@@ -25,7 +25,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Avatar from '@mui/material/Avatar';
-import Sidebar from '@/Components/sidebar';
+import Sidebar from '@/Components/Sidebar';
 
 
 const drawerWidth = 240;
