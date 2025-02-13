@@ -25,6 +25,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Avatar from '@mui/material/Avatar';
+import Sidebar from '@/Components/sidebar';
 
 
 const drawerWidth = 240;
@@ -137,87 +138,7 @@ export default function MainLayout({ children }) {
                 </Toolbar>
             </AppBar>
             { /* DRAWER */}
-            <Drawer
-                variant="permanent"
-                sx={{
-                    width: drawerWidth,
-                    flexShrink: 0,
-                    [`& .MuiDrawer-paper`]: {
-                        width: drawerWidth,
-                        boxSizing: 'border-box',
-                        backgroundColor: '#3d3d3d',
-                    },
-                }}
-            >
-                <Toolbar />
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        height: '100%',
-                        justifyContent: 'space-between'
-                    }}
-                >
-                    <Box>
-                        {/* AVATAR AND USERNAME */}
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                paddingTop: 2,
-                                paddingBottom: 0,
-                            }}
-                        >
-                            <Avatar
-                                sx={{ width: 80, height: 80, marginBottom: 1 }}
-                                alt="User Avatar"
-                                src="https://via.placeholder.com/80" // Replace with the user's avatar URL
-                            />
-                            <Typography variant="h6" sx={{ color: '#fafafa' }}>
-                                {user.name}
-                            </Typography>
-                            <Divider sx={{ width: '100%', borderColor: '#d3d3d3', marginTop: 2 }} />
-                        </Box>
-                        <Box>
-                            <List>
-                                {[
-                                    { text: 'Quests', icon: <InboxIcon /> },
-                                    { text: 'Achievements', icon: <StarIcon /> },
-                                    { text: 'Badges', icon: <EmojiEventsIcon /> },
-                                ].map((item) => (
-                                    <ListItem key={item.text} disablePadding>
-                                        <ListItemButton>
-                                            <ListItemIcon sx={{ color: '#fafafa' }}>
-                                                {item.icon}
-                                            </ListItemIcon>
-                                            <ListItemText primary={item.text} sx={{ color: '#fafafa' }} />
-                                        </ListItemButton>
-                                    </ListItem>
-                                ))}
-                            </List>
-                        </Box>
-                    </Box>
-                    <Box>
-                        <Divider sx={{ borderColor: '#d3d3d3' }} />
-                        <List>
-                            {[
-                                { text: 'Settings', icon: <SettingsIcon /> },
-                                { text: 'Log Out', icon: <LogoutIcon /> },
-                            ].map((item) => (
-                                <ListItem key={item.text} disablePadding>
-                                    <ListItemButton>
-                                        <ListItemIcon sx={{ color: '#fafafa' }}>
-                                            {item.icon}
-                                        </ListItemIcon>
-                                        <ListItemText primary={item.text} sx={{ color: '#fafafa' }} />
-                                    </ListItemButton>
-                                </ListItem>
-                            ))}
-                        </List>
-                    </Box>
-                </Box>
-            </Drawer>
+            <Sidebar></Sidebar>
             <main>{children}</main>
         </Box>
 
