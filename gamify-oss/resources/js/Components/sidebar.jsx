@@ -12,8 +12,17 @@ import {
   Divider
 } from '@mui/material';
 
+import './../../css/app.css';
+
 // Icons (install @mui/icons-material if not installed)
-import BoltIcon from '@mui/icons-material/Bolt';
+import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
+import ExploreRoundedIcon from '@mui/icons-material/ExploreRounded';
+import MapRoundedIcon from '@mui/icons-material/MapRounded';
+import LightbulbRoundedIcon from '@mui/icons-material/LightbulbRounded';
+import FlagRoundedIcon from '@mui/icons-material/FlagRounded';
+import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
+import StarRoundedIcon from '@mui/icons-material/StarRounded';
+import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -30,7 +39,7 @@ export default function Sidebar() {
   return (
     <Box
       sx={{
-        width: '250px',
+        width: '265px',
         height: '100vh',
         bgcolor: '#2f2f2f',
         color: '#fff',
@@ -38,9 +47,10 @@ export default function Sidebar() {
         flexDirection: 'column',
         alignItems: 'center',
         p: 2,
+        pt: 12,
       }}
     >
-      {/* User Avatar */}
+      {/* Avatar */}
       <Avatar
         alt="User Avatar"
         src="https://via.placeholder.com/80"
@@ -52,48 +62,74 @@ export default function Sidebar() {
         username
       </Typography>
 
-      {/* XP + Thunder Icon */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-        <BoltIcon sx={{ color: '#FFC107', mr: 0.5 }} />
-        <Typography variant="body2">2106 XP</Typography>
+      {/* XP, Progress Bar, and Level Section */}
+      <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', width: '100%', mb: 2 }}>
+        <BoltRoundedIcon sx={{ color: '#FFC107', mr: 0.5, fontSize: 35, }} />
+        {/* XP, Progress Bar, and Level */}
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'left', mr: 2, width: '100%', }}>
+          <Typography variant="body2">2106 XP</Typography>
+          <LinearProgress
+            variant="determinate"
+            value={70}
+            sx={{ flexGrow: 1 }}
+          />
+          <Typography variant="body2">Level 3</Typography>
+        </Box>
       </Box>
 
-      {/* XP Bar + Level */}
-      <Box sx={{ width: '100%', mb: 2 }}>
-        <LinearProgress variant="determinate" value={70} sx={{ mb: 0.5 }} />
-        <Typography variant="body2" align="right">
-          Level 3
-        </Typography>
-      </Box>
+      <Divider sx={{ width: '100%', mb: 1, bgcolor: 'rgba(255,255,255,0.2)' }} />
 
       {/* Quest Dropdown */}
-      <List sx={{ width: '100%' }} component="nav">
+      <List sx={{ width: '100%', alignItems: 'left' }} component="nav">
         <ListItemButton onClick={handleToggleQuests}>
+          <ListItemIcon>
+            <ExploreRoundedIcon sx={{ color: '#fff' }} />
+          </ListItemIcon>
           <ListItemText primary="Quests" />
           {openQuests ? <ExpandLessIcon /> : <ExpandMoreIcon />}
         </ListItemButton>
         <Collapse in={openQuests} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            <ListItemButton sx={{ pl: 4 }}>
-              <ListItemText primary="Quest Board" />
-            </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
-              <ListItemText primary="Beginner Quests" />
-            </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
-              <ListItemText primary="Taken Quests" />
-            </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
-              <ListItemText primary="Quest History" />
-            </ListItemButton>
-          </List>
+          <Box sx={{ maxHeight: '120px', overflowY: 'auto' }}>
+            <List component="div" disablePadding>
+              <ListItemButton sx={{ pl: 4 }}>
+                <ListItemIcon>
+                  <MapRoundedIcon sx={{ color: '#fff' }} />
+                </ListItemIcon>
+                <ListItemText className="sidebar" primary="Quest Board" />
+              </ListItemButton>
+              <ListItemButton sx={{ pl: 4 }}>
+                <ListItemIcon>
+                  <LightbulbRoundedIcon sx={{ color: '#fff' }} />
+                </ListItemIcon>
+                <ListItemText className="sidebar" primary="Beginner Quests" />
+              </ListItemButton>
+              <ListItemButton sx={{ pl: 4 }}>
+                <ListItemIcon>
+                  <FlagRoundedIcon sx={{ color: '#fff' }} />
+                </ListItemIcon>
+                <ListItemText className="sidebar" primary="Taken Quests" />
+              </ListItemButton>
+              <ListItemButton sx={{ pl: 4 }}>
+                <ListItemIcon>
+                  <HistoryRoundedIcon sx={{ color: '#fff' }} />
+                </ListItemIcon>
+                <ListItemText className="sidebar" primary="Quest History" />
+              </ListItemButton>
+            </List>
+          </Box>
         </Collapse>
 
         <ListItemButton>
+          <ListItemIcon>
+            <StarRoundedIcon sx={{ color: '#fff'}} />
+          </ListItemIcon>
           <ListItemText primary="Achievements" />
         </ListItemButton>
 
         <ListItemButton>
+          <ListItemIcon>
+            <EmojiEventsRoundedIcon sx={{ color: '#fff'}} />
+          </ListItemIcon>
           <ListItemText primary="Badges" />
         </ListItemButton>
       </List>
@@ -103,7 +139,7 @@ export default function Sidebar() {
 
       {/* Settings & Log Out */}
       <Divider sx={{ width: '100%', mb: 1, bgcolor: 'rgba(255,255,255,0.2)' }} />
-      <List sx={{ width: '100%' }}>
+      <List className="sidebar" sx={{ width: '100%' }}>
         <ListItemButton>
           <ListItemIcon>
             <SettingsIcon sx={{ color: '#fff' }} />
