@@ -67,13 +67,13 @@ export default function Sidebar() {
         <BoltRoundedIcon sx={{ color: '#FFC107', mr: 0.5, fontSize: 35, }} />
         {/* XP, Progress Bar, and Level */}
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'left', mr: 2, width: '100%', }}>
-          <Typography variant="body2">2106 XP</Typography>
+          <Typography variant="body2">250 XP</Typography>
           <LinearProgress
             variant="determinate"
             value={70}
             sx={{ flexGrow: 1 }}
           />
-          <Typography variant="body2">Level 3</Typography>
+          <Typography variant="body2">Level 2</Typography>
         </Box>
       </Box>
 
