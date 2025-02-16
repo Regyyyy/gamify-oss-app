@@ -29,7 +29,9 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 
-export default function Sidebar() {
+export default function Sidebar({
+  username = "username"
+}) {
   const [openQuests, setOpenQuests] = useState(false);
 
   const handleToggleQuests = () => {
@@ -40,7 +42,7 @@ export default function Sidebar() {
     <Box
       sx={{
         width: '265px',
-        height: '100vh',
+        height: '96.75vh',
         bgcolor: '#2f2f2f',
         color: '#fff',
         display: 'flex',
@@ -59,7 +61,7 @@ export default function Sidebar() {
 
       {/* Username */}
       <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-        username
+        {username}
       </Typography>
 
       {/* XP, Progress Bar, and Level Section */}

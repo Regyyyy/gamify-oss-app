@@ -120,10 +120,10 @@ export default function AuthenticatedLayout({ header, children }) {
                 >
                     <div className="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink
-                            href={route('dashboard')}
-                            active={route().current('dashboard')}
+                            href={route('questboard')}
+                            active={route().current('questboard')}
                         >
-                            Dashboard
+                            Quest Board
                         </ResponsiveNavLink>
                     </div>
 
