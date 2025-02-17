@@ -28,9 +28,11 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
+import { router } from '@inertiajs/react';
+
 
 export default function Sidebar({
-  username = "username"
+  username = "username",
 }) {
   const [openQuests, setOpenQuests] = useState(false);
 
@@ -93,25 +95,25 @@ export default function Sidebar({
         <Collapse in={openQuests} timeout="auto" unmountOnExit>
           <Box sx={{ maxHeight: '120px', overflowY: 'auto' }}>
             <List component="div" disablePadding>
-              <ListItemButton sx={{ pl: 4 }}>
+              <ListItemButton href="questboard" sx={{ pl: 4 }}>
                 <ListItemIcon>
                   <MapRoundedIcon sx={{ color: '#fff' }} />
                 </ListItemIcon>
                 <ListItemText className="sidebar" primary="Quest Board" />
               </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
+              <ListItemButton href="beginnerquests" sx={{ pl: 4 }}>
                 <ListItemIcon>
                   <LightbulbRoundedIcon sx={{ color: '#fff' }} />
                 </ListItemIcon>
                 <ListItemText className="sidebar" primary="Beginner Quests" />
               </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
+              <ListItemButton href="takenquests" sx={{ pl: 4 }}>
                 <ListItemIcon>
                   <FlagRoundedIcon sx={{ color: '#fff' }} />
                 </ListItemIcon>
                 <ListItemText className="sidebar" primary="Taken Quests" />
               </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
+              <ListItemButton href="questhistory" sx={{ pl: 4 }}>
                 <ListItemIcon>
                   <HistoryRoundedIcon sx={{ color: '#fff' }} />
                 </ListItemIcon>
@@ -121,16 +123,16 @@ export default function Sidebar({
           </Box>
         </Collapse>
 
-        <ListItemButton>
+        <ListItemButton href="achievements">
           <ListItemIcon>
-            <StarRoundedIcon sx={{ color: '#fff'}} />
+            <StarRoundedIcon sx={{ color: '#fff' }} />
           </ListItemIcon>
           <ListItemText primary="Achievements" />
         </ListItemButton>
 
-        <ListItemButton>
+        <ListItemButton href="badges">
           <ListItemIcon>
-            <EmojiEventsRoundedIcon sx={{ color: '#fff'}} />
+            <EmojiEventsRoundedIcon sx={{ color: '#fff' }} />
           </ListItemIcon>
           <ListItemText primary="Badges" />
         </ListItemButton>
@@ -142,18 +144,18 @@ export default function Sidebar({
       {/* Settings & Log Out */}
       <Divider sx={{ width: '100%', mb: 1, bgcolor: 'rgba(255,255,255,0.2)' }} />
       <List className="sidebar" sx={{ width: '100%' }}>
-        <ListItemButton>
+        <ListItemButton href={route("profile.edit")}>
           <ListItemIcon>
             <SettingsIcon sx={{ color: '#fff' }} />
           </ListItemIcon>
           <ListItemText primary="Settings" />
         </ListItemButton>
 
-        <ListItemButton>
+        <ListItemButton onClick={() => router.post(route("logout"))}>
           <ListItemIcon>
-            <LogoutIcon sx={{ color: '#fff' }} />
+            <LogoutIcon sx={{ color: 'red' }} />
           </ListItemIcon>
-          <ListItemText primary="Log Out" />
+          <ListItemText sx={{ color: 'red' }} primary="Log Out" />
         </ListItemButton>
       </List>
     </Box>

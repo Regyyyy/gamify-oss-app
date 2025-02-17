@@ -28,9 +28,6 @@ import Avatar from '@mui/material/Avatar';
 import Sidebar from '@/Components/Sidebar';
 import PrimaryButton from '@/Components/PrimaryButton';
 
-
-const drawerWidth = 240;
-
 export default function MainLayout({ children }) {
     const user = usePage().props.auth.user;
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
@@ -119,7 +116,7 @@ export default function MainLayout({ children }) {
             
             { /* Sidebar and children */}
             <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                <Sidebar username={user.name}/>
+                <Sidebar username={user.name} user={user}/>
                 <main>{children}</main>
             </Box>  
         </Box>
