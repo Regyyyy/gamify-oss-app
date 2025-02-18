@@ -34,12 +34,11 @@ export default function MainLayout({ children }) {
         useState(false);
 
     return (
-        <Box>
+        <Box sx={{ bgcolor: '#dedede' }}>
             <CssBaseline />
             <AppBar
                 sx={{
                     zIndex: (theme) => theme.zIndex.drawer + 1,
-                    bgcolor: "#ff7a00",
                 }}
             >
                 <Toolbar>
@@ -117,7 +116,18 @@ export default function MainLayout({ children }) {
             { /* Sidebar and children */}
             <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                 <Sidebar username={user.name} user={user}/>
-                <main>{children}</main>
+                <Box sx={{
+                    width:'100%',
+                    height:'100%',
+                    my: 10,
+                    mx:5,
+                    borderRadius: 3,
+                    boxShadow: 3,
+                    alignItems: 'center',
+                    bgcolor: 'white'
+                }}>
+                    <main>{children}</main>
+                </Box>
             </Box>  
         </Box>
 

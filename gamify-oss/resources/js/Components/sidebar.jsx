@@ -29,12 +29,14 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import { router } from '@inertiajs/react';
-
+import { useTheme } from "@mui/material/styles";
 
 export default function Sidebar({
   username = "username",
 }) {
   const [openQuests, setOpenQuests] = useState(false);
+
+  const theme = useTheme();
 
   const handleToggleQuests = () => {
     setOpenQuests(!openQuests);
@@ -43,7 +45,7 @@ export default function Sidebar({
   return (
     <Box
       sx={{
-        width: '265px',
+        width: '23%',
         height: '96.75vh',
         bgcolor: '#2f2f2f',
         color: '#fff',
@@ -84,7 +86,7 @@ export default function Sidebar({
       <Divider sx={{ width: '100%', mb: 1, bgcolor: 'rgba(255,255,255,0.2)' }} />
 
       {/* Quest Dropdown */}
-      <List sx={{ width: '100%', alignItems: 'left' }} component="nav">
+      <List className="sidebar" sx={{ width: '100%', alignItems: 'left' }} component="nav">
         <ListItemButton onClick={handleToggleQuests}>
           <ListItemIcon>
             <ExploreRoundedIcon sx={{ color: '#fff' }} />
@@ -153,9 +155,9 @@ export default function Sidebar({
 
         <ListItemButton onClick={() => router.post(route("logout"))}>
           <ListItemIcon>
-            <LogoutIcon sx={{ color: 'red' }} />
+            <LogoutIcon sx={{ color: theme.palette.warning.main }} />
           </ListItemIcon>
-          <ListItemText sx={{ color: 'red' }} primary="Log Out" />
+          <ListItemText sx={{ color: theme.palette.warning.main }} primary="Log Out" />
         </ListItemButton>
       </List>
     </Box>
