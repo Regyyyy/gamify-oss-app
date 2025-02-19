@@ -33,6 +33,8 @@ export default function MainLayout({ children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
+    const drawerWidth = 275;
+    
     return (
         <Box sx={{ bgcolor: '#dedede' }}>
             <CssBaseline />
@@ -44,7 +46,7 @@ export default function MainLayout({ children }) {
                 <Toolbar>
                     <Box>
                         <Link href="/">
-                            <img src="/images/logo-no-text-white.png" width="40"/>
+                            <img src="/images/logo-no-text-white.png" width="40" />
                         </Link>
                     </Box>
 
@@ -117,8 +119,11 @@ export default function MainLayout({ children }) {
 
             { /* Sidebar and children */}
             <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                <Sidebar username={user.name} user={user} />
+                <Box sx={{ width: drawerWidth, flexShrink: 0 }}>
+                    <Sidebar width={drawerWidth} username={user.name} user={user} />
+                </Box>
                 <Box sx={{
+                    flexGrow: 1,
                     width: '100%',
                     height: '100%',
                     my: 10,

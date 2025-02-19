@@ -4,6 +4,7 @@ import { blue, green, grey, orange, red, yellow } from "@mui/material/colors";
 import LockOpenRoundedIcon from "@mui/icons-material/LockOpenRounded";
 import LockRoundedIcon from "@mui/icons-material/LockRounded";
 import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowRightRounded';
+import { useTheme } from '@mui/material/styles';
 
 export default function QuestCard({
     questTitle = "Quest Title",
@@ -16,6 +17,8 @@ export default function QuestCard({
     proficiencyReward = 100,
 }) {
     const isUnlocked = playerLevel >= requiredLevel;
+
+    const theme = useTheme();
 
     return (
         <Card sx={{ display: "flex", borderRadius: 2, overflow: "hidden", boxShadow: 3, my: 2 }}>
@@ -31,7 +34,7 @@ export default function QuestCard({
                                 icon={isUnlocked ? <LockOpenRoundedIcon /> : <LockRoundedIcon />}
                                 sx={{
                                     bgcolor: isUnlocked ? green[200] : red[200],
-                                    border: isUnlocked ? '1px solid green' : '1px solid red',
+                                    border: isUnlocked ? '1px solid' + green[800] : '1px solid' + red[800],
                                     fontWeight: 'bold',
                                     color: 'black',
                                     px: 0.5,
@@ -50,7 +53,7 @@ export default function QuestCard({
                             sx={{
                                 display: "-webkit-box",
                                 WebkitBoxOrient: "vertical",
-                                WebkitLineClamp: 1, // Limit to 2 lines
+                                WebkitLineClamp: 1,
                                 overflow: "hidden",
                             }}
                         >
@@ -63,10 +66,9 @@ export default function QuestCard({
                         gap: 1,
                         display: 'flex',
                         flexDirection: 'column',
-                        alignItems: 'right'
+                        alignItems: 'flex-end'
                     }}>
                         <Box sx={{
-                            alignItems: 'right',
                             gap: 1,
                             display: 'flex',
                             flexDirection: 'row',
@@ -75,7 +77,7 @@ export default function QuestCard({
                                 label={difficulty}
                                 sx={{
                                     bgcolor: difficulty === "Easy" ? green[200] : difficulty === "Medium" ? orange[200] : red[200],
-                                    border: difficulty === "Easy" ? '1px solid green' : difficulty === "Medium" ? '1px solid orange' : '1px solid red',
+                                    border: difficulty === "Easy" ? '1px solid' + green[800] : difficulty === "Medium" ? '1px solid' + orange[800] : '1px solid' + red[800],
                                     fontWeight: 'bold',
                                 }}
                             />
@@ -83,7 +85,7 @@ export default function QuestCard({
                                 label={`XP +${xpReward}`}
                                 sx={{
                                     bgcolor: yellow[200],
-                                    border: '1px solid yellow',
+                                    border: '1px solid' + yellow[800],
                                     fontWeight: 'bold',
                                 }}
                             />
@@ -92,7 +94,7 @@ export default function QuestCard({
                             label={`${role} Proficiency +${proficiencyReward}`}
                             sx={{
                                 bgcolor: blue[100],
-                                border: '1px solid blue',
+                                border: '1px solid' + blue[800],
                                 fontWeight: 'bold',
                             }}
                         />
@@ -101,7 +103,10 @@ export default function QuestCard({
             </CardContent>
             <Button
                 variant="contained"
-                sx={{ borderRadius: 0, minWidth: 50, backgroundColor: isUnlocked ? orange[500] : grey[400] }}
+                sx={{ 
+                    borderRadius: 0, 
+                    minWidth: 50, 
+                    backgroundColor: isUnlocked ? theme.palette.primary.main : grey[400] }}
                 disabled={!isUnlocked}
             >
                 <KeyboardDoubleArrowRightRoundedIcon sx={{ color: 'white' }} />

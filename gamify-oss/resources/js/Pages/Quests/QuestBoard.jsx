@@ -14,7 +14,7 @@ export default function QuestBoard() {
             <Head title="QuestBoard" />
 
             <Box>
-                <div className="mx-auto max-w-7xl">
+                <div className="">
                     <div className="overflow-hidden">
                         <Box className="p-10 text-gray-900">
 
