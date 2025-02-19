@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, Typography, Chip, Button, Box } from "@mui/material";
 import { blue, green, grey, orange, red, yellow } from "@mui/material/colors";
 import LockOpenRoundedIcon from "@mui/icons-material/LockOpenRounded";
 import LockRoundedIcon from "@mui/icons-material/LockRounded";
 import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowRightRounded';
 import { useTheme } from '@mui/material/styles';
+import QuestModal from "./QuestModal";
 
 export default function QuestCard({
     questTitle = "Quest Title",
@@ -20,97 +21,119 @@ export default function QuestCard({
 
     const theme = useTheme();
 
+    const [open, setOpen] = useState(false);
+
     return (
-        <Card sx={{ display: "flex", borderRadius: 2, overflow: "hidden", boxShadow: 3, my: 2 }}>
-            <CardContent sx={{ flexGrow: 1 }}>
-                <Box sx={{ display: "flex", flexDirection: "row" }}>
-                    <Box>
-                        <Typography variant="h6" fontWeight="bold">
-                            {questTitle}
-                        </Typography>
-                        <Box display="flex" alignItems="center" gap={1} my={1}>
-                            <Chip
-                                label={isUnlocked ? "Unlocked" : "Locked"}
-                                icon={isUnlocked ? <LockOpenRoundedIcon /> : <LockRoundedIcon />}
+        <>
+            <Card sx={{
+                display: "flex",
+                borderRadius: 2,
+                overflow: "hidden",
+                boxShadow: 3,
+                my: 2,
+                cursor: "pointer",
+                transition: "all 0.2s ease-in-out",
+                "&:hover": {
+                    transform: "translateY(-6px)",
+                    boxShadow: 8,
+                },
+            }}
+                onClick={() => setOpen(true)}
+            >
+                <CardContent sx={{
+                    flexGrow: 1,
+                }}>
+                    <Box sx={{ display: "flex", flexDirection: "row" }}>
+                        <Box>
+                            <Typography variant="h6" fontWeight="bold">
+                                {questTitle}
+                            </Typography>
+                            <Box display="flex" alignItems="center" gap={1} my={1}>
+                                <Chip
+                                    label={isUnlocked ? "Unlocked" : "Locked"}
+                                    icon={isUnlocked ? <LockOpenRoundedIcon /> : <LockRoundedIcon />}
+                                    sx={{
+                                        bgcolor: isUnlocked ? green[200] : red[200],
+                                        border: isUnlocked ? '1px solid' + green[800] : '1px solid' + red[800],
+                                        fontWeight: 'bold',
+                                        color: 'black',
+                                        px: 0.5,
+                                        '& .MuiChip-icon': {
+                                            color: 'black'
+                                        },
+                                    }}
+                                />
+                                <Typography variant="subtitle2" fontWeight="bold">
+                                    Required Level {requiredLevel}
+                                </Typography>
+                            </Box>
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
                                 sx={{
-                                    bgcolor: isUnlocked ? green[200] : red[200],
-                                    border: isUnlocked ? '1px solid' + green[800] : '1px solid' + red[800],
-                                    fontWeight: 'bold',
-                                    color: 'black',
-                                    px: 0.5,
-                                    '& .MuiChip-icon': {
-                                        color: 'black'
-                                    },
+                                    display: "-webkit-box",
+                                    WebkitBoxOrient: "vertical",
+                                    WebkitLineClamp: 1,
+                                    overflow: "hidden",
                                 }}
-                            />
-                            <Typography variant="subtitle2" fontWeight="bold">
-                                Required Level {requiredLevel}
+                            >
+                                {questDescription}
                             </Typography>
                         </Box>
-                        <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{
-                                display: "-webkit-box",
-                                WebkitBoxOrient: "vertical",
-                                WebkitLineClamp: 1,
-                                overflow: "hidden",
-                            }}
-                        >
-                            {questDescription}
-                        </Typography>
-                    </Box>
-                    <Box sx={{
-                        ml: 2,
-                        mt: 1,
-                        gap: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'flex-end'
-                    }}>
                         <Box sx={{
+                            ml: 2,
+                            mt: 1,
                             gap: 1,
                             display: 'flex',
-                            flexDirection: 'row',
+                            flexDirection: 'column',
+                            alignItems: 'flex-end'
                         }}>
+                            <Box sx={{
+                                gap: 1,
+                                display: 'flex',
+                                flexDirection: 'row',
+                            }}>
+                                <Chip
+                                    label={difficulty}
+                                    sx={{
+                                        bgcolor: difficulty === "Easy" ? green[200] : difficulty === "Medium" ? orange[200] : red[200],
+                                        border: difficulty === "Easy" ? '1px solid' + green[800] : difficulty === "Medium" ? '1px solid' + orange[800] : '1px solid' + red[800],
+                                        fontWeight: 'bold',
+                                    }}
+                                />
+                                <Chip
+                                    label={`XP +${xpReward}`}
+                                    sx={{
+                                        bgcolor: yellow[200],
+                                        border: '1px solid' + yellow[800],
+                                        fontWeight: 'bold',
+                                    }}
+                                />
+                            </Box>
                             <Chip
-                                label={difficulty}
+                                label={`${role} Proficiency +${proficiencyReward}`}
                                 sx={{
-                                    bgcolor: difficulty === "Easy" ? green[200] : difficulty === "Medium" ? orange[200] : red[200],
-                                    border: difficulty === "Easy" ? '1px solid' + green[800] : difficulty === "Medium" ? '1px solid' + orange[800] : '1px solid' + red[800],
-                                    fontWeight: 'bold',
-                                }}
-                            />
-                            <Chip
-                                label={`XP +${xpReward}`}
-                                sx={{
-                                    bgcolor: yellow[200],
-                                    border: '1px solid' + yellow[800],
+                                    bgcolor: blue[100],
+                                    border: '1px solid' + blue[800],
                                     fontWeight: 'bold',
                                 }}
                             />
                         </Box>
-                        <Chip
-                            label={`${role} Proficiency +${proficiencyReward}`}
-                            sx={{
-                                bgcolor: blue[100],
-                                border: '1px solid' + blue[800],
-                                fontWeight: 'bold',
-                            }}
-                        />
                     </Box>
-                </Box>
-            </CardContent>
-            <Button
-                variant="contained"
-                sx={{ 
-                    borderRadius: 0, 
-                    minWidth: 50, 
-                    backgroundColor: isUnlocked ? theme.palette.primary.main : grey[400] }}
-                disabled={!isUnlocked}
-            >
-                <KeyboardDoubleArrowRightRoundedIcon sx={{ color: 'white' }} />
-            </Button>
-        </Card>
+                </CardContent>
+                <Button
+                    variant="contained"
+                    sx={{
+                        borderRadius: 0,
+                        minWidth: 50,
+                        backgroundColor: isUnlocked ? theme.palette.primary.main : grey[400]
+                    }}
+                    disabled={!isUnlocked}
+                >
+                    <KeyboardDoubleArrowRightRoundedIcon sx={{ color: 'white' }} />
+                </Button>
+            </Card>
+            <QuestModal open={open} onClose={() => setOpen(false)} quest={{ questTitle, questDescription, playerLevel, requiredLevel, difficulty, xpReward, role, proficiencyReward }} />
+        </>
     );
 }
