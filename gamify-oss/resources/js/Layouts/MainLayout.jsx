@@ -42,9 +42,11 @@ export default function MainLayout({ children }) {
                 }}
             >
                 <Toolbar>
-                    <Link href="/">
-                        <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
-                    </Link>
+                    <Box>
+                        <Link href="/">
+                            <img src="/images/logo-no-text-white.png" width="40"/>
+                        </Link>
+                    </Box>
 
                     <Box sx={{ flexGrow: 1 }} />
 
@@ -56,7 +58,7 @@ export default function MainLayout({ children }) {
                                     <span className="inline-flex rounded-md">
                                         <button
                                             type="button"
-                                            className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
+                                            className="inline-flex items-center rounded-md border border-transparent px-3 py-2 text-sm font-medium leading-4 text-white transition duration-150 ease-in-out hover:text-white-100 focus:outline-none"
                                         >
                                             {user.name}
                                             <svg
@@ -112,15 +114,15 @@ export default function MainLayout({ children }) {
                     </Box>
                 </Toolbar>
             </AppBar>;
-            
+
             { /* Sidebar and children */}
             <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                <Sidebar username={user.name} user={user}/>
+                <Sidebar username={user.name} user={user} />
                 <Box sx={{
-                    width:'100%',
-                    height:'100%',
+                    width: '100%',
+                    height: '100%',
                     my: 10,
-                    mx:5,
+                    mx: 5,
                     borderRadius: 3,
                     boxShadow: 3,
                     alignItems: 'center',
@@ -128,7 +130,7 @@ export default function MainLayout({ children }) {
                 }}>
                     <main>{children}</main>
                 </Box>
-            </Box>  
+            </Box>
         </Box>
 
     );
