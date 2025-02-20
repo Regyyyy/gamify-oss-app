@@ -44,7 +44,7 @@ export default function QuestCard({
                     flexGrow: 1,
                 }}>
                     <Box sx={{ display: "flex", flexDirection: "row" }}>
-                        <Box>
+                        <Box mx={1}>
                             <Typography variant="h6" fontWeight="bold">
                                 {questTitle}
                             </Typography>

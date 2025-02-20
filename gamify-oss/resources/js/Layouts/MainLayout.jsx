@@ -36,7 +36,7 @@ export default function MainLayout({ children }) {
     const drawerWidth = 275;
     
     return (
-        <Box sx={{ bgcolor: '#dedede', minHeight: '100vh', width: '100vw' }}>
+        <Box sx={{ bgcolor: '#dedede', minHeight: '100vh', width: '100%' }}>
             <CssBaseline />
             <AppBar
                 sx={{
