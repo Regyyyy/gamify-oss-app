@@ -34,6 +34,10 @@ Route::get('/questhistory', function () {
     return Inertia::render('Quests/QuestHistory');
 })->middleware(['auth', 'verified'])->name('questhistory');
 
+Route::get('/leaderboard', function () {
+    return Inertia::render('Leaderboard');
+})->middleware(['auth', 'verified'])->name('leaderboard');
+
 Route::get('/achievements', function () {
     return Inertia::render('Achievements');
 })->middleware(['auth', 'verified'])->name('achievements');

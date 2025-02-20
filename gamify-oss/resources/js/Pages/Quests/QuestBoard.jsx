@@ -20,7 +20,7 @@ export default function QuestBoard() {
 
                             {/* Head */}
                             <Box>
-                                <Typography variant='h4' sx={{ fontWeight: 'bold' }}>
+                                <Typography variant='h4' sx={{ display: 'flex', fontWeight: 'bold', alignItems: 'flex-center' }}>
                                     <MapRoundedIcon sx={{ fontSize: 38, mr: 1 }} />
                                     Quest Board
                                 </Typography>

@@ -25,7 +25,8 @@ import {
   ExpandLess as ExpandLessIcon,
   ExpandMore as ExpandMoreIcon,
   Settings as SettingsIcon,
-  Logout as LogoutIcon
+  Logout as LogoutIcon,
+  LeaderboardRounded as LeaderboardRoundedIcon 
 } from "@mui/icons-material";
 
 import { router } from "@inertiajs/react";
@@ -105,6 +106,7 @@ export default function Sidebar({ username = "username", width = 275 }) {
         <Collapse in={openQuests} timeout="auto" unmountOnExit>
           <Box
             sx={{
+              maxHeight: 125,
               overflowY: "auto",
               "&::-webkit-scrollbar": {
                 width: "8px",
@@ -146,6 +148,13 @@ export default function Sidebar({ username = "username", width = 275 }) {
             </List>
           </Box>
         </Collapse>
+
+        <ListItemButton href="/leaderboard">
+          <ListItemIcon>
+            <LeaderboardRoundedIcon sx={{ color: "#fff" }} />
+          </ListItemIcon>
+          <ListItemText primary="Leaderboard" />
+        </ListItemButton>
 
         <ListItemButton href="/achievements">
           <ListItemIcon>

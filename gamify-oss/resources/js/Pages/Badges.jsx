@@ -1,22 +1,41 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import MainLayout from '@/Layouts/MainLayout';
 import { Head } from '@inertiajs/react';
+import { Box, Typography, Link } from '@mui/material';
 
-export default function QuestBoard() {
+import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
+
+export default function Badges() {
     return (
         <MainLayout
         >
-            <Head title="QuestBoard" />
+            <Head title="Badges" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900">
-                            Badges
-                        </div>
+            <Box>
+                <div className="">
+                    <div className="overflow-hidden">
+                        <Box className="p-10 text-gray-900">
+
+                            {/* Head */}
+                            <Box>
+                                <Typography variant='h4' sx={{ display: 'flex', fontWeight: 'bold', alignItems: 'flex-center' }}>
+                                    <EmojiEventsRoundedIcon sx={{ fontSize: 38, mr: 1 }} />
+                                    Badges
+                                </Typography>
+                            </Box>
+                            <Box sx={{ py: 1 }}>
+                                <Typography>
+                                    Get your special badges and show them in your profile by completing various activities in the project!
+                                </Typography>
+                            </Box>
+
+                            {/* Achievements */}
+                            <Box>
+
+                            </Box>
+                        </Box>
                     </div>
                 </div>
-            </div>
+            </Box>
         </MainLayout>
     );
 }
