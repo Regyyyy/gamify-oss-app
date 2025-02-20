@@ -86,7 +86,7 @@ export default function Login({ status, canResetPassword }) {
                     </label>
                 </div>
 
-                <div className="mt-4 flex items-center justify-end">
+                <div className="mt-4 flex items-center justify-end gap-4">
                     {canResetPassword && (
                         <Link
                             href={route('password.request')}
@@ -96,7 +96,7 @@ export default function Login({ status, canResetPassword }) {
                         </Link>
                     )}
 
-                    <PrimaryButton className="ms-4" disabled={processing}>
+                    <PrimaryButton className="md-4" disabled={processing}>
                         Log in
                     </PrimaryButton>
                 </div>
