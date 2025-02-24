@@ -21,6 +21,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'avatar',
+        'level',
+        'xp_point',
     ];
 
     /**
@@ -43,6 +47,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'level' => 'integer',
+            'xp_point' => 'integer',
         ];
     }
 }

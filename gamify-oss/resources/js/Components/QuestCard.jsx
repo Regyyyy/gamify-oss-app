@@ -42,6 +42,7 @@ export default function QuestCard({
             >
                 <CardContent sx={{
                     flexGrow: 1,
+                    alignItems: 'center',
                 }}>
                     <Box sx={{ display: "flex", flexDirection: "row" }}>
                         <Box mx={1}>
@@ -110,14 +111,16 @@ export default function QuestCard({
                                     }}
                                 />
                             </Box>
-                            <Chip
-                                label={`${role} Proficiency +${proficiencyReward}`}
-                                sx={{
-                                    bgcolor: blue[100],
-                                    border: '1px solid' + blue[800],
-                                    fontWeight: 'bold',
-                                }}
-                            />
+                            {proficiencyReward > 0 && (
+                                <Chip
+                                    label={`${role} Proficiency +${proficiencyReward}`}
+                                    sx={{
+                                        bgcolor: blue[100],
+                                        border: '1px solid' + blue[800],
+                                        fontWeight: 'bold',
+                                    }}
+                                />
+                            )}
                         </Box>
                     </Box>
                 </CardContent>

@@ -1,14 +1,16 @@
 import MainLayout from '@/Layouts/MainLayout';
+import AdminLayout from '@/Layouts/AdminLayout';
 import { Head } from '@inertiajs/react';
 import { Box, Typography, Link } from '@mui/material';
 
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import QuestCard from '@/Components/QuestCard';
 import LightbulbRoundedIcon from '@mui/icons-material/LightbulbRounded';
+import AdminLayout from '@/Layouts/AdminLayout';
 
 export default function BeginnerQuest() {
     return (
-        <MainLayout
+        <AdminLayout
         >
             <Head title="BeginnerQuest" />
 
@@ -50,37 +52,55 @@ export default function BeginnerQuest() {
 
                             }}>
                                 <QuestCard
-                                    questTitle='Membutuhkan definisi "fun" yang lebih jelas pada design document'
+                                    questTitle='Membuka repository project dan baca README'
                                     playerLevel='1'
                                     requiredLevel='1'
                                     difficulty='Easy'
                                     xpReward='75'
                                     role='Game Designer'
-                                    proficiencyReward='100'
+                                    proficiencyReward='0'
                                 />
                                 <QuestCard
-                                    questTitle='Membutuhkan script untuk membuat karakter bergerak'
+                                    questTitle='Memberi komentar kepada 3 issues yang berbeda'
+                                    playerLevel='1'
+                                    requiredLevel='1'
+                                    difficulty='Easy'
+                                    xpReward='150'
+                                    role='Game Programmer'
+                                    proficiencyReward='0'
+                                />
+                                <QuestCard
+                                    questTitle='Membuat fork dari project repository'
+                                    playerLevel='1'
+                                    requiredLevel='1'
+                                    difficulty='Easy'
+                                    xpReward='75'
+                                    role='Game Artist'
+                                    proficiencyReward='0'
+                                />
+                                <QuestCard
+                                    questTitle='Melakukan pull request kepada project repository'
                                     playerLevel='1'
                                     requiredLevel='2'
                                     difficulty='Medium'
                                     xpReward='150'
-                                    role='Game Programmer'
-                                    proficiencyReward='200'
+                                    role='Game Artist'
+                                    proficiencyReward='0'
                                 />
                                 <QuestCard
-                                    questTitle='Membutuhkan aset dari main character'
+                                    questTitle='Membuat issue baru terkait ide/masukan/temuan pada project'
                                     playerLevel='1'
-                                    requiredLevel='3'
-                                    difficulty='Hard'
-                                    xpReward='300'
+                                    requiredLevel='2'
+                                    difficulty='Medium'
+                                    xpReward='150'
                                     role='Game Artist'
-                                    proficiencyReward='300'
+                                    proficiencyReward='0'
                                 />
                             </Box>
                         </Box>
                     </div>
                 </div>
             </Box>
-        </MainLayout>
+        </AdminLayout>
     );
 }
