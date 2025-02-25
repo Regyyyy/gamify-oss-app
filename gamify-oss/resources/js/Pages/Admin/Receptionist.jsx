@@ -4,13 +4,13 @@ import { Box, Typography, Link } from '@mui/material';
 
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import QuestCard from '@/Components/QuestCard';
-import LightbulbRoundedIcon from '@mui/icons-material/LightbulbRounded';
+import RoomServiceRoundedIcon from '@mui/icons-material/RoomServiceRounded';
 
-export default function BeginnerQuest() {
+export default function Receptionist() {
     return (
         <MainLayout
         >
-            <Head title="BeginnerQuest" />
+            <Head title="Receptionist" />
 
             <Box>
                 <div className="">
@@ -20,8 +20,8 @@ export default function BeginnerQuest() {
                             {/* Head */}
                             <Box>
                                 <Typography variant='h4' sx={{ display: 'flex', fontWeight: 'bold', alignItems: 'flex-center' }}>
-                                    <LightbulbRoundedIcon sx={{ fontSize: 38, mr: 1 }} />
-                                    Beginner Quest
+                                    <RoomServiceRoundedIcon sx={{ fontSize: 38, mr: 1 }} />
+                                    Receptionist Table
                                 </Typography>
                             </Box>
                             <Box sx={{ py: 1 }}>

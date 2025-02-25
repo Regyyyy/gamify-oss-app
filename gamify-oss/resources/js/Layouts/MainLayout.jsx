@@ -120,7 +120,7 @@ export default function MainLayout({ children }) {
             { /* Sidebar and children */}
             <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                 <Box sx={{ width: drawerWidth, flexShrink: 0 }}>
-                    <Sidebar width={drawerWidth} username={user.name} user={user} />
+                    <Sidebar width={drawerWidth} username={user.name} role={user.role} />
                 </Box>
                 <Box sx={{
                     flexGrow: 1,

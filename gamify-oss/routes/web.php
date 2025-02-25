@@ -46,6 +46,10 @@ Route::get('/badges', function () {
     return Inertia::render('Badges');
 })->middleware(['auth', 'verified'])->name('badges');
 
+Route::get('/receptionist', function () {
+    return Inertia::render('Admin/Receptionist');
+})->middleware(['auth', 'verified'])->name('receptionist');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

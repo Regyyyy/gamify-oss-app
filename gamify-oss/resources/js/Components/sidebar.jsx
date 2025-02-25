@@ -26,23 +26,25 @@ import {
   ExpandMore as ExpandMoreIcon,
   Settings as SettingsIcon,
   Logout as LogoutIcon,
-  LeaderboardRounded as LeaderboardRoundedIcon 
+  LeaderboardRounded as LeaderboardRoundedIcon,
+  RoomServiceRounded as RoomServiceRoundedIcon
 } from "@mui/icons-material";
 
 import { router } from "@inertiajs/react";
 import { useTheme } from "@mui/material/styles";
 
-export default function Sidebar({ username = "username", width = 275 }) {
+export default function Sidebar({ username = "username", width = 275, role }) {
   const theme = useTheme();
-  const { url } = usePage(); // Get current page URL
+  const { url } = usePage();
 
-  // Determine if the current page is related to quests
+  const isAdmin = role === "admin";
+
   const isQuestPage = ["/questboard", "/beginnerquests", "/takenquests", "/questhistory"].includes(url);
 
   const [openQuests, setOpenQuests] = useState(isQuestPage);
 
   useEffect(() => {
-    setOpenQuests(isQuestPage); // Update when navigating
+    setOpenQuests(isQuestPage);
   }, [url]);
 
   const handleToggleQuests = () => {
@@ -93,8 +95,20 @@ export default function Sidebar({ username = "username", width = 275 }) {
 
       <Divider sx={{ width: "100%", mb: 1, bgcolor: "rgba(255,255,255,0.2)" }} />
 
-      {/* Quest Dropdown */}
       <List className="sidebar" sx={{ width: "100%", alignItems: "left" }} component="nav">
+        {/* Receptionist */}
+        {isAdmin ?
+          <ListItemButton href="/receptionist">
+            <ListItemIcon>
+              <RoomServiceRoundedIcon sx={{ color: "#fff" }} />
+            </ListItemIcon>
+            <ListItemText primary="Receptionist" />
+          </ListItemButton>
+          :
+          <></>
+        }
+
+        {/* Quest Dropdown */}
         <ListItemButton onClick={handleToggleQuests}>
           <ListItemIcon>
             <ExploreRoundedIcon sx={{ color: "#fff" }} />
