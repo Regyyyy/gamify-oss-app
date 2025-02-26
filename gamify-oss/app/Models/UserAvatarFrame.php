@@ -9,6 +9,8 @@ class UserAvatarFrame extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $primaryKey = 'user_avatar_frame_id';
 
     protected $fillable = [

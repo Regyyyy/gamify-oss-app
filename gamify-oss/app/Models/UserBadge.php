@@ -9,6 +9,8 @@ class UserBadge extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $primaryKey = 'user_badge_id';
 
     protected $fillable = [

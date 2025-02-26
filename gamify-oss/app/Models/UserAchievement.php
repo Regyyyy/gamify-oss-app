@@ -9,6 +9,8 @@ class UserAchievement extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $primaryKey = 'user_achievement_id';
 
     protected $fillable = [

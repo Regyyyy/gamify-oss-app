@@ -9,6 +9,8 @@ class UserProficiency extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $primaryKey = 'user_proficiency_id';
 
     protected $fillable = [

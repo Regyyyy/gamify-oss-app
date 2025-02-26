@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Quest extends Model
 {
     use HasFactory;
-
+    public $timestamps = false;
     protected $primaryKey = 'quest_id';
 
     protected $fillable = [

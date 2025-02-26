@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Achievement extends Model
 {
     use HasFactory;
-
+    public $timestamps = false;
     protected $primaryKey = 'achievement_id';
 
     protected $fillable = [

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Badge extends Model
 {
     use HasFactory;
-
+    
     protected $primaryKey = 'badge_id';
 
     protected $fillable = [

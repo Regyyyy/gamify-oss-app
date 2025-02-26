@@ -9,6 +9,8 @@ class UserUiCustomization extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $primaryKey = 'user_ui_customization_id';
 
     protected $fillable = [
