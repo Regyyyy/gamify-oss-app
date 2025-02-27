@@ -34,7 +34,7 @@ export default function MainLayout({ children }) {
         useState(false);
 
     const drawerWidth = 275;
-    
+
     return (
         <Box sx={{ bgcolor: '#dedede', minHeight: '100vh', width: '100%' }}>
             <CssBaseline />
@@ -120,7 +120,7 @@ export default function MainLayout({ children }) {
             { /* Sidebar and children */}
             <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                 <Box sx={{ width: drawerWidth, flexShrink: 0 }}>
-                    <Sidebar width={drawerWidth} username={user.name} role={user.role} />
+                    <Sidebar width={drawerWidth} username={user.name} role={user.role} avatar={user.avatar ? `/storage/${user.avatar}` : '/default-avatar.png'} />
                 </Box>
                 <Box sx={{
                     flexGrow: 1,

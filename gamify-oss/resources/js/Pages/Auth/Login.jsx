@@ -71,7 +71,7 @@ export default function Login({ status, canResetPassword }) {
                     </Box>
                 </Box>
 
-                <div className="mt-4 block">
+                <Box className="mt-4 block">
                     <label className="flex items-center">
                         <Checkbox
                             name="remember"
@@ -84,9 +84,9 @@ export default function Login({ status, canResetPassword }) {
                             Remember me
                         </span>
                     </label>
-                </div>
+                </Box>
 
-                <div className="mt-4 flex items-center justify-end gap-4">
+                <Box className="mt-4 flex items-center justify-end gap-4">
                     {canResetPassword && (
                         <Link
                             href={route('password.request')}
@@ -99,7 +99,7 @@ export default function Login({ status, canResetPassword }) {
                     <PrimaryButton className="md-4" disabled={processing}>
                         Log in
                     </PrimaryButton>
-                </div>
+                </Box>
             </form>
         </GuestLayout>
     );

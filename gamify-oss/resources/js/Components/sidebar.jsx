@@ -33,7 +33,7 @@ import {
 import { router } from "@inertiajs/react";
 import { useTheme } from "@mui/material/styles";
 
-export default function Sidebar({ username = "username", width = 275, role }) {
+export default function Sidebar({ username = "username", width = 275, role, avatar = '' }) {
   const theme = useTheme();
   const { url } = usePage();
 
@@ -67,7 +67,7 @@ export default function Sidebar({ username = "username", width = 275, role }) {
       }}
     >
       {/* Avatar */}
-      <Avatar alt="User Avatar" src="https://via.placeholder.com/80" sx={{ width: 80, height: 80, mb: 1 }} />
+      <Avatar alt="User Avatar" src={avatar} sx={{ width: 80, height: 80, mb: 1 }} />
 
       {/* Username */}
       <Typography variant="h6" sx={{ fontWeight: "bold", mb: 0.5 }}>

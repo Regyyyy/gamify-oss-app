@@ -7,7 +7,7 @@ export default function GuestLayout({ children }) {
         <div className="flex min-h-screen flex-col items-center bg-gray-100 pt-6 sm:justify-center sm:pt-0">
             <Box>
                 <Link href="/">
-                    <img src="/images/logo-vertical.png" width="200" height="auto"/>
+                    <img src="/images/logo-vertical.png" width="150" height="auto"/>
                 </Link>
             </Box>
 
