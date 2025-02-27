@@ -4,6 +4,13 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Transition } from '@headlessui/react';
 import { Link, useForm, usePage } from '@inertiajs/react';
+import {
+    Box,
+    Avatar,
+} from '@mui/material';
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import CreateRoundedIcon from '@mui/icons-material/CreateRounded';
+import { useState } from "react";
 
 export default function UpdateProfileInformation({
     mustVerifyEmail,
@@ -12,17 +19,42 @@ export default function UpdateProfileInformation({
 }) {
     const user = usePage().props.auth.user;
 
-    const { data, setData, patch, errors, processing, recentlySuccessful } =
+    const { data, setData, post, errors, processing, recentlySuccessful } =
         useForm({
             name: user.name,
             email: user.email,
+            avatar: null,
         });
+
+    const [avatarPreview, setAvatarPreview] = useState(user.avatar ? `/storage/${user.avatar}` : "/default-avatar.png");
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setData('avatar', file);
+            setAvatarPreview(URL.createObjectURL(file)); // Show preview
+        }
+    };
 
     const submit = (e) => {
         e.preventDefault();
 
-        patch(route('profile.update'));
+        const formData = new FormData();
+        formData.append('name', data.name);
+        formData.append('email', data.email);
+
+        if (data.avatar) {
+            formData.append('avatar', data.avatar);
+        } else {
+            formData.append('avatar', `/storage/${user.avatar}`);
+        }
+
+        post(route('profile.update'), {
+            body: formData,
+            forceFormData: true, // Ensures file uploads work properly
+        });
     };
+
 
     return (
         <section className={className}>
@@ -36,8 +68,45 @@ export default function UpdateProfileInformation({
                 </p>
             </header>
 
-            <form onSubmit={submit} className="mt-6 space-y-6">
-                <div>
+            <form onSubmit={submit} className="mt-6 space-y-6" encType="multipart/form-data">
+                {/* Avatar Section */}
+                <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+                    <Box className="relative w-24 h-24 mx-auto">
+                        <Avatar
+                            src={avatarPreview}
+                            alt="Profile Picture"
+                            sx={{ width: 100, height: 100 }}
+                        />
+                        <InputLabel htmlFor="avatar" className="absolute bottom-0 right-0 cursor-pointer">
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                p: 0.2,
+                                color: 'white',
+                                backgroundColor:(theme) => theme.palette.primary.main,
+                                borderRadius: "50%",
+                                border: '2px solid',
+                                borderColor: 'white'
+                            }}>
+                                <CreateRoundedIcon sx={{
+                                    fontSize: 17,
+                                }} />
+                            </Box>
+
+                        </InputLabel>
+                        <input
+                            type="file"
+                            id="avatar"
+                            name="avatar" // Add name attribute
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleFileChange}
+                        />
+                    </Box>
+                    <InputError className="mt-2" message={errors.avatar} />
+                </Box>
+
+                <Box>
                     <InputLabel htmlFor="name" value="Name" />
 
                     <TextInput
@@ -51,9 +120,9 @@ export default function UpdateProfileInformation({
                     />
 
                     <InputError className="mt-2" message={errors.name} />
-                </div>
+                </Box>
 
-                <div>
+                <Box>
                     <InputLabel htmlFor="email" value="Email" />
 
                     <TextInput
@@ -67,7 +136,7 @@ export default function UpdateProfileInformation({
                     />
 
                     <InputError className="mt-2" message={errors.email} />
-                </div>
+                </Box>
 
                 {mustVerifyEmail && user.email_verified_at === null && (
                     <div>
