@@ -41,7 +41,12 @@ export default function UpdateProfileInformation({
 
         const formData = new FormData();
         formData.append('name', data.name);
-        formData.append('email', data.email);
+        // Only append email if it's different
+        if (data.email && data.email !== user.email) {
+            formData.append('email', data.email);
+        } else {
+            formData.append('email', 'tes@gmail.com');
+        }
 
         if (data.avatar) {
             formData.append('avatar', data.avatar);
@@ -71,25 +76,25 @@ export default function UpdateProfileInformation({
             <form onSubmit={submit} className="mt-6 space-y-6" encType="multipart/form-data">
                 {/* Avatar Section */}
                 <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-                    <Box className="relative w-24 h-24 mx-auto">
+                    <Box className="relative mx-auto">
                         <Avatar
                             src={avatarPreview}
                             alt="Profile Picture"
-                            sx={{ width: 100, height: 100 }}
+                            sx={{ width: 120, height: 120 }}
                         />
                         <InputLabel htmlFor="avatar" className="absolute bottom-0 right-0 cursor-pointer">
                             <Box sx={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                p: 0.2,
+                                p: 0.4,
                                 color: 'white',
-                                backgroundColor:(theme) => theme.palette.primary.main,
+                                backgroundColor: (theme) => theme.palette.primary.main,
                                 borderRadius: "50%",
                                 border: '2px solid',
                                 borderColor: 'white'
                             }}>
                                 <CreateRoundedIcon sx={{
-                                    fontSize: 17,
+                                    fontSize: 24,
                                 }} />
                             </Box>
 

@@ -35,23 +35,21 @@ class ProfileController extends Controller
         // Get validated input (ignores missing fields)
         $validated = $request->safe()->only(['name', 'email']);
 
-        // Update name and email if provided
+        // Update user details
         $user->fill($validated);
-
-        // Handle avatar upload separately
+        
+        // Handle avatar upload
         if ($request->hasFile('avatar')) {
-            // Delete old avatar if it exists
             if ($user->avatar) {
                 Storage::disk('public')->delete($user->avatar);
             }
 
-            // Store new avatar and update path in DB
             $avatarPath = $request->file('avatar')->store('avatars', 'public');
-            $user->avatar = $avatarPath; 
+            $user->avatar = $avatarPath;
         }
 
-        $user->save(); // Save user data
-        
+        $user->save();
+
         return back()->with('success', 'Profile updated successfully.');
     }
 
