@@ -5,6 +5,9 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import {
+    Box,
+} from '@mui/material';
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -32,40 +35,43 @@ export default function Login({ status, canResetPassword }) {
             )}
 
             <form onSubmit={submit}>
-                <div>
+                <Box>
                     <InputLabel htmlFor="email" value="Email" />
+                    <Box sx={{ py: 0.5 }}>
+                        <TextInput
+                            id="email"
+                            type="email"
+                            name="email"
+                            value={data.email}
+                            className="mt-1 block w-full"
+                            autoComplete="username"
+                            isFocused={true}
+                            onChange={(e) => setData('email', e.target.value)}
+                        />
 
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
-                        autoComplete="username"
-                        isFocused={true}
-                        onChange={(e) => setData('email', e.target.value)}
-                    />
+                        <InputError message={errors.email} className="mt-2" />
+                    </Box>
+                </Box>
 
-                    <InputError message={errors.email} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
+                <Box sx={{ mt: 2 }}>
                     <InputLabel htmlFor="password" value="Password" />
 
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
-                        autoComplete="current-password"
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
+                    <Box sx={{ py: 0.5 }}>
+                        <TextInput
+                            id="password"
+                            type="password"
+                            name="password"
+                            value={data.password}
+                            className="mt-1 block w-full"
+                            autoComplete="current-password"
+                            onChange={(e) => setData('password', e.target.value)}
+                        />
 
-                    <InputError message={errors.password} className="mt-2" />
-                </div>
+                        <InputError message={errors.password} className="mt-2" />
+                    </Box>
+                </Box>
 
-                <div className="mt-4 block">
+                <Box className="mt-4 block">
                     <label className="flex items-center">
                         <Checkbox
                             name="remember"
@@ -78,9 +84,9 @@ export default function Login({ status, canResetPassword }) {
                             Remember me
                         </span>
                     </label>
-                </div>
+                </Box>
 
-                <div className="mt-4 flex items-center justify-end">
+                <Box className="mt-4 flex items-center justify-end gap-4">
                     {canResetPassword && (
                         <Link
                             href={route('password.request')}
@@ -90,10 +96,10 @@ export default function Login({ status, canResetPassword }) {
                         </Link>
                     )}
 
-                    <PrimaryButton className="ms-4" disabled={processing}>
+                    <PrimaryButton className="md-4" disabled={processing}>
                         Log in
                     </PrimaryButton>
-                </div>
+                </Box>
             </form>
         </GuestLayout>
     );

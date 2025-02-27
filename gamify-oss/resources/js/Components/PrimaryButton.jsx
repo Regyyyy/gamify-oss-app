@@ -1,20 +1,24 @@
-export default function PrimaryButton({
-    className = '',
-    disabled,
-    children,
-    ...props
-}) {
+import { Button } from "@mui/material";
+
+export default function PrimaryButton({ className = '', disabled, children, ...props }) {
     return (
-        <button
+        <Button
             {...props}
-            className={
-                `inline-flex items-center rounded-md border border-transparent bg-gray-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-gray-700 focus:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:bg-gray-900 ${
-                    disabled && 'opacity-25'
-                } ` + className
-            }
+            variant="contained"
+            color="primary"
             disabled={disabled}
+            className={className}
+            type="submit"
+            sx={{
+                textTransform: 'uppercase',
+                fontWeight: 'bold',
+                px: 2,
+                py: 0.5,
+                borderRadius: '6px',
+                color: 'white',
+            }}
         >
             {children}
-        </button>
+        </Button>
     );
 }
