@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\QuestController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -22,9 +23,9 @@ Route::get('/questboard', function () {
     return Inertia::render('Quests/QuestBoard');
 })->middleware(['auth', 'verified'])->name('questboard');
 
-Route::get('/beginnerquests', function () {
-    return Inertia::render('Quests/BeginnerQuests');
-})->middleware(['auth', 'verified'])->name('beginnerquests');
+Route::get('/beginnerquests', [QuestController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('beginnerquests');
 
 Route::get('/takenquests', function () {
     return Inertia::render('Quests/TakenQuests');

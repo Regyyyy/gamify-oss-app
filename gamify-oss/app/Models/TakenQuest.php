@@ -14,6 +14,7 @@ class TakenQuest extends Model
     protected $fillable = [
         'quest_id',
         'user_id',
+        'submission'
     ];
 
     public function quest()

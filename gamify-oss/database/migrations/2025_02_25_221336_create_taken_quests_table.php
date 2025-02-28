@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id('taken_quest_id');
             $table->foreignId('quest_id')->constrained('quests', 'quest_id')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users', 'user_id')->cascadeOnDelete();
+            $table->string('submission')->nullable();
             $table->timestamps();
         });
     }

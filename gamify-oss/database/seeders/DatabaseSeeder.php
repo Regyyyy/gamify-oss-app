@@ -79,37 +79,95 @@ class DatabaseSeeder extends Seeder
         $badge2 = Badge::create(['name' => 'Veteran', 'description' => 'Awarded for exceptional contributions.']);
 
         // Proficiencies
-        $proficiency1 = Proficiency::create(['name' => 'Coding']);
-        $proficiency2 = Proficiency::create(['name' => 'Documentation']);
+        $proficiency1 = Proficiency::create(['name' => 'Game Designer']);
+        $proficiency2 = Proficiency::create(['name' => 'Game Artist']);
+        $proficiency3 = Proficiency::create(['name' => 'Game Programmer']);
+        $proficiency4 = Proficiency::create(['name' => 'Audio Composer']);
 
         // Quests
+        // Beginner Quests
         $quest1 = Quest::create([
-            'title' => 'Fix a Bug',
-            'type' => 'Development',
-            'role' => 'Developer',
+            'title' => 'Membuka repository project dan baca README',
+            'type' => 'Beginner',
+            'description' => 'Buka lah repository dari project kita, yang bisa diakses melalui project info yang ada pada halaman quest. Cobalah untuk membaca README sehingga kalian bisa memahami apa yang dilakukan dan dibutuhkan oleh project kita. Selesaikan quest ini dengan submit screenshot layar dari repository project kita.',
+            'role' => null,
             'difficulty' => 'Easy',
-            'xp_reward' => 150,
-            'proficiency_reward' => $proficiency1->proficiency_id,
-            'status' => 'active',
+            'xp_reward' => 75,
+            'proficiency_reward' => null,
+            'status' => 'open',
             'created_at' => now(),
             'finished_at' => null,
         ]);
 
         $quest2 = Quest::create([
+            'title' => 'Memberi komentar kepada 3 issues yang berbeda',
+            'type' => 'Beginner',
+            'description' => 'Berikan komentar terhadap 3 issue yang berbeda. Komentar bisa berisikan masukan atau ide yang berkaitan terhadap issue yang dikomentar. Selesaikan quest ini dengan submit screenshot dari komentar-komentar yang telah kalian berikan.',
+            'role' => null,
+            'difficulty' => 'Easy',
+            'xp_reward' => 75,
+            'proficiency_reward' => null,
+            'status' => 'open',
+            'created_at' => now(),
+            'finished_at' => null,
+        ]);
+
+        $quest3 = Quest::create([
+            'title' => 'Membuat fork dari project repository',
+            'type' => 'Beginner',
+            'description' => 'Lakukan fork terhadap repository project kita, dan set up project tersebut di device kalian masing-masing. Selesaikan quest ini dengan submit screenshot hasil fork kalian.',
+            'role' => null,
+            'difficulty' => 'Easy',
+            'xp_reward' => 75,
+            'proficiency_reward' => null,
+            'status' => 'open',
+            'created_at' => now(),
+            'finished_at' => null,
+        ]);
+
+        $quest4 = Quest::create([
+            'title' => 'Melakukan pull request kepada project repository',
+            'type' => 'Beginner',
+            'description' => 'Lakukan pull request kepada main repository project kita. Kalian dibebaskan untuk memberikan kontribusi dalam bentuk apapun (aset ataupun program) untuk pull request ini. Selesaikan quest ini dengan submit screenshot permintaan pull request yang sudah diberikan.',
+            'role' => null,
+            'difficulty' => 'Medium',
+            'xp_reward' => 150,
+            'proficiency_reward' => null,
+            'status' => 'open',
+            'created_at' => now(),
+            'finished_at' => null,
+        ]);
+
+        $quest5 = Quest::create([
+            'title' => 'Membuat issue baru terkait ide/masukan/temuan pada project',
+            'type' => 'Beginner',
+            'description' => 'Buatlah sebuah issue baru yang berisikan ide, temuan, ataupun masukan terhadap aspek apapun dari project. Contoh judul issue: terdapat bug pada kode …, design document belum menjelaskan terkait …, aku mendapatkan ide untuk … agar game lebih menarik, dan lain sebagainya. Selesaikan quest ini dengan submit screenshot issue yang sudah dibuat.',
+            'role' => null,
+            'difficulty' => 'Easy',
+            'xp_reward' => 75,
+            'proficiency_reward' => null,
+            'status' => 'open',
+            'created_at' => now(),
+            'finished_at' => null,
+        ]);
+
+        $quest6 = Quest::create([
             'title' => 'Write Documentation',
             'type' => 'Writing',
-            'role' => 'Technical Writer',
+            'description' => 'This is description',
+            'role' => 'Game Designer',
             'difficulty' => 'Medium',
             'xp_reward' => 200,
-            'proficiency_reward' => $proficiency2->proficiency_id,
+            'proficiency_reward' => 120,
             'status' => 'active',
             'created_at' => now(),
             'finished_at' => null,
         ]);
 
+
         // Taken Quests
-        TakenQuest::create(['quest_id' => $quest1->quest_id, 'user_id' => 2]);
-        TakenQuest::create(['quest_id' => $quest2->quest_id, 'user_id' => 3]);
+        TakenQuest::create(['quest_id' => $quest1->quest_id, 'user_id' => 2, 'submission' => null]);
+        TakenQuest::create(['quest_id' => $quest2->quest_id, 'user_id' => 3, 'submission' => null]);
 
         // User Achievements
         UserAchievement::create(['user_id' => 2, 'achievement_id' => 1, 'status' => 'completed']);

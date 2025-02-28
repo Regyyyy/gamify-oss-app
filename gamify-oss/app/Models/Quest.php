@@ -14,6 +14,7 @@ class Quest extends Model
     protected $fillable = [
         'title',
         'type',
+        'description',
         'role',
         'difficulty',
         'xp_reward',
