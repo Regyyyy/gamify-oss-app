@@ -8,6 +8,7 @@ import { useTheme } from '@mui/material/styles';
 import QuestModal from "./QuestModal";
 
 export default function QuestCard({
+    questId = 1,
     questTitle = "Quest Title",
     questDescription = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
     playerLevel = 3,
@@ -16,6 +17,8 @@ export default function QuestCard({
     xpReward = 75,
     role = "Game Programmer",
     proficiencyReward = 100,
+    isCompleted = false,
+    submissionImages = [],
 }) {
     const isUnlocked = playerLevel >= requiredLevel;
 
@@ -50,20 +53,33 @@ export default function QuestCard({
                                 {questTitle}
                             </Typography>
                             <Box display="flex" alignItems="center" gap={1} my={1}>
-                                <Chip
-                                    label={isUnlocked ? "Unlocked" : "Locked"}
-                                    icon={isUnlocked ? <LockOpenRoundedIcon /> : <LockRoundedIcon />}
-                                    sx={{
-                                        bgcolor: isUnlocked ? green[200] : red[200],
-                                        border: isUnlocked ? '1px solid' + green[800] : '1px solid' + red[800],
-                                        fontWeight: 'bold',
-                                        color: 'black',
-                                        px: 0.5,
-                                        '& .MuiChip-icon': {
-                                            color: 'black'
-                                        },
-                                    }}
-                                />
+                                {isCompleted ? (
+                                    <Chip
+                                        label="Completed"
+                                        sx={{
+                                            bgcolor: "transparent",
+                                            border: '1px solid ' + grey[700],
+                                            fontWeight: 'bold',
+                                            color: grey[800],
+                                            px: 0.5,
+                                        }}
+                                    />
+                                ) : (
+                                    <Chip
+                                        label={isUnlocked ? "Unlocked" : "Locked"}
+                                        icon={isUnlocked ? <LockOpenRoundedIcon /> : <LockRoundedIcon />}
+                                        sx={{
+                                            bgcolor: isUnlocked ? green[200] : red[200],
+                                            border: isUnlocked ? '1px solid' + green[800] : '1px solid' + red[800],
+                                            fontWeight: 'bold',
+                                            color: 'black',
+                                            px: 0.5,
+                                            '& .MuiChip-icon': {
+                                                color: 'black'
+                                            },
+                                        }}
+                                    />
+                                )}
                                 <Typography variant="subtitle2" fontWeight="bold">
                                     Required Level {requiredLevel}
                                 </Typography>
@@ -129,14 +145,30 @@ export default function QuestCard({
                     sx={{
                         borderRadius: 0,
                         minWidth: 50,
-                        backgroundColor: isUnlocked ? theme.palette.primary.main : grey[400]
+                        backgroundColor: isCompleted ? grey[600] : isUnlocked ? theme.palette.primary.main : grey[400]
                     }}
-                    disabled={!isUnlocked}
+                    disabled={!isUnlocked || isCompleted}
                 >
                     <KeyboardDoubleArrowRightRoundedIcon sx={{ color: 'white' }} />
                 </Button>
             </Card>
-            <QuestModal open={open} onClose={() => setOpen(false)} quest={{ questTitle, questDescription, playerLevel, requiredLevel, difficulty, xpReward, role, proficiencyReward }} />
+            <QuestModal 
+                open={open} 
+                onClose={() => setOpen(false)} 
+                quest={{ 
+                    questId,
+                    questTitle, 
+                    questDescription, 
+                    playerLevel, 
+                    requiredLevel, 
+                    difficulty, 
+                    xpReward, 
+                    role, 
+                    proficiencyReward,
+                    isCompleted,
+                    submissionImages
+                }} 
+            />
         </>
     );
 }

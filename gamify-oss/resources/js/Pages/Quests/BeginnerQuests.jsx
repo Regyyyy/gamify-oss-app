@@ -8,15 +8,15 @@ import LightbulbRoundedIcon from '@mui/icons-material/LightbulbRounded';
 import { useEffect } from 'react';
 
 export default function BeginnerQuest() {
-    const { quests, user } = usePage().props;
-    
+    const { quests, auth } = usePage().props;
+    const user = auth.user;
+
     useEffect(() => {
         console.log("Received quests:", quests);
     }, [quests]);
 
     return (
-        <MainLayout
-        >
+        <MainLayout>
             <Head title="BeginnerQuest" />
 
             <Box>
@@ -55,19 +55,25 @@ export default function BeginnerQuest() {
                             {/* Quest List */}
                             <Box sx={{ py: 2 }}>
                                 {quests.length > 0 ? (
-                                    quests.map((quest) => (
-                                        <QuestCard
-                                            key={quest.id}
-                                            questTitle={quest.title}
-                                            playerLevel='1'
-                                            requiredLevel='1'
-                                            difficulty={quest.difficulty}
-                                            xpReward={quest.xp_reward}
-                                            role={quest.role ?? 'Any'}
-                                            proficiencyReward={quest.proficiency_reward ?? '0'}
-                                            description={quest.description}
-                                        />
-                                    ))
+                                    quests.map((quest) => {
+                                        const requiredLevel = (quest.quest_id === 4 || quest.quest_id === 5) ? '2' : '1';
+                                        return (
+                                            <QuestCard
+                                                key={quest.quest_id}
+                                                questId={quest.quest_id}
+                                                questTitle={quest.title}
+                                                questDescription={quest.description}
+                                                playerLevel={user.level.toString()}
+                                                requiredLevel={requiredLevel}
+                                                difficulty={quest.difficulty}
+                                                xpReward={quest.xp_reward}
+                                                role={quest.role ?? 'Any'}
+                                                proficiencyReward={quest.proficiency_reward ?? 0}
+                                                isCompleted={quest.is_completed}
+                                                submissionImages={quest.submission_images}
+                                            />
+                                        );
+                                    })
                                 ) : (
                                     <Typography>No beginner quests available.</Typography>
                                 )}

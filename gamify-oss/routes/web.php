@@ -27,6 +27,10 @@ Route::get('/beginnerquests', [QuestController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('beginnerquests');
 
+Route::post('/quest/submit', [QuestController::class, 'submit'])
+    ->middleware(['auth', 'verified'])
+    ->name('quest.submit');
+
 Route::get('/takenquests', function () {
     return Inertia::render('Quests/TakenQuests');
 })->middleware(['auth', 'verified'])->name('takenquests');
