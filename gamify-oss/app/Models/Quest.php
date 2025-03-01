@@ -20,6 +20,7 @@ class Quest extends Model
         'xp_reward',
         'proficiency_reward',
         'status',
+        'issue_link',
         'created_at',
         'finished_at',
     ];

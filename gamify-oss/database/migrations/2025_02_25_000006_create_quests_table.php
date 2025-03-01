@@ -21,6 +21,7 @@ return new class extends Migration
             $table->integer('xp_reward');
             $table->integer('proficiency_reward')->nullable();
             $table->string('status');
+            $table->string('issue_link')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('finished_at')->nullable();
         });

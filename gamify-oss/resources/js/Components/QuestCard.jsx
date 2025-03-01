@@ -19,6 +19,7 @@ export default function QuestCard({
     proficiencyReward = 100,
     isCompleted = false,
     submissionImages = [],
+    issueLink = null,
 }) {
     const isUnlocked = playerLevel >= requiredLevel;
 
@@ -81,12 +82,10 @@ export default function QuestCard({
                                     />
                                 )}
                                 <Typography variant="subtitle2" fontWeight="bold">
-                                    Required Level {requiredLevel}
+                                    {isCompleted ? "Completed" : `Required Level ${requiredLevel}`}
                                 </Typography>
                             </Box>
-                            <Typography
-                                variant="body2"
-                                color="text.secondary"
+                            <Box
                                 sx={{
                                     display: "-webkit-box",
                                     WebkitBoxOrient: "vertical",
@@ -94,8 +93,10 @@ export default function QuestCard({
                                     overflow: "hidden",
                                 }}
                             >
-                                {questDescription}
-                            </Typography>
+                                <Typography>
+                                    {questDescription}
+                                </Typography>
+                            </Box>
                         </Box>
                         <Box sx={{
                             ml: 2,
@@ -166,7 +167,8 @@ export default function QuestCard({
                     role, 
                     proficiencyReward,
                     isCompleted,
-                    submissionImages
+                    submissionImages,
+                    issue_link: issueLink
                 }} 
             />
         </>

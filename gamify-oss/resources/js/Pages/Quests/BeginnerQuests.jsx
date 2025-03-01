@@ -71,6 +71,7 @@ export default function BeginnerQuest() {
                                                 proficiencyReward={quest.proficiency_reward ?? 0}
                                                 isCompleted={quest.is_completed}
                                                 submissionImages={quest.submission_images}
+                                                issueLink={quest.issue_link}
                                             />
                                         );
                                     })

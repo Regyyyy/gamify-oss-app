@@ -19,9 +19,10 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/questboard', function () {
-    return Inertia::render('Quests/QuestBoard');
-})->middleware(['auth', 'verified'])->name('questboard');
+// Updated to use controller method
+Route::get('/questboard', [QuestController::class, 'questBoard'])
+    ->middleware(['auth', 'verified'])
+    ->name('questboard');
 
 Route::get('/beginnerquests', [QuestController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -54,6 +55,12 @@ Route::get('/badges', function () {
 Route::get('/receptionist', function () {
     return Inertia::render('Admin/Receptionist');
 })->middleware(['auth', 'verified'])->name('receptionist');
+
+// Admin only routes
+Route::middleware(['auth', 'verified', \App\Http\Middleware\AdminMiddleware::class])->group(function () {
+    Route::get('/quests/create', [QuestController::class, 'create'])->name('quests.create');
+    Route::post('/quests', [QuestController::class, 'store'])->name('quests.store');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

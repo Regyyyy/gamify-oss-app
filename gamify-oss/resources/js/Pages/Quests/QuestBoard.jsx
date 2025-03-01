@@ -1,16 +1,20 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import MainLayout from '@/Layouts/MainLayout';
-import { Head } from '@inertiajs/react';
-import { Box, Typography, Link } from '@mui/material';
+import { Head, usePage } from '@inertiajs/react';
+import { Box, Typography, Link, Button } from '@mui/material';
 
 import MapRoundedIcon from '@mui/icons-material/MapRounded';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import AddIcon from '@mui/icons-material/Add';
 import QuestCard from '@/Components/QuestCard';
+import PrimaryButton from '@/Components/PrimaryButton';
 
 export default function QuestBoard() {
+    const { quests, auth } = usePage().props;
+    const user = auth.user;
+    const isAdmin = user.role === 'admin';
+    
     return (
-        <MainLayout
-        >
+        <MainLayout>
             <Head title="QuestBoard" />
 
             <Box>
@@ -27,7 +31,7 @@ export default function QuestBoard() {
                             </Box>
                             <Box sx={{ py: 1 }}>
                                 <Typography>
-                                    Choose quest you want to take! You don’t need any good experience to start, just have fun.
+                                    Choose quest you want to take! You don't need any good experience to start, just have fun.
                                 </Typography>
                             </Box>
 
@@ -47,36 +51,57 @@ export default function QuestBoard() {
                             </Box>
 
                             {/* Quest List */}
-                            <Box sx={{
-
-                            }}>
-                                <QuestCard
-                                    questTitle='Membutuhkan definisi "fun" yang lebih jelas pada design document'
-                                    playerLevel='3'
-                                    requiredLevel='3'
-                                    difficulty='Easy'
-                                    xpReward='75'
-                                    role='Game Designer'
-                                    proficiencyReward='100'
-                                />
-                                <QuestCard
-                                    questTitle='Membutuhkan script untuk membuat karakter bergerak'
-                                    playerLevel='3'
-                                    requiredLevel='3'
-                                    difficulty='Medium'
-                                    xpReward='150'
-                                    role='Game Programmer'
-                                    proficiencyReward='200'
-                                />
-                                <QuestCard
-                                    questTitle='Membutuhkan aset dari main character'
-                                    playerLevel='3'
-                                    requiredLevel='4'
-                                    difficulty='Hard'
-                                    xpReward='300'
-                                    role='Game Artist'
-                                    proficiencyReward='300'
-                                />
+                            <Box sx={{ py: 2 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                    <Typography variant="h6" fontWeight="bold">
+                                        Advanced Quests
+                                    </Typography>
+                                    {isAdmin && (
+                                        <PrimaryButton 
+                                            variant="contained" 
+                                            startIcon={<AddIcon />}
+                                            href={route('quests.create')}
+                                        >
+                                            Add New Quest
+                                        </PrimaryButton>
+                                    )}
+                                </Box>
+                                
+                                {quests && quests.length > 0 ? (
+                                    quests.map((quest) => (
+                                        <QuestCard
+                                            key={quest.quest_id}
+                                            questId={quest.quest_id}
+                                            questTitle={quest.title}
+                                            questDescription={quest.description}
+                                            playerLevel={user.level.toString()}
+                                            requiredLevel={quest.difficulty === "Hard" ? 4 : 3} // Level 4 for Hard, Level 3 for others
+                                            difficulty={quest.difficulty}
+                                            xpReward={quest.xp_reward}
+                                            role={quest.role ?? 'Any'}
+                                            proficiencyReward={quest.proficiency_reward ?? 0}
+                                            isCompleted={quest.is_completed || false}
+                                            submissionImages={quest.submission_images || []}
+                                            issueLink={quest.issue_link}
+                                        />
+                                    ))
+                                ) : (
+                                    <Box sx={{ 
+                                        p: 4, 
+                                        border: '1px dashed #ccc', 
+                                        borderRadius: 2, 
+                                        textAlign: 'center' 
+                                    }}>
+                                        <Typography variant="body1" color="text.secondary">
+                                            No advanced quests available yet.
+                                            {isAdmin && (
+                                                <Box component="span" sx={{ display: 'block', mt: 1 }}>
+                                                    Click the "Add New Quest" button to create one.
+                                                </Box>
+                                            )}
+                                        </Typography>
+                                    </Box>
+                                )}
                             </Box>
                         </Box>
                     </div>

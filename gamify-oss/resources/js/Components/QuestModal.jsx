@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import { Modal, Box, Typography, Chip, Button, IconButton, Paper, Alert } from "@mui/material";
+import { Modal, Box, Typography, Chip, Button, IconButton, Paper, Alert, Link } from "@mui/material";
 import { blue, green, grey, orange, red, yellow } from "@mui/material/colors";
 import LockOpenRoundedIcon from "@mui/icons-material/LockOpenRounded";
 import LockRoundedIcon from "@mui/icons-material/LockRounded";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import DeleteIcon from "@mui/icons-material/Delete";
+import CloseIcon from "@mui/icons-material/Close";
 import { useForm } from "@inertiajs/react";
+import PrimaryButton from "./PrimaryButton";
 
 export default function QuestModal({ open, onClose, quest }) {
   if (!quest) return null;
@@ -13,10 +15,10 @@ export default function QuestModal({ open, onClose, quest }) {
   const isUnlocked = quest.playerLevel >= quest.requiredLevel;
   const isCompleted = quest.isCompleted || false;
   const submissionImages = quest.submissionImages || [];
-  
+
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
-  
+
   const { data, setData, post, processing, errors, reset } = useForm({
     quest_id: quest.questId,
     images: [],
@@ -25,15 +27,15 @@ export default function QuestModal({ open, onClose, quest }) {
   const handleFileChange = (e) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files).slice(0, 3 - selectedFiles.length);
-      
+
       // Create preview URLs
       const newPreviews = filesArray.map(file => URL.createObjectURL(file));
       setPreviews([...previews, ...newPreviews]);
-      
+
       // Update selected files
       const newSelectedFiles = [...selectedFiles, ...filesArray];
       setSelectedFiles(newSelectedFiles);
-      
+
       // Update form data with the files
       setData('images', newSelectedFiles);
     }
@@ -43,28 +45,28 @@ export default function QuestModal({ open, onClose, quest }) {
     const newFiles = [...selectedFiles];
     newFiles.splice(index, 1);
     setSelectedFiles(newFiles);
-    
+
     const newPreviews = [...previews];
     URL.revokeObjectURL(newPreviews[index]); // Clean up preview URL
     newPreviews.splice(index, 1);
     setPreviews(newPreviews);
-    
+
     // Update form data with the new files array
     setData('images', newFiles);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     // Create FormData object for file uploads
     const formData = new FormData();
     formData.append('quest_id', quest.questId);
-    
+
     // Append each file to the FormData with proper naming
     selectedFiles.forEach((file, index) => {
       formData.append(`images[]`, file);
     });
-    
+
     post(route('quest.submit'), formData, {
       forceFormData: true,
       onSuccess: () => {
@@ -84,22 +86,39 @@ export default function QuestModal({ open, onClose, quest }) {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 1000,
+          width: 1100,
           maxHeight: "90vh",
           overflow: "auto",
           bgcolor: "background.paper",
           boxShadow: 24,
           p: 4,
+          pt: 5, // Add extra padding at top for the close button
           borderRadius: 2,
+          position: "relative" // For positioning the close button
         }}
       >
+        {/* Close button (X) in the top-right corner */}
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          disabled={processing}
+          sx={{
+            position: 'absolute',
+            right: 12,
+            top: 12,
+            color: (theme) => theme.palette.grey[500],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+
         <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3 }}>
           {/* Left side */}
-          <Box sx={{ flex: { md: 10/12 } }}>
+          <Box sx={{ flex: { md: 7 / 12 } }}>
             <Typography variant="h5" fontWeight="bold" gutterBottom>
               {quest.questTitle}
             </Typography>
-            
+
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
               {isCompleted ? (
                 <Chip
@@ -124,20 +143,42 @@ export default function QuestModal({ open, onClose, quest }) {
                 />
               )}
               <Typography variant="body2" fontWeight="bold">
-                Required Level {quest.requiredLevel}
+                {isCompleted ? "Completed" : `Required Level: ${quest.requiredLevel}`}
               </Typography>
             </Box>
-            
+
             <Typography variant="h6" gutterBottom>
               Description
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              {quest.questDescription}
-            </Typography>
+            <Box sx={{ mb: 2 }}>
+              <Typography sx={{ lineHeight: 1.6 }}>
+                {quest.questDescription}
+              </Typography>
+            </Box>
+
+            {quest.issue_link && (
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
+                  <strong>Read More</strong>
+                  <Link
+                    href={quest.issue_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      wordBreak: 'break-word',
+                      display: 'inline-flex',
+                      alignItems: 'center'
+                    }}
+                  >
+                    {quest.issue_link}
+                  </Link>
+                </Typography>
+              </Box>
+            )}
           </Box>
-          
+
           {/* Right side */}
-          <Box sx={{ flex: { md: 5/12 } }}>
+          <Box sx={{ flex: { md: 5 / 12 } }}>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <Box>
                 <Typography variant="h6" gutterBottom>
@@ -172,7 +213,7 @@ export default function QuestModal({ open, onClose, quest }) {
                   )}
                 </Box>
               </Box>
-              
+
               <Box>
                 {isCompleted ? (
                   <>
@@ -182,7 +223,7 @@ export default function QuestModal({ open, onClose, quest }) {
                     <Typography variant="body2" color="text.secondary" gutterBottom>
                       You have already completed this quest. Here are your submitted screenshots:
                     </Typography>
-                    
+
                     {/* Display Submitted Images */}
                     {submissionImages.length > 0 ? (
                       <Box sx={{ display: "flex", flexDirection: "column", gap: 2, my: 2 }}>
@@ -199,22 +240,22 @@ export default function QuestModal({ open, onClose, quest }) {
                             <img
                               src={`/storage/${image}`}
                               alt={`Submission ${index + 1}`}
-                              style={{ 
-                                width: "100%", 
-                                height: "auto", 
-                                maxHeight: "200px", 
+                              style={{
+                                width: "100%",
+                                height: "auto",
+                                maxHeight: "200px",
                                 objectFit: "contain",
                                 marginBottom: "8px"
                               }}
                             />
-                            <Button
+                            <PrimaryButton
                               variant="outlined"
                               fullWidth
                               onClick={() => window.open(`/storage/${image}`, '_blank')}
                               sx={{ mt: 1 }}
                             >
                               View Full Size
-                            </Button>
+                            </PrimaryButton>
                           </Paper>
                         ))}
                       </Box>
@@ -232,14 +273,14 @@ export default function QuestModal({ open, onClose, quest }) {
                     <Typography variant="body2" color="text.secondary" gutterBottom>
                       Upload up to 3 screenshots of your work
                     </Typography>
-                    
+
                     {/* Error messages */}
                     {(errors.images || errors.quest_id) && (
                       <Alert severity="error" sx={{ mb: 2 }}>
                         {errors.images || errors.quest_id}
                       </Alert>
                     )}
-                    
+
                     {/* File Upload Section */}
                     <Box sx={{ mb: 2 }}>
                       <input
@@ -252,7 +293,7 @@ export default function QuestModal({ open, onClose, quest }) {
                         disabled={!isUnlocked || selectedFiles.length >= 3 || processing}
                       />
                       <label htmlFor="upload-images">
-                        <Button
+                        <PrimaryButton
                           variant="contained"
                           component="span"
                           startIcon={<UploadFileIcon />}
@@ -261,9 +302,9 @@ export default function QuestModal({ open, onClose, quest }) {
                           sx={{ mb: 2 }}
                         >
                           {selectedFiles.length >= 3 ? "Maximum files reached" : "Upload Images"}
-                        </Button>
+                        </PrimaryButton>
                       </label>
-                      
+
                       {/* Image Previews */}
                       {previews.length > 0 && (
                         <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 2 }}>
@@ -299,9 +340,9 @@ export default function QuestModal({ open, onClose, quest }) {
                         </Box>
                       )}
                     </Box>
-                    
+
                     {/* Submit button */}
-                    <Button
+                    <PrimaryButton
                       variant="contained"
                       color="primary"
                       fullWidth
@@ -309,19 +350,12 @@ export default function QuestModal({ open, onClose, quest }) {
                       onClick={handleSubmit}
                     >
                       Submit Quest
-                    </Button>
+                    </PrimaryButton>
                   </>
                 )}
               </Box>
             </Box>
           </Box>
-        </Box>
-        
-        {/* Footer buttons */}
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
-          <Button variant="outlined" onClick={onClose} disabled={processing}>
-            Close
-          </Button>
         </Box>
       </Box>
     </Modal>

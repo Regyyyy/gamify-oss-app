@@ -55,6 +55,92 @@ class QuestController extends Controller
     }
 
     /**
+     * Display the quest board with advanced quests.
+     */
+    public function questBoard(Request $request): Response
+    {
+        $quests = Quest::where('type', 'Advanced')
+            ->orderBy('created_at', 'desc') // Order by creation time, newest first
+            ->get();
+        $user = Auth::user();
+        
+        // Get all quest IDs
+        $questIds = $quests->pluck('quest_id')->toArray();
+        
+        // Get all taken quests for this user that match these quest IDs
+        $takenQuests = TakenQuest::where('user_id', $user->user_id)
+            ->whereIn('quest_id', $questIds)
+            ->whereNotNull('submission')
+            ->get()
+            ->keyBy('quest_id');
+        
+        // Enhance the quests with completion status and submission data
+        $enhancedQuests = $quests->map(function ($quest) use ($takenQuests) {
+            $takenQuest = $takenQuests->get($quest->quest_id);
+            
+            if ($takenQuest) {
+                // Add completed status and submission images to the quest
+                $quest->is_completed = true;
+                
+                // Parse the JSON submission field
+                $submissionImages = json_decode($takenQuest->submission, true) ?? [];
+                $quest->submission_images = $submissionImages;
+            } else {
+                $quest->is_completed = false;
+                $quest->submission_images = [];
+            }
+            
+            return $quest;
+        });
+
+        return Inertia::render('Quests/QuestBoard', [
+            'quests' => $enhancedQuests,
+        ]);
+    }
+
+    /**
+     * Show the form for creating a new quest.
+     */
+    public function create(): Response
+    {
+        return Inertia::render('Admin/AddNewQuest');
+    }
+
+    /**
+     * Store a newly created quest in storage.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|max:1000',
+            'issue_link' => 'nullable|url|max:255',
+            'role' => 'required|string',
+            'difficulty' => 'required|string|in:Easy,Medium,Hard',
+            'xp_reward' => 'required|integer|min:0',
+            'proficiency_reward' => 'nullable|integer|min:0',
+        ]);
+
+        // Set role to null if it's "None"
+        $role = $request->role === 'None' ? null : $request->role;
+
+        // Create the quest
+        $quest = Quest::create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'issue_link' => $request->issue_link,
+            'type' => 'Advanced',
+            'role' => $role,
+            'difficulty' => $request->difficulty,
+            'xp_reward' => $request->xp_reward,
+            'proficiency_reward' => $request->proficiency_reward,
+            'status' => 'open',
+        ]);
+
+        return redirect()->route('questboard')->with('success', 'Quest created successfully!');
+    }
+
+    /**
      * Submit a quest with screenshots.
      */
     public function submit(Request $request)
