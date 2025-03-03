@@ -93,7 +93,7 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
     } else if (isTaken && isAdvanced) {
       return renderTeamWorkContent();
     } else if (isAdvanced && !isTaken) {
-      return <TeamMemberSelection quest={quest} onClose={onClose} />;
+      return <TeamMemberSelection quest={quest} onClose={onClose} isUnlocked={isUnlocked} />;
     } else {
       return renderSubmissionContent();
     }
