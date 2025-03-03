@@ -4,6 +4,8 @@ import { blue, green, grey, orange, red, yellow } from "@mui/material/colors";
 import LockOpenRoundedIcon from "@mui/icons-material/LockOpenRounded";
 import LockRoundedIcon from "@mui/icons-material/LockRounded";
 import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowRightRounded';
+import GroupIcon from '@mui/icons-material/Group';
+import PersonIcon from '@mui/icons-material/Person';
 import { useTheme } from '@mui/material/styles';
 import QuestModal from "./QuestModal";
 
@@ -18,8 +20,12 @@ export default function QuestCard({
     role = "Game Programmer",
     proficiencyReward = 100,
     isCompleted = false,
+    isTaken = false,
     submissionImages = [],
     issueLink = null,
+    teammates = [],
+    questType = "Beginner", // New prop for quest type
+    currentUserAvatar = null,
 }) {
     const isUnlocked = playerLevel >= requiredLevel;
 
@@ -65,6 +71,16 @@ export default function QuestCard({
                                             px: 0.5,
                                         }}
                                     />
+                                ) : isTaken ? (
+                                    <Chip
+                                        label="Waiting"
+                                        sx={{
+                                            bgcolor: orange[200],
+                                            border: '1px solid' + orange[800],
+                                            fontWeight: 'bold',
+                                            px: 0.5,
+                                        }}
+                                    />
                                 ) : (
                                     <Chip
                                         label={isUnlocked ? "Unlocked" : "Locked"}
@@ -81,9 +97,11 @@ export default function QuestCard({
                                         }}
                                     />
                                 )}
-                                <Typography variant="subtitle2" fontWeight="bold">
-                                    {isCompleted ? "Completed" : `Required Level ${requiredLevel}`}
-                                </Typography>
+                                {!isCompleted && !isTaken && (
+                                    <Typography variant="subtitle2" fontWeight="bold">
+                                        {`Required Level ${requiredLevel}`}
+                                    </Typography>
+                                )}
                             </Box>
                             <Box
                                 sx={{
@@ -146,16 +164,17 @@ export default function QuestCard({
                     sx={{
                         borderRadius: 0,
                         minWidth: 50,
-                        backgroundColor: isCompleted ? grey[600] : isUnlocked ? theme.palette.primary.main : grey[400]
+                        backgroundColor: isCompleted ? grey[600] : isTaken ? blue[600] : isUnlocked ? theme.palette.primary.main : grey[400]
                     }}
-                    disabled={!isUnlocked || isCompleted}
+                    disabled={!isUnlocked || isCompleted || isTaken}
                 >
                     <KeyboardDoubleArrowRightRoundedIcon sx={{ color: 'white' }} />
                 </Button>
             </Card>
             <QuestModal 
                 open={open} 
-                onClose={() => setOpen(false)} 
+                onClose={() => setOpen(false)}
+                questType={questType}
                 quest={{ 
                     questId,
                     questTitle, 
@@ -167,8 +186,11 @@ export default function QuestCard({
                     role, 
                     proficiencyReward,
                     isCompleted,
+                    is_taken: isTaken,
                     submissionImages,
-                    issue_link: issueLink
+                    issue_link: issueLink,
+                    teammates,
+                    currentUserAvatar
                 }} 
             />
         </>

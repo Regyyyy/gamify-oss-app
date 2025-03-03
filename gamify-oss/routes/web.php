@@ -32,6 +32,15 @@ Route::post('/quest/submit', [QuestController::class, 'submit'])
     ->middleware(['auth', 'verified'])
     ->name('quest.submit');
 
+// New routes for team-based quest taking
+Route::post('/quests/eligible-users', [QuestController::class, 'getEligibleUsers'])
+    ->middleware(['auth', 'verified'])
+    ->name('quests.eligible-users');
+
+Route::post('/quests/take', [QuestController::class, 'takeQuest'])
+    ->middleware(['auth', 'verified'])
+    ->name('quests.take');
+
 Route::get('/takenquests', function () {
     return Inertia::render('Quests/TakenQuests');
 })->middleware(['auth', 'verified'])->name('takenquests');

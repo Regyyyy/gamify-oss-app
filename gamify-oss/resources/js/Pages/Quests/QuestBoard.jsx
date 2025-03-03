@@ -31,7 +31,7 @@ export default function QuestBoard() {
                             </Box>
                             <Box sx={{ py: 1 }}>
                                 <Typography>
-                                    Choose quest you want to take! You don't need any good experience to start, just have fun.
+                                    Choose quest you want to take! You can collaborate with teammates on Advanced quests.
                                 </Typography>
                             </Box>
 
@@ -53,9 +53,7 @@ export default function QuestBoard() {
                             {/* Quest List */}
                             <Box sx={{ py: 2 }}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                    <Typography variant="h6" fontWeight="bold">
-                                        Advanced Quests
-                                    </Typography>
+                                    <Box/>
                                     {isAdmin && (
                                         <PrimaryButton 
                                             variant="contained" 
@@ -81,8 +79,12 @@ export default function QuestBoard() {
                                             role={quest.role ?? 'Any'}
                                             proficiencyReward={quest.proficiency_reward ?? 0}
                                             isCompleted={quest.is_completed || false}
+                                            isTaken={quest.is_taken || false}
                                             submissionImages={quest.submission_images || []}
                                             issueLink={quest.issue_link}
+                                            teammates={quest.teammates || []}
+                                            questType="Advanced"
+                                            currentUserAvatar={user.avatar ? `/storage/${user.avatar}` : '/default-avatar.png'}
                                         />
                                     ))
                                 ) : (

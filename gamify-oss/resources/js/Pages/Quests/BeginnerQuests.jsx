@@ -72,6 +72,8 @@ export default function BeginnerQuest() {
                                                 isCompleted={quest.is_completed}
                                                 submissionImages={quest.submission_images}
                                                 issueLink={quest.issue_link}
+                                                questType="Beginner"
+                                                currentUserAvatar={user.avatar ? `/storage/${user.avatar}` : '/default-avatar.png'}
                                             />
                                         );
                                     })
