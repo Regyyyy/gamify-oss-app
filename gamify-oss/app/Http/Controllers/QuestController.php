@@ -116,6 +116,60 @@ class QuestController extends Controller
             'quests' => $enhancedQuests,
         ]);
     }
+    
+    /**
+     * Display quests that have been taken by other users (not the current user)
+     */
+    public function takenQuests(Request $request): Response
+    {
+        $user = Auth::user();
+        
+        // Get all Advanced quests that are not "open"
+        $quests = Quest::where('type', 'Advanced')
+            ->where('status', '!=', 'open')
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+        // Get quests that the current user has taken
+        $userTakenQuestIds = TakenQuest::where('user_id', $user->user_id)
+            ->pluck('quest_id')
+            ->toArray();
+        
+        // Enhance the quests with team information and filter out those taken by current user
+        $enhancedQuests = $quests->filter(function ($quest) use ($userTakenQuestIds) {
+            // Skip quests that the current user has taken
+            return !in_array($quest->quest_id, $userTakenQuestIds);
+        })->map(function ($quest) {
+            // Get all users who have taken this quest
+            $questTakers = TakenQuest::where('quest_id', $quest->quest_id)
+                ->with('user:user_id,name,avatar,level')
+                ->get();
+                
+            // Check if any team member has completed the quest
+            $anyCompleted = $questTakers->contains(function($takenQuest) {
+                return !is_null($takenQuest->submission);
+            });
+            
+            // This quest is taken by other users, so mark it as taken
+            $quest->is_taken = true;
+            $quest->is_completed = $anyCompleted;
+            
+            // Get the team members who are working on this quest
+            $quest->teammates = $questTakers->map(function($takenQuest) {
+                return $takenQuest->user;
+            })->values();
+            
+            // Required level based on difficulty
+            $quest->required_level = $quest->difficulty === "Hard" ? 4 : 3;
+            
+            return $quest;
+        })
+        ->values(); // Re-index the array
+        
+        return Inertia::render('Quests/TakenQuests', [
+            'quests' => $enhancedQuests,
+        ]);
+    }
 
     /**
      * Show the form for creating a new quest.
@@ -183,7 +237,7 @@ class QuestController extends Controller
         
         // Check if current user meets the level requirement
         $currentUser = Auth::user();
-        if ($currentUser->level < $requiredLevel) {
+        if ((int)$currentUser->level < (int)$requiredLevel) {
             return response()->json([
                 'error' => 'You do not meet the level requirement for this quest.',
                 'users' => []
@@ -229,7 +283,7 @@ class QuestController extends Controller
         
         // Check if user meets the level requirement
         $requiredLevel = $quest->difficulty === "Hard" ? 4 : 3; // Same logic as in QuestBoard.jsx
-        if ($currentUser->level < $requiredLevel) {
+        if ((int)$currentUser->level < (int)$requiredLevel) {
             return redirect()->back()->withErrors(['level' => "You don't meet the level requirement for this quest."]);
         }
 

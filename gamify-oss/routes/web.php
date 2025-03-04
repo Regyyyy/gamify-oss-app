@@ -41,9 +41,9 @@ Route::post('/quests/take', [QuestController::class, 'takeQuest'])
     ->middleware(['auth', 'verified'])
     ->name('quests.take');
 
-Route::get('/takenquests', function () {
-    return Inertia::render('Quests/TakenQuests');
-})->middleware(['auth', 'verified'])->name('takenquests');
+Route::get('/takenquests', [QuestController::class, 'takenQuests'])
+    ->middleware(['auth', 'verified'])
+    ->name('takenquests');
 
 Route::get('/questhistory', function () {
     return Inertia::render('Quests/QuestHistory');
