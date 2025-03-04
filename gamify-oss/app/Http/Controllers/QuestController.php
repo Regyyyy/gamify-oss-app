@@ -120,13 +120,20 @@ class QuestController extends Controller
     /**
      * Display quests that have been taken by other users (not the current user)
      */
-    public function takenQuests(Request $request): Response
+    public function communityTakenQuests(Request $request): Response
     {
         $user = Auth::user();
         
-        // Get all Advanced quests that are not "open"
-        $quests = Quest::where('type', 'Advanced')
+        // Get quests that are not "open" (have been taken by someone)
+        $takenQuestIds = TakenQuest::pluck('quest_id')->unique()->toArray();
+        
+        // Get quests that are:
+        // 1. taken (status is not "open")
+        // 2. of type "Advanced"
+        // 3. not taken by the current user (filtered later)
+        $quests = Quest::whereIn('quest_id', $takenQuestIds)
             ->where('status', '!=', 'open')
+            ->where('type', 'Advanced') // Only show Advanced quests
             ->orderBy('created_at', 'desc')
             ->get();
             
@@ -135,18 +142,20 @@ class QuestController extends Controller
             ->pluck('quest_id')
             ->toArray();
         
-        // Enhance the quests with team information and filter out those taken by current user
-        $enhancedQuests = $quests->filter(function ($quest) use ($userTakenQuestIds) {
+        // Enhance the quests with team information and other metadata
+        $enhancedQuests = $quests->map(function ($quest) use ($userTakenQuestIds) {
             // Skip quests that the current user has taken
-            return !in_array($quest->quest_id, $userTakenQuestIds);
-        })->map(function ($quest) {
+            if (in_array($quest->quest_id, $userTakenQuestIds)) {
+                return null;
+            }
+            
             // Get all users who have taken this quest
             $questTakers = TakenQuest::where('quest_id', $quest->quest_id)
                 ->with('user:user_id,name,avatar,level')
                 ->get();
                 
             // Check if any team member has completed the quest
-            $anyCompleted = $questTakers->contains(function($takenQuest) {
+            $anyCompleted = $questTakers->some(function($takenQuest) {
                 return !is_null($takenQuest->submission);
             });
             
@@ -157,13 +166,14 @@ class QuestController extends Controller
             // Get the team members who are working on this quest
             $quest->teammates = $questTakers->map(function($takenQuest) {
                 return $takenQuest->user;
-            })->values();
+            });
             
             // Required level based on difficulty
             $quest->required_level = $quest->difficulty === "Hard" ? 4 : 3;
             
             return $quest;
         })
+        ->filter() // Remove null values (quests taken by current user)
         ->values(); // Re-index the array
         
         return Inertia::render('Quests/TakenQuests', [
