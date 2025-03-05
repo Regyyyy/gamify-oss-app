@@ -26,6 +26,7 @@ export default function QuestCard({
     teammates = [],
     questType = "Beginner", // New prop for quest type
     currentUserAvatar = null,
+    status = "open",
 }) {
     const isUnlocked = playerLevel >= requiredLevel;
 
@@ -190,7 +191,8 @@ export default function QuestCard({
                     submissionImages,
                     issue_link: issueLink,
                     teammates,
-                    currentUserAvatar
+                    currentUserAvatar,
+                    status,
                 }} 
             />
         </>

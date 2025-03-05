@@ -100,7 +100,6 @@ class QuestController extends Controller
             
             // Get team members for this quest
             $teammates = TakenQuest::where('quest_id', $quest->quest_id)
-                ->where('user_id', '!=', $user->user_id)
                 ->with('user:user_id,name,avatar,level')
                 ->get()
                 ->map(function($takenQuest) {

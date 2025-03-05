@@ -126,6 +126,7 @@ export default function QuestBoard() {
                                             issueLink={quest.issue_link}
                                             questType="Advanced"
                                             currentUserAvatar={user.avatar ? `/storage/${user.avatar}` : '/default-avatar.png'}
+                                            status={quest.status}
                                         />
                                     ))
                                 ) : (

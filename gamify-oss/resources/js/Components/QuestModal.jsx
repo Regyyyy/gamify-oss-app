@@ -87,6 +87,7 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
   };
 
   // Render different right side content based on quest status and type
+  // Render different right side content based on quest status and type
   const renderRightSideContent = () => {
     if (isCompleted) {
       return renderCompletedContent();
@@ -94,8 +95,10 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
       return renderTeamWorkContent();
     } else if (isAdvanced && !isTaken) {
       return <TeamMemberSelection quest={quest} onClose={onClose} isUnlocked={isUnlocked} />;
-    } else {
+    } else if (!isAdvanced && !isTaken && !isCompleted) { // For beginner
       return renderSubmissionContent();
+    } else {
+      return null;
     }
   };
 
@@ -158,129 +161,122 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
       <Typography variant="h6" gutterBottom>
         Quest In Progress
       </Typography>
-      
+
       {/* Team information */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="subtitle2" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
           <GroupIcon sx={{ mr: 1, fontSize: 20 }} />
-          Your Team
+          Team
         </Typography>
-        
+
         {teammates.length > 0 ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <AvatarGroup max={5} sx={{ justifyContent: 'flex-start' }}>
-              <Avatar 
-                alt="You" 
-                src={quest.currentUserAvatar || "/default-avatar.png"} 
-                sx={{ border: '2px solid', borderColor: blue[500] }}
-              />
+            <AvatarGroup max={5} sx={{ justifyContent: 'flex-end' }}>
               {teammates.map(member => (
-                <Avatar 
-                  key={member.user_id} 
-                  alt={member.name} 
-                  src={member.avatar ? `/storage/${member.avatar}` : "/default-avatar.png"} 
+                <Avatar
+                  key={member.user_id}
+                  alt={member.name}
+                  src={member.avatar ? `/storage/${member.avatar}` : "/default-avatar.png"}
                 />
               ))}
             </AvatarGroup>
-            <Typography variant="body2" color="text.secondary">
-              You are working on this quest with {teammates.length} other {teammates.length === 1 ? 'person' : 'people'}.
-            </Typography>
           </Box>
         ) : (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Avatar alt="You" src={quest.currentUserAvatar || "/default-avatar.png"} />
-            <Typography variant="body2" color="text.secondary">
-              You are working on this quest solo.
-            </Typography>
-          </Box>
+          <></>
         )}
       </Box>
 
       {/* Submission section */}
-      <Typography variant="h6" gutterBottom>
-        Submit Your Work
-      </Typography>
-      <Typography variant="body2" color="text.secondary" gutterBottom>
-        Upload up to 3 screenshots of your work
-      </Typography>
+      {quest.status === "in progress" ? (
+        <>
+          <Typography variant="h6" gutterBottom>
+            Submit Your Work
+          </Typography>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Upload up to 3 screenshots of your work
+          </Typography>
 
-      {/* Error messages */}
-      {(errors.images || errors.quest_id) && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {errors.images || errors.quest_id}
-        </Alert>
-      )}
+          {/* Error messages */}
+          {(errors.images || errors.quest_id) && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {errors.images || errors.quest_id}
+            </Alert>
+          )}
 
-      {/* File Upload Section */}
-      <Box sx={{ mb: 2 }}>
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          id="upload-images"
-          style={{ display: 'none' }}
-          onChange={handleFileChange}
-          disabled={selectedFiles.length >= 3 || processing}
-        />
-        <label htmlFor="upload-images">
+          {/* File Upload Section */}
+          <Box sx={{ mb: 2 }}>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              id="upload-images"
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
+              disabled={selectedFiles.length >= 3 || processing}
+            />
+            <label htmlFor="upload-images">
+              <PrimaryButton
+                variant="contained"
+                component="span"
+                startIcon={<UploadFileIcon />}
+                disabled={selectedFiles.length >= 3 || processing}
+                fullWidth
+                sx={{ mb: 2 }}
+              >
+                {selectedFiles.length >= 3 ? "Maximum files reached" : "Upload Images"}
+              </PrimaryButton>
+            </label>
+
+            {/* Image Previews */}
+            {previews.length > 0 && (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 2 }}>
+                {previews.map((preview, index) => (
+                  <Paper
+                    key={index}
+                    elevation={2}
+                    sx={{
+                      p: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <img
+                        src={preview}
+                        alt={`Preview ${index}`}
+                        style={{ width: 50, height: 50, objectFit: "cover" }}
+                      />
+                      <Typography variant="body2" noWrap>
+                        {selectedFiles[index]?.name || `Image ${index + 1}`}
+                      </Typography>
+                    </Box>
+                    <IconButton
+                      onClick={() => removeFile(index)}
+                      disabled={processing}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Paper>
+                ))}
+              </Box>
+            )}
+          </Box>
+
+          {/* Submit button */}
           <PrimaryButton
             variant="contained"
-            component="span"
-            startIcon={<UploadFileIcon />}
-            disabled={selectedFiles.length >= 3 || processing}
+            color="primary"
             fullWidth
-            sx={{ mb: 2 }}
+            disabled={selectedFiles.length === 0 || processing}
+            onClick={handleSubmit}
           >
-            {selectedFiles.length >= 3 ? "Maximum files reached" : "Upload Images"}
+            Submit Quest
           </PrimaryButton>
-        </label>
-
-        {/* Image Previews */}
-        {previews.length > 0 && (
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 2 }}>
-            {previews.map((preview, index) => (
-              <Paper
-                key={index}
-                elevation={2}
-                sx={{
-                  p: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <img
-                    src={preview}
-                    alt={`Preview ${index}`}
-                    style={{ width: 50, height: 50, objectFit: "cover" }}
-                  />
-                  <Typography variant="body2" noWrap>
-                    {selectedFiles[index]?.name || `Image ${index + 1}`}
-                  </Typography>
-                </Box>
-                <IconButton
-                  onClick={() => removeFile(index)}
-                  disabled={processing}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </Paper>
-            ))}
-          </Box>
-        )}
-      </Box>
-
-      {/* Submit button */}
-      <PrimaryButton
-        variant="contained"
-        color="primary"
-        fullWidth
-        disabled={selectedFiles.length === 0 || processing}
-        onClick={handleSubmit}
-      >
-        Submit Quest
-      </PrimaryButton>
+        </>
+      ) : (
+        <></>
+      )}
     </>
   );
 
@@ -427,12 +423,12 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
                 />
               ) : isTaken ? (
                 <Chip
-                  label="In Progress"
+                  label="Waiting"
                   sx={{
-                    bgcolor: blue[100],
-                    border: `1px solid ${blue[800]}`,
-                    fontWeight: "bold",
-                    color: "black",
+                    bgcolor: orange[200],
+                    border: '1px solid' + orange[800],
+                    fontWeight: 'bold',
+                    px: 0.5,
                   }}
                 />
               ) : (
