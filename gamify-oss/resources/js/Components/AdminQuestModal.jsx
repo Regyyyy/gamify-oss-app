@@ -1,20 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { Modal, Box, Typography, Chip, IconButton, Paper, Link, Button } from "@mui/material";
 import { blue, green, grey, orange, red, yellow } from "@mui/material/colors";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckIcon from "@mui/icons-material/Check";
-import { useForm } from "@inertiajs/react";
+import { router } from "@inertiajs/react"; // Import router instead of useForm
 import PrimaryButton from "@/Components/PrimaryButton";
 import Avatar from "@mui/material/Avatar";
 import AvatarGroup from "@mui/material/AvatarGroup";
-// Using native JS date formatting instead of date-fns
 
 export default function AdminQuestModal({ open, onClose, quest }) {
     if (!quest) return null;
 
     const { status, submissionImages = [], teammates = [] } = quest;
-
-    const { post, processing } = useForm();
+    const [isProcessing, setIsProcessing] = useState(false);
 
     // Format date from database format (2025-03-04 19:35:59) to website format (4 Mar 2025)
     const formatDate = (dateString) => {
@@ -27,12 +25,29 @@ export default function AdminQuestModal({ open, onClose, quest }) {
     };
 
     const handleAction = (action) => {
-        post(route('admin.quest.action'), {
+        console.log(`Submitting action: ${action} for quest ID: ${quest.questId}`);
+        setIsProcessing(true);
+        
+        // Use router.post instead of useForm's post
+        router.post(route('admin.quest.action'), {
             quest_id: quest.questId,
             action: action
         }, {
+            preserveScroll: true,
             onSuccess: () => {
+                console.log('Action processed successfully');
                 onClose();
+                // Reload the page to show updated data
+                window.location.reload();
+            },
+            onError: (errors) => {
+                console.error('Action failed with errors:', errors);
+                setIsProcessing(false);
+            },
+            onFinish: () => {
+                if (!window.location.reload) {
+                    setIsProcessing(false);
+                }
             }
         });
     };
@@ -106,7 +121,7 @@ export default function AdminQuestModal({ open, onClose, quest }) {
                 <IconButton
                     aria-label="close"
                     onClick={onClose}
-                    disabled={processing}
+                    disabled={isProcessing}
                     sx={{
                         position: 'absolute',
                         right: 12,
@@ -274,7 +289,7 @@ export default function AdminQuestModal({ open, onClose, quest }) {
                                 <Box sx={{ display: 'flex', gap: 2 }}>
                                     <PrimaryButton
                                         fullWidth
-                                        disabled={processing}
+                                        disabled={isProcessing}
                                         onClick={() => handleAction('decline')}
                                         startIcon={<CloseIcon />}
                                         sx={{ 
@@ -289,7 +304,7 @@ export default function AdminQuestModal({ open, onClose, quest }) {
                                     
                                     <PrimaryButton
                                         fullWidth
-                                        disabled={processing}
+                                        disabled={isProcessing}
                                         onClick={() => handleAction('accept')}
                                         startIcon={<CheckIcon />}
                                         sx={{ 

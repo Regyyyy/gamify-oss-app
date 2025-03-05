@@ -8,12 +8,20 @@ import AddIcon from '@mui/icons-material/Add';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import QuestCard from '@/Components/QuestCard';
 import PrimaryButton from '@/Components/PrimaryButton';
+import { useEffect, useState } from 'react';
 
 export default function QuestBoard() {
     const { takenQuests, availableQuests, auth } = usePage().props;
     const user = auth.user;
     const isAdmin = user.role === 'admin';
-    
+
+    useEffect(() => {
+        // Separate quests into waiting and submitted
+        if (takenQuests) {
+            console.log("Received quests:", takenQuests); // Debug log
+        }
+    }, [takenQuests]);
+
     return (
         <MainLayout>
             <Head title="QuestBoard" />
@@ -55,15 +63,15 @@ export default function QuestBoard() {
                             {takenQuests && takenQuests.length > 0 && (
                                 <>
                                     <Box sx={{ py: 2 }}>
-                                        <Typography variant="h5" fontWeight="bold" sx={{ 
-                                            display: 'flex', 
+                                        <Typography variant="h5" fontWeight="bold" sx={{
+                                            display: 'flex',
                                             alignItems: 'center',
                                             mb: 2
                                         }}>
                                             <AssignmentTurnedInIcon sx={{ fontSize: 28, mr: 1 }} />
                                             Your Taken Quests
                                         </Typography>
-                                        
+
                                         {takenQuests.map((quest) => (
                                             <QuestCard
                                                 key={`taken-${quest.quest_id}`}
@@ -83,6 +91,7 @@ export default function QuestBoard() {
                                                 teammates={quest.teammates || []}
                                                 questType="Advanced"
                                                 currentUserAvatar={user.avatar ? `/storage/${user.avatar}` : '/default-avatar.png'}
+                                                status={quest.status}
                                             />
                                         ))}
                                     </Box>
@@ -98,8 +107,8 @@ export default function QuestBoard() {
                                         Available Quests
                                     </Typography>
                                     {isAdmin && (
-                                        <PrimaryButton 
-                                            variant="contained" 
+                                        <PrimaryButton
+                                            variant="contained"
                                             startIcon={<AddIcon />}
                                             href={route('quests.create')}
                                         >
@@ -107,7 +116,7 @@ export default function QuestBoard() {
                                         </PrimaryButton>
                                     )}
                                 </Box>
-                                
+
                                 {availableQuests && availableQuests.length > 0 ? (
                                     availableQuests.map((quest) => (
                                         <QuestCard
@@ -130,11 +139,11 @@ export default function QuestBoard() {
                                         />
                                     ))
                                 ) : (
-                                    <Box sx={{ 
-                                        p: 4, 
-                                        border: '1px dashed #ccc', 
-                                        borderRadius: 2, 
-                                        textAlign: 'center' 
+                                    <Box sx={{
+                                        p: 4,
+                                        border: '1px dashed #ccc',
+                                        borderRadius: 2,
+                                        textAlign: 'center'
                                     }}>
                                         <Typography variant="body1" color="text.secondary">
                                             No available quests at the moment.

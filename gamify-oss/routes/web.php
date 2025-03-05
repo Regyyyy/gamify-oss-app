@@ -61,12 +61,17 @@ Route::get('/badges', function () {
     return Inertia::render('Badges');
 })->middleware(['auth', 'verified'])->name('badges');
 
+// REMOVE THIS LINE as it's being replaced by the admin middleware group below
+// Route::get('/receptionist', function () {
+//     return Inertia::render('Admin/Receptionist');
+// })->middleware(['auth', 'verified'])->name('receptionist');
+
+// Admin only routes
 Route::middleware(['auth', 'verified', \App\Http\Middleware\AdminMiddleware::class])->group(function () {
-    // Existing routes
     Route::get('/quests/create', [QuestController::class, 'create'])->name('quests.create');
     Route::post('/quests', [QuestController::class, 'store'])->name('quests.store');
-    
-    // New routes for admin receptionist
+
+    // Admin receptionist routes
     Route::get('/receptionist', [QuestController::class, 'receptionist'])->name('receptionist');
     Route::post('/admin/quest/action', [QuestController::class, 'handleAdminAction'])->name('admin.quest.action');
 });
@@ -78,4 +83,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

@@ -511,6 +511,12 @@ class QuestController extends Controller
      */
     public function handleAdminAction(Request $request)
     {
+        // Log received data for debugging using the logger helper function
+        logger('Admin quest action received', [
+            'quest_id' => $request->quest_id,
+            'action' => $request->action
+        ]);
+
         $request->validate([
             'quest_id' => 'required|exists:quests,quest_id',
             'action' => 'required|in:accept,decline',
@@ -519,18 +525,23 @@ class QuestController extends Controller
         $quest = Quest::findOrFail($request->quest_id);
         $currentStatus = $quest->status;
 
+        logger('Current quest status', [
+            'quest_id' => $quest->quest_id,
+            'current_status' => $currentStatus
+        ]);
+
         if ($request->action === 'accept') {
             if ($currentStatus === 'waiting') {
                 // If approving a waiting quest, change status to "in progress"
                 $quest->status = 'in progress';
                 $quest->save();
+                logger('Quest status updated to in progress');
             } elseif ($currentStatus === 'submitted') {
                 // If approving a submitted quest, change status to "completed" and set finished_at
                 $quest->status = 'completed';
                 $quest->finished_at = now();
                 $quest->save();
-
-                // Note: XP rewards and proficiency points will be handled in a future update
+                logger('Quest status updated to completed');
             }
         } else {
             // If declining either a waiting or submitted quest, revert to "open"
@@ -539,6 +550,7 @@ class QuestController extends Controller
 
             // Delete all taken_quests entries for this quest
             TakenQuest::where('quest_id', $quest->quest_id)->delete();
+            logger('Quest status updated to open and taken_quests entries deleted');
         }
 
         return redirect()->route('receptionist')->with('success', 'Quest has been ' . ($request->action === 'accept' ? 'approved' : 'declined') . ' successfully.');
