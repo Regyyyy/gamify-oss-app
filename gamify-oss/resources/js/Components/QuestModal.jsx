@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Box, Typography, Chip, IconButton, Paper, Alert, Link } from "@mui/material";
-import { blue, green, grey, orange, red, yellow } from "@mui/material/colors";
+import { blue, green, grey, orange, red, yellow, purple } from "@mui/material/colors";
 import LockOpenRoundedIcon from "@mui/icons-material/LockOpenRounded";
 import LockRoundedIcon from "@mui/icons-material/LockRounded";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
+import HistoryIcon from '@mui/icons-material/History';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import RateReviewIcon from '@mui/icons-material/RateReview';
 import { useForm } from "@inertiajs/react";
 import PrimaryButton from "./PrimaryButton";
 import TeamMemberSelection from "./TeamMemberSelection";
@@ -18,11 +21,19 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
   if (!quest) return null;
 
   const isUnlocked = quest.playerLevel >= quest.requiredLevel;
-  const isCompleted = quest.isCompleted || false;
-  const isTaken = quest.is_taken || false;
+  const isAdvanced = questType === "Advanced";
   const submissionImages = quest.submissionImages || [];
   const teammates = quest.teammates || [];
-  const isAdvanced = questType === "Advanced";
+  const status = quest.status || "open";
+  // isTaken for Advanced quests uses the is_taken prop or status not being "open"
+  // For Beginner quests, just use is_taken prop
+  // For Beginner quests: isCompleted is determined by the isCompleted prop
+  // For Advanced quests: isCompleted is determined by status === "finished"
+  const isCompleted = isAdvanced ? (status === "finished") : quest.isCompleted;
+  
+  // Adjust status for Beginner quests
+  const actualStatus = isAdvanced ? status : (isCompleted ? "finished" : "open");
+  const isTaken = isAdvanced ? (quest.is_taken || actualStatus !== "open") : quest.is_taken;
 
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
@@ -31,6 +42,82 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
     quest_id: quest.questId,
     images: [],
   });
+
+  // Function to determine chip properties based on quest type and status
+  const getStatusChip = () => {
+    // For Beginner quests, only show "Unlocked"/"Locked" or "Finished"
+    if (!isAdvanced) {
+      if (isCompleted) {
+        return {
+          label: "Finished",
+          icon: <CheckCircleIcon />,
+          bgcolor: "transparent",
+          border: `1px solid ${grey[700]}`,
+          color: grey[800]
+        };
+      } else {
+        return {
+          label: isUnlocked ? "Unlocked" : "Locked",
+          icon: isUnlocked ? <LockOpenRoundedIcon /> : <LockRoundedIcon />,
+          bgcolor: isUnlocked ? green[200] : red[200],
+          border: isUnlocked ? `1px solid ${green[800]}` : `1px solid ${red[800]}`,
+          color: 'black'
+        };
+      }
+    }
+    
+    // For Advanced quests, use the full range of statuses
+    switch (actualStatus) {
+        case "open":
+            return {
+                label: isUnlocked ? "Unlocked" : "Locked",
+                icon: isUnlocked ? <LockOpenRoundedIcon /> : <LockRoundedIcon />,
+                bgcolor: isUnlocked ? green[200] : red[200],
+                border: isUnlocked ? `1px solid ${green[800]}` : `1px solid ${red[800]}`,
+                color: 'black'
+            };
+        case "waiting":
+            return {
+                label: "Waiting",
+                bgcolor: orange[200],
+                border: `1px solid ${orange[800]}`,
+                color: 'black'
+            };
+        case "in progress":
+            return {
+                label: "In Progress",
+                icon: <HistoryIcon />,
+                bgcolor: blue[200],
+                border: `1px solid ${blue[800]}`,
+                color: 'black'
+            };
+        case "submitted":
+            return {
+                label: "Reviewing",
+                icon: <RateReviewIcon />,
+                bgcolor: purple[200],
+                border: `1px solid ${purple[800]}`,
+                color: 'black'
+            };
+        case "finished":
+            return {
+                label: "Finished",
+                icon: <CheckCircleIcon />,
+                bgcolor: "transparent",
+                border: `1px solid ${grey[700]}`,
+                color: grey[800]
+            };
+        default:
+            return {
+                label: "Unknown",
+                bgcolor: grey[200],
+                border: `1px solid ${grey[800]}`,
+                color: 'black'
+            };
+    }
+  };
+
+  const statusChip = getStatusChip();
 
   const handleFileChange = (e) => {
     if (e.target.files) {
@@ -66,7 +153,6 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Submit clicked with files:', selectedFiles);
-    console.log('Current form data:', data);
 
     // Create FormData object for file uploads
     const formData = new FormData();
@@ -74,146 +160,432 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
 
     // Append each file to the FormData with proper naming
     selectedFiles.forEach((file, index) => {
-      formData.append(`images[${index}]`, file);
-      console.log(`Added file to FormData: images[${index}]`, file.name);
+      formData.append(`images[]`, file);
+      console.log(`Added file to FormData: images[]`, file.name);
     });
 
     // Log the FormData entries (for debugging)
     for (let [key, value] of formData.entries()) {
       console.log(`FormData contains: ${key} => ${value instanceof File ? value.name : value}`);
     }
-
-    // Set up form submission config with detailed feedback
-    console.log('Submitting to:', route('quest.submit'));
-
+    
     post(route('quest.submit'), formData, {
       forceFormData: true,
-      preserveScroll: true,
-      onBefore: () => console.log('Before submission'),
-      onStart: () => console.log('Submission started'),
-      onProgress: (progress) => console.log('Upload progress:', progress),
       onSuccess: () => {
         console.log('Submission successful');
         reset();
         setSelectedFiles([]);
         setPreviews([]);
         onClose();
-
-        // Force page reload to show updated status
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
+        window.location.reload();
       },
       onError: (errors) => {
         console.error('Submission failed with errors:', errors);
-      },
-      onFinish: () => console.log('Submission finished')
+      }
     });
   };
 
-  // Render different right side content based on quest status and type
-  // Render different right side content based on quest status and type
-  const renderRightSideContent = () => {
+  // Render content for Beginner quests
+  const renderBeginnerContent = () => {
+    // If the quest is finished, show the submitted images
     if (isCompleted) {
-      return renderCompletedContent();
-    } else if (isTaken && isAdvanced) {
-      return renderTeamWorkContent();
-    } else if (isAdvanced && !isTaken) {
-      return <TeamMemberSelection quest={quest} onClose={onClose} isUnlocked={isUnlocked} />;
-    } else if (!isAdvanced && !isTaken && !isCompleted) { // For beginner
-      return renderSubmissionContent();
-    } else {
-      return null;
+      return (
+        <>
+          <Typography variant="h6" gutterBottom>
+            Quest Finished
+          </Typography>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            You have already finished this quest. Here are your submitted screenshots:
+          </Typography>
+
+          {/* Display Submitted Images */}
+          {submissionImages.length > 0 ? (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2, my: 2 }}>
+              {submissionImages.map((image, index) => (
+                <Paper
+                  key={index}
+                  elevation={2}
+                  sx={{
+                    p: 2,
+                    borderRadius: 2,
+                    overflow: "hidden",
+                  }}
+                >
+                  <img
+                    src={`/storage/${image}`}
+                    alt={`Submission ${index + 1}`}
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      maxHeight: "200px",
+                      objectFit: "contain",
+                      marginBottom: "8px"
+                    }}
+                  />
+                  <PrimaryButton
+                    variant="outlined"
+                    fullWidth
+                    onClick={() => window.open(`/storage/${image}`, '_blank')}
+                    sx={{ mt: 1 }}
+                  >
+                    View Full Size
+                  </PrimaryButton>
+                </Paper>
+              ))}
+            </Box>
+          ) : (
+            <Alert severity="info" sx={{ my: 2 }}>
+              No screenshots available for this submission.
+            </Alert>
+          )}
+        </>
+      );
     }
-  };
-
-  // Content for completed quests
-  const renderCompletedContent = () => (
-    <>
-      <Typography variant="h6" gutterBottom>
-        Quest Completed
-      </Typography>
-      <Typography variant="body2" color="text.secondary" gutterBottom>
-        You have already completed this quest. Here are your submitted screenshots:
-      </Typography>
-
-      {/* Display Submitted Images */}
-      {submissionImages.length > 0 ? (
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2, my: 2 }}>
-          {submissionImages.map((image, index) => (
-            <Paper
-              key={index}
-              elevation={2}
-              sx={{
-                p: 2,
-                borderRadius: 2,
-                overflow: "hidden",
-              }}
-            >
-              <img
-                src={`/storage/${image}`}
-                alt={`Submission ${index + 1}`}
-                style={{
-                  width: "100%",
-                  height: "auto",
-                  maxHeight: "200px",
-                  objectFit: "contain",
-                  marginBottom: "8px"
-                }}
-              />
-              <PrimaryButton
-                variant="outlined"
-                fullWidth
-                onClick={() => window.open(`/storage/${image}`, '_blank')}
-                sx={{ mt: 1 }}
-              >
-                View Full Size
-              </PrimaryButton>
-            </Paper>
-          ))}
-        </Box>
-      ) : (
-        <Alert severity="info" sx={{ my: 2 }}>
-          No screenshots available for this submission.
-        </Alert>
-      )}
-    </>
-  );
-
-  // Content for team work (Advanced quest that has been taken but not yet completed)
-  const renderTeamWorkContent = () => (
-    <>
-      <Typography variant="h6" gutterBottom>
-        Quest In Progress
-      </Typography>
-
-      {/* Team information */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="subtitle2" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <GroupIcon sx={{ mr: 1, fontSize: 20 }} />
-          Team
+    
+    // If not completed, show the submission form
+    return (
+      <>
+        <Typography variant="h6" gutterBottom>
+          Submit Your Work
+        </Typography>
+        <Typography variant="body2" color="text.secondary" gutterBottom>
+          Upload up to 3 screenshots of your work
         </Typography>
 
-        {teammates.length > 0 ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <AvatarGroup max={5} sx={{ justifyContent: 'flex-end' }}>
-              {teammates.map(member => (
-                <Avatar
-                  key={member.user_id}
-                  alt={member.name}
-                  src={member.avatar ? `/storage/${member.avatar}` : "/default-avatar.png"}
-                />
-              ))}
-            </AvatarGroup>
-          </Box>
-        ) : (
-          <></>
+        {/* Error messages */}
+        {(errors.images || errors.quest_id) && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {errors.images || errors.quest_id}
+          </Alert>
         )}
-      </Box>
 
-      {/* Submission section */}
-      {quest.status === "in progress" ? (
+        {/* File Upload Section */}
+        <Box sx={{ mb: 2 }}>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            id="upload-images"
+            style={{ display: 'none' }}
+            onChange={handleFileChange}
+            disabled={!isUnlocked || selectedFiles.length >= 3 || processing}
+          />
+          <label htmlFor="upload-images">
+            <PrimaryButton
+              variant="contained"
+              component="span"
+              startIcon={<UploadFileIcon />}
+              disabled={!isUnlocked || selectedFiles.length >= 3 || processing}
+              fullWidth
+              sx={{ mb: 2 }}
+            >
+              {selectedFiles.length >= 3 ? "Maximum files reached" : "Upload Images"}
+            </PrimaryButton>
+          </label>
+
+          {/* Image Previews */}
+          {previews.length > 0 && (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 2 }}>
+              {previews.map((preview, index) => (
+                <Paper
+                  key={index}
+                  elevation={2}
+                  sx={{
+                    p: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <img
+                      src={preview}
+                      alt={`Preview ${index}`}
+                      style={{ width: 50, height: 50, objectFit: "cover" }}
+                    />
+                    <Typography variant="body2" noWrap>
+                      {selectedFiles[index]?.name || `Image ${index + 1}`}
+                    </Typography>
+                  </Box>
+                  <IconButton
+                    onClick={() => removeFile(index)}
+                    disabled={processing}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Paper>
+              ))}
+            </Box>
+          )}
+        </Box>
+
+        {/* Submit button */}
+        <PrimaryButton
+          variant="contained"
+          color="primary"
+          fullWidth
+          disabled={!isUnlocked || selectedFiles.length === 0 || processing}
+          onClick={handleSubmit}
+        >
+          Submit Quest
+        </PrimaryButton>
+      </>
+    );
+  };
+
+  // Render advanced quest content
+  const renderAdvancedContent = () => {
+    // For finished quests
+    if (actualStatus === "finished") {
+      return (
         <>
+          <Typography variant="h6" gutterBottom>
+            Quest Finished
+          </Typography>
+          
+          {/* Team information */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+              <GroupIcon sx={{ mr: 1, fontSize: 20 }} />
+              Team Members
+            </Typography>
+
+            {teammates.length > 0 ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {teammates.map(member => (
+                  <Box 
+                    key={member.user_id}
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 2,
+                      p: 2,
+                      borderRadius: 2,
+                      bgcolor: 'rgba(0, 0, 0, 0.03)'
+                    }}
+                  >
+                    <Avatar
+                      src={member.avatar ? `/storage/${member.avatar}` : "/default-avatar.png"}
+                      alt={member.name}
+                      sx={{ width: 40, height: 40 }}
+                    />
+                    <Box>
+                      <Typography variant="subtitle2">{member.name}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Level {member.level}
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            ) : (
+              <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                No team members found.
+              </Typography>
+            )}
+          </Box>
+
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            This quest is finished.
+          </Typography>
+
+          {/* Display Submitted Images */}
+          {submissionImages.length > 0 ? (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2, my: 2 }}>
+              {submissionImages.map((image, index) => (
+                <Paper
+                  key={index}
+                  elevation={2}
+                  sx={{
+                    p: 2,
+                    borderRadius: 2,
+                    overflow: "hidden",
+                  }}
+                >
+                  <img
+                    src={`/storage/${image}`}
+                    alt={`Submission ${index + 1}`}
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      maxHeight: "200px",
+                      objectFit: "contain",
+                      marginBottom: "8px"
+                    }}
+                  />
+                  <PrimaryButton
+                    variant="outlined"
+                    fullWidth
+                    onClick={() => window.open(`/storage/${image}`, '_blank')}
+                    sx={{ mt: 1 }}
+                  >
+                    View Full Size
+                  </PrimaryButton>
+                </Paper>
+              ))}
+            </Box>
+          ) : (
+            <></>
+          )}
+        </>
+      );
+    }
+    
+    // For submitted quests (under review)
+    if (actualStatus === "submitted") {
+      return (
+        <>
+          <Typography variant="h6" gutterBottom>
+            Quest Under Review
+          </Typography>
+          
+          {/* Team information */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+              <GroupIcon sx={{ mr: 1, fontSize: 20 }} />
+              Team Members
+            </Typography>
+
+            {teammates.length > 0 ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {teammates.map(member => (
+                  <Box 
+                    key={member.user_id}
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 2,
+                      p: 2,
+                      borderRadius: 2,
+                      bgcolor: 'rgba(0, 0, 0, 0.03)'
+                    }}
+                  >
+                    <Avatar
+                      src={member.avatar ? `/storage/${member.avatar}` : "/default-avatar.png"}
+                      alt={member.name}
+                      sx={{ width: 40, height: 40 }}
+                    />
+                    <Box>
+                      <Typography variant="subtitle2">{member.name}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Level {member.level}
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            ) : (
+              <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                No team members found.
+              </Typography>
+            )}
+          </Box>
+
+          {/* Submission Images */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Submitted Work
+            </Typography>
+            
+            {submissionImages.length > 0 ? (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2, my: 2 }}>
+                {submissionImages.map((image, index) => (
+                  <Paper
+                    key={index}
+                    elevation={2}
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <img
+                      src={`/storage/${image}`}
+                      alt={`Submission ${index + 1}`}
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        maxHeight: "200px",
+                        objectFit: "contain",
+                        marginBottom: "8px"
+                      }}
+                    />
+                    <PrimaryButton
+                      variant="outlined"
+                      fullWidth
+                      onClick={() => window.open(`/storage/${image}`, '_blank')}
+                      sx={{ mt: 1 }}
+                    >
+                      View Full Size
+                    </PrimaryButton>
+                  </Paper>
+                ))}
+              </Box>
+            ) : (
+              <Alert severity="info" sx={{ my: 2 }}>
+                No submission images available.
+              </Alert>
+            )}
+          </Box>
+          
+          <Alert severity="info">
+            Your submission is currently being reviewed by an administrator.
+          </Alert>
+        </>
+      );
+    }
+    
+    // For quests in progress (can submit)
+    if (actualStatus === "in progress") {
+      return (
+        <>
+          <Typography variant="h6" gutterBottom>
+            Quest In Progress
+          </Typography>
+          
+          {/* Team information */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+              <GroupIcon sx={{ mr: 1, fontSize: 20 }} />
+              Team Members
+            </Typography>
+
+            {teammates.length > 0 ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {teammates.map(member => (
+                  <Box 
+                    key={member.user_id}
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 2,
+                      p: 2,
+                      borderRadius: 2,
+                      bgcolor: 'rgba(0, 0, 0, 0.03)'
+                    }}
+                  >
+                    <Avatar
+                      src={member.avatar ? `/storage/${member.avatar}` : "/default-avatar.png"}
+                      alt={member.name}
+                      sx={{ width: 40, height: 40 }}
+                    />
+                    <Box>
+                      <Typography variant="subtitle2">{member.name}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Level {member.level}
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            ) : (
+              <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                No team members found.
+              </Typography>
+            )}
+          </Box>
+
+          {/* Submission form */}
           <Typography variant="h6" gutterBottom>
             Submit Your Work
           </Typography>
@@ -299,101 +671,87 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
             Submit Quest
           </PrimaryButton>
         </>
-      ) : (
-        <></>
-      )}
-    </>
-  );
+      );
+    }
+    
+    // For waiting quests
+    if (actualStatus === "waiting") {
+      return (
+        <>
+          <Typography variant="h6" gutterBottom>
+            Quest Awaiting Approval
+          </Typography>
+          
+          {/* Team information */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+              <GroupIcon sx={{ mr: 1, fontSize: 20 }} />
+              Team Members
+            </Typography>
 
-  // Content for regular submission (Beginner quests)
-  const renderSubmissionContent = () => (
-    <>
-      <Typography variant="h6" gutterBottom>
-        Submit Your Work
-      </Typography>
-      <Typography variant="body2" color="text.secondary" gutterBottom>
-        Upload up to 3 screenshots of your work
-      </Typography>
-
-      {/* Error messages */}
-      {(errors.images || errors.quest_id) && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {errors.images || errors.quest_id}
-        </Alert>
-      )}
-
-      {/* File Upload Section */}
-      <Box sx={{ mb: 2 }}>
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          id="upload-images"
-          style={{ display: 'none' }}
-          onChange={handleFileChange}
-          disabled={!isUnlocked || selectedFiles.length >= 3 || processing}
-        />
-        <label htmlFor="upload-images">
-          <PrimaryButton
-            variant="contained"
-            component="span"
-            startIcon={<UploadFileIcon />}
-            disabled={!isUnlocked || selectedFiles.length >= 3 || processing}
-            fullWidth
-            sx={{ mb: 2 }}
-          >
-            {selectedFiles.length >= 3 ? "Maximum files reached" : "Upload Images"}
-          </PrimaryButton>
-        </label>
-
-        {/* Image Previews */}
-        {previews.length > 0 && (
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 2 }}>
-            {previews.map((preview, index) => (
-              <Paper
-                key={index}
-                elevation={2}
-                sx={{
-                  p: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <img
-                    src={preview}
-                    alt={`Preview ${index}`}
-                    style={{ width: 50, height: 50, objectFit: "cover" }}
-                  />
-                  <Typography variant="body2" noWrap>
-                    {selectedFiles[index]?.name || `Image ${index + 1}`}
-                  </Typography>
-                </Box>
-                <IconButton
-                  onClick={() => removeFile(index)}
-                  disabled={processing}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </Paper>
-            ))}
+            {teammates.length > 0 ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {teammates.map(member => (
+                  <Box 
+                    key={member.user_id}
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 2,
+                      p: 2,
+                      borderRadius: 2,
+                      bgcolor: 'rgba(0, 0, 0, 0.03)'
+                    }}
+                  >
+                    <Avatar
+                      src={member.avatar ? `/storage/${member.avatar}` : "/default-avatar.png"}
+                      alt={member.name}
+                      sx={{ width: 40, height: 40 }}
+                    />
+                    <Box>
+                      <Typography variant="subtitle2">{member.name}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Level {member.level}
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            ) : (
+              <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                No team members found.
+              </Typography>
+            )}
           </Box>
-        )}
-      </Box>
+          
+          <Alert severity="info">
+            This quest request is currently awaiting admin approval.
+          </Alert>
+        </>
+      );
+    }
+    
+    // For open/untaken quests - show team selection
+    if (actualStatus === "open" && !isTaken) {
+      return <TeamMemberSelection quest={quest} onClose={onClose} isUnlocked={isUnlocked} />;
+    }
+    
+    // Default fallback
+    return (
+      <Alert severity="warning">
+        Unknown quest status: {actualStatus}
+      </Alert>
+    );
+  };
 
-      {/* Submit button */}
-      <PrimaryButton
-        variant="contained"
-        color="primary"
-        fullWidth
-        disabled={!isUnlocked || selectedFiles.length === 0 || processing}
-        onClick={handleSubmit}
-      >
-        Submit Quest
-      </PrimaryButton>
-    </>
-  );
+  // Main render method - uses the questType to determine which content to render
+  const renderRightSideContent = () => {
+    if (isAdvanced) {
+      return renderAdvancedContent();
+    } else {
+      return renderBeginnerContent();
+    }
+  };
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -436,39 +794,21 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
             </Typography>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-              {isCompleted ? (
-                <Chip
-                  label="Completed"
-                  sx={{
-                    bgcolor: "transparent",
-                    border: `1px solid ${grey[700]}`,
-                    fontWeight: "bold",
-                    color: grey[800],
-                  }}
-                />
-              ) : isTaken ? (
-                <Chip
-                  label="Waiting"
-                  sx={{
-                    bgcolor: orange[200],
-                    border: '1px solid' + orange[800],
-                    fontWeight: 'bold',
-                    px: 0.5,
-                  }}
-                />
-              ) : (
-                <Chip
-                  label={isUnlocked ? "Unlocked" : "Locked"}
-                  icon={isUnlocked ? <LockOpenRoundedIcon /> : <LockRoundedIcon />}
-                  sx={{
-                    bgcolor: isUnlocked ? green[200] : red[200],
-                    border: `1px solid ${isUnlocked ? green[800] : red[800]}`,
-                    fontWeight: "bold",
-                    color: "black",
-                  }}
-                />
-              )}
-              {!isCompleted && !isTaken && (
+              <Chip
+                label={statusChip.label}
+                icon={statusChip.icon}
+                sx={{
+                  bgcolor: statusChip.bgcolor,
+                  border: statusChip.border,
+                  fontWeight: 'bold',
+                  color: statusChip.color,
+                  px: 0.5,
+                  '& .MuiChip-icon': {
+                    color: statusChip.color
+                  },
+                }}
+              />
+              {!isAdvanced && actualStatus === "open" && !isCompleted && !isTaken && (
                 <Typography variant="body2" fontWeight="bold">
                   {`Required Level: ${quest.requiredLevel}`}
                 </Typography>

@@ -16,11 +16,14 @@ export default function QuestBoard() {
     const isAdmin = user.role === 'admin';
 
     useEffect(() => {
-        // Separate quests into waiting and submitted
+        // Log taken and available quests for debugging
         if (takenQuests) {
-            console.log("Received quests:", takenQuests); // Debug log
+            console.log("Taken quests:", takenQuests);
         }
-    }, [takenQuests]);
+        if (availableQuests) {
+            console.log("Available quests:", availableQuests);
+        }
+    }, [takenQuests, availableQuests]);
 
     return (
         <MainLayout>
@@ -84,7 +87,7 @@ export default function QuestBoard() {
                                                 xpReward={quest.xp_reward}
                                                 role={quest.role ?? 'Any'}
                                                 proficiencyReward={quest.proficiency_reward ?? 0}
-                                                isCompleted={quest.is_completed || false}
+                                                isCompleted={quest.status === 'finished'}
                                                 isTaken={true}
                                                 submissionImages={quest.submission_images || []}
                                                 issueLink={quest.issue_link}

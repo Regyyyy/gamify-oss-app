@@ -67,13 +67,14 @@ export default function TakenQuests() {
                                                     xpReward={quest.xp_reward}
                                                     role={quest.role ?? 'Any'}
                                                     proficiencyReward={quest.proficiency_reward ?? 0}
-                                                    isCompleted={quest.is_completed || false}
+                                                    isCompleted={quest.status === 'finished'}
                                                     isTaken={true} // These are all taken quests
                                                     submissionImages={quest.submission_images || []}
                                                     issueLink={quest.issue_link}
                                                     teammates={quest.teammates || []}
                                                     questType="Advanced"
                                                     currentUserAvatar={user.avatar ? `/storage/${user.avatar}` : '/default-avatar.png'}
+                                                    status={quest.status}
                                                 />
                                             </Box>
                                         ))}

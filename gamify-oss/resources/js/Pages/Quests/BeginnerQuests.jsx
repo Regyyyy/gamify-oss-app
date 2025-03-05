@@ -74,6 +74,7 @@ export default function BeginnerQuest() {
                                                 issueLink={quest.issue_link}
                                                 questType="Beginner"
                                                 currentUserAvatar={user.avatar ? `/storage/${user.avatar}` : '/default-avatar.png'}
+                                                status={quest.is_completed ? "finished" : "open"} // Set status based on completion
                                             />
                                         );
                                     })

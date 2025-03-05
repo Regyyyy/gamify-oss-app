@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { Card, CardContent, Typography, Chip, Button, Box } from "@mui/material";
-import { blue, green, grey, orange, red, yellow } from "@mui/material/colors";
+import { blue, green, grey, orange, red, yellow, purple } from "@mui/material/colors";
 import LockOpenRoundedIcon from "@mui/icons-material/LockOpenRounded";
 import LockRoundedIcon from "@mui/icons-material/LockRounded";
 import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowRightRounded';
 import GroupIcon from '@mui/icons-material/Group';
 import PersonIcon from '@mui/icons-material/Person';
+import HistoryIcon from '@mui/icons-material/History';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import RateReviewIcon from '@mui/icons-material/RateReview';
 import { useTheme } from '@mui/material/styles';
 import QuestModal from "./QuestModal";
 
@@ -33,6 +36,72 @@ export default function QuestCard({
     const theme = useTheme();
 
     const [open, setOpen] = useState(false);
+    
+    // Determine the actual status based on quest type and completion
+    const determineStatus = () => {
+        // For Beginner quests, use isCompleted to determine status
+        if (questType === "Beginner") {
+            return isCompleted ? "finished" : "open";
+        }
+        // For Advanced quests, use the provided status
+        return status;
+    };
+
+    const actualStatus = determineStatus();
+
+    // Function to determine chip properties based on status
+    const getStatusChip = () => {
+        switch (actualStatus) {
+            case "open":
+                return {
+                    label: isUnlocked ? "Unlocked" : "Locked",
+                    icon: isUnlocked ? <LockOpenRoundedIcon /> : <LockRoundedIcon />,
+                    bgcolor: isUnlocked ? green[200] : red[200],
+                    border: isUnlocked ? `1px solid ${green[800]}` : `1px solid ${red[800]}`,
+                    color: 'black'
+                };
+            case "waiting":
+                return {
+                    label: "Waiting",
+                    bgcolor: orange[200],
+                    border: `1px solid ${orange[800]}`,
+                    color: 'black'
+                };
+            case "in progress":
+                return {
+                    label: "In Progress",
+                    icon: <HistoryIcon />,
+                    bgcolor: blue[200],
+                    border: `1px solid ${blue[800]}`,
+                    color: 'black'
+                };
+            case "submitted":
+                return {
+                    label: "Reviewing",
+                    icon: <RateReviewIcon />,
+                    bgcolor: purple[200],
+                    border: `1px solid ${purple[800]}`,
+                    color: 'black'
+                };
+            case "finished":
+                return {
+                    label: "Finished",
+                    icon: <CheckCircleIcon />,
+                    bgcolor: "transparent",
+                    border: `1px solid ${grey[700]}`,
+                    color: grey[800]
+                };
+            default:
+                return {
+                    label: "Unknown",
+                    bgcolor: grey[200],
+                    border: `1px solid ${grey[800]}`,
+                    color: 'black'
+                };
+        }
+    };
+
+    const statusChip = getStatusChip();
 
     return (
         <>
@@ -61,44 +130,21 @@ export default function QuestCard({
                                 {questTitle}
                             </Typography>
                             <Box display="flex" alignItems="center" gap={1} my={1}>
-                                {isCompleted ? (
-                                    <Chip
-                                        label="Completed"
-                                        sx={{
-                                            bgcolor: "transparent",
-                                            border: '1px solid ' + grey[700],
-                                            fontWeight: 'bold',
-                                            color: grey[800],
-                                            px: 0.5,
-                                        }}
-                                    />
-                                ) : isTaken ? (
-                                    <Chip
-                                        label="Waiting"
-                                        sx={{
-                                            bgcolor: orange[200],
-                                            border: '1px solid' + orange[800],
-                                            fontWeight: 'bold',
-                                            px: 0.5,
-                                        }}
-                                    />
-                                ) : (
-                                    <Chip
-                                        label={isUnlocked ? "Unlocked" : "Locked"}
-                                        icon={isUnlocked ? <LockOpenRoundedIcon /> : <LockRoundedIcon />}
-                                        sx={{
-                                            bgcolor: isUnlocked ? green[200] : red[200],
-                                            border: isUnlocked ? '1px solid' + green[800] : '1px solid' + red[800],
-                                            fontWeight: 'bold',
-                                            color: 'black',
-                                            px: 0.5,
-                                            '& .MuiChip-icon': {
-                                                color: 'black'
-                                            },
-                                        }}
-                                    />
-                                )}
-                                {!isCompleted && !isTaken && (
+                                <Chip
+                                    label={statusChip.label}
+                                    icon={statusChip.icon}
+                                    sx={{
+                                        bgcolor: statusChip.bgcolor,
+                                        border: statusChip.border,
+                                        fontWeight: 'bold',
+                                        color: statusChip.color,
+                                        px: 0.5,
+                                        '& .MuiChip-icon': {
+                                            color: statusChip.color
+                                        },
+                                    }}
+                                />
+                                {actualStatus === "open" && !isCompleted && !isTaken && (
                                     <Typography variant="subtitle2" fontWeight="bold">
                                         {`Required Level ${requiredLevel}`}
                                     </Typography>
@@ -165,9 +211,14 @@ export default function QuestCard({
                     sx={{
                         borderRadius: 0,
                         minWidth: 50,
-                        backgroundColor: isCompleted ? grey[600] : isTaken ? blue[600] : isUnlocked ? theme.palette.primary.main : grey[400]
+                        backgroundColor: 
+                            actualStatus === "finished" ? grey[600] :
+                            actualStatus === "submitted" ? purple[600] :
+                            actualStatus === "in progress" ? blue[600] :
+                            actualStatus === "waiting" ? orange[600] :
+                            isUnlocked ? theme.palette.primary.main : grey[400]
                     }}
-                    disabled={!isUnlocked || isCompleted || isTaken}
+                    disabled={!isUnlocked || actualStatus !== "open"} // Only enable for open quests that are unlocked
                 >
                     <KeyboardDoubleArrowRightRoundedIcon sx={{ color: 'white' }} />
                 </Button>
@@ -186,7 +237,7 @@ export default function QuestCard({
                     xpReward, 
                     role, 
                     proficiencyReward,
-                    isCompleted,
+                    isCompleted: status === "finished",
                     is_taken: isTaken,
                     submissionImages,
                     issue_link: issueLink,
