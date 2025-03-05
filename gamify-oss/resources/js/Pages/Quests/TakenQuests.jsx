@@ -54,10 +54,6 @@ export default function TakenQuests() {
                             <Box sx={{ py: 2 }}>
                                 {quests && quests.length > 0 ? (
                                     <>
-                                        <Typography variant="h6" gutterBottom>
-                                            Quests Currently In Progress By Others
-                                        </Typography>
-                                        
                                         {quests.map((quest) => (
                                             <Box key={quest.quest_id} sx={{ mb: 3 }}>
                                                 <QuestCard

@@ -1,15 +1,16 @@
 import MainLayout from '@/Layouts/MainLayout';
 import { Head, usePage } from '@inertiajs/react';
-import { Box, Typography, Link, Button } from '@mui/material';
+import { Box, Typography, Link, Button, Divider } from '@mui/material';
 
 import MapRoundedIcon from '@mui/icons-material/MapRounded';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import AddIcon from '@mui/icons-material/Add';
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import QuestCard from '@/Components/QuestCard';
 import PrimaryButton from '@/Components/PrimaryButton';
 
 export default function QuestBoard() {
-    const { quests, auth } = usePage().props;
+    const { takenQuests, availableQuests, auth } = usePage().props;
     const user = auth.user;
     const isAdmin = user.role === 'admin';
     
@@ -50,10 +51,52 @@ export default function QuestBoard() {
                                 </Typography>
                             </Box>
 
-                            {/* Quest List */}
+                            {/* Your Taken Quests Section - Only shown if user has taken quests */}
+                            {takenQuests && takenQuests.length > 0 && (
+                                <>
+                                    <Box sx={{ py: 2 }}>
+                                        <Typography variant="h5" fontWeight="bold" sx={{ 
+                                            display: 'flex', 
+                                            alignItems: 'center',
+                                            mb: 2
+                                        }}>
+                                            <AssignmentTurnedInIcon sx={{ fontSize: 28, mr: 1 }} />
+                                            Your Taken Quests
+                                        </Typography>
+                                        
+                                        {takenQuests.map((quest) => (
+                                            <QuestCard
+                                                key={`taken-${quest.quest_id}`}
+                                                questId={quest.quest_id}
+                                                questTitle={quest.title}
+                                                questDescription={quest.description}
+                                                playerLevel={user.level.toString()}
+                                                requiredLevel={quest.difficulty === "Hard" ? 4 : 3}
+                                                difficulty={quest.difficulty}
+                                                xpReward={quest.xp_reward}
+                                                role={quest.role ?? 'Any'}
+                                                proficiencyReward={quest.proficiency_reward ?? 0}
+                                                isCompleted={quest.is_completed || false}
+                                                isTaken={true}
+                                                submissionImages={quest.submission_images || []}
+                                                issueLink={quest.issue_link}
+                                                teammates={quest.teammates || []}
+                                                questType="Advanced"
+                                                currentUserAvatar={user.avatar ? `/storage/${user.avatar}` : '/default-avatar.png'}
+                                            />
+                                        ))}
+                                    </Box>
+
+                                    <Divider sx={{ my: 4 }} />
+                                </>
+                            )}
+
+                            {/* Available Quests Section */}
                             <Box sx={{ py: 2 }}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                    <Box/>
+                                    <Typography variant="h5" fontWeight="bold">
+                                        Available Quests
+                                    </Typography>
                                     {isAdmin && (
                                         <PrimaryButton 
                                             variant="contained" 
@@ -65,24 +108,22 @@ export default function QuestBoard() {
                                     )}
                                 </Box>
                                 
-                                {quests && quests.length > 0 ? (
-                                    quests.map((quest) => (
+                                {availableQuests && availableQuests.length > 0 ? (
+                                    availableQuests.map((quest) => (
                                         <QuestCard
-                                            key={quest.quest_id}
+                                            key={`available-${quest.quest_id}`}
                                             questId={quest.quest_id}
                                             questTitle={quest.title}
                                             questDescription={quest.description}
                                             playerLevel={user.level.toString()}
-                                            requiredLevel={quest.difficulty === "Hard" ? 4 : 3} // Level 4 for Hard, Level 3 for others
+                                            requiredLevel={quest.difficulty === "Hard" ? 4 : 3}
                                             difficulty={quest.difficulty}
                                             xpReward={quest.xp_reward}
                                             role={quest.role ?? 'Any'}
                                             proficiencyReward={quest.proficiency_reward ?? 0}
-                                            isCompleted={quest.is_completed || false}
-                                            isTaken={quest.is_taken || false}
-                                            submissionImages={quest.submission_images || []}
+                                            isCompleted={false}
+                                            isTaken={false}
                                             issueLink={quest.issue_link}
-                                            teammates={quest.teammates || []}
                                             questType="Advanced"
                                             currentUserAvatar={user.avatar ? `/storage/${user.avatar}` : '/default-avatar.png'}
                                         />
@@ -95,7 +136,7 @@ export default function QuestBoard() {
                                         textAlign: 'center' 
                                     }}>
                                         <Typography variant="body1" color="text.secondary">
-                                            No advanced quests available yet.
+                                            No available quests at the moment.
                                             {isAdmin && (
                                                 <Box component="span" sx={{ display: 'block', mt: 1 }}>
                                                     Click the "Add New Quest" button to create one.

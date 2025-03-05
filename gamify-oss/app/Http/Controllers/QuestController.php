@@ -61,59 +61,71 @@ class QuestController extends Controller
      */
     public function questBoard(Request $request): Response
     {
-        $quests = Quest::where('type', 'Advanced')
-            ->orderBy('created_at', 'desc') // Order by creation time, newest first
-            ->get();
         $user = Auth::user();
         
-        // Get all quest IDs
-        $questIds = $quests->pluck('quest_id')->toArray();
-        
-        // Get all taken quests for this user that match these quest IDs
-        $takenQuests = TakenQuest::where('user_id', $user->user_id)
-            ->whereIn('quest_id', $questIds)
-            ->get()
-            ->keyBy('quest_id');
-        
-        // Enhance the quests with completion status, submission data, and team information
-        $enhancedQuests = $quests->map(function ($quest) use ($takenQuests) {
-            $takenQuest = $takenQuests->get($quest->quest_id);
+        // Get quests taken by the current user (status not "open" or "finished")
+        $takenQuestIds = TakenQuest::where('user_id', $user->user_id)
+            ->pluck('quest_id')
+            ->toArray();
             
-            if ($takenQuest) {
-                // Add status and submission images to the quest
-                $quest->is_completed = !is_null($takenQuest->submission);
-                $quest->is_taken = true;
+        $takenQuests = Quest::where('type', 'Advanced')
+            ->whereIn('quest_id', $takenQuestIds)
+            ->whereNotIn('status', ['open', 'finished'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+        // Get available quests (status "open")
+        $availableQuests = Quest::where('type', 'Advanced')
+            ->where('status', 'open')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Enhance taken quests with team information and submission data
+        $enhancedTakenQuests = $takenQuests->map(function ($quest) use ($user) {
+            $takenQuest = TakenQuest::where('quest_id', $quest->quest_id)
+                ->where('user_id', $user->user_id)
+                ->first();
                 
-                // Parse the JSON submission field if it exists
-                if (!is_null($takenQuest->submission)) {
-                    $submissionImages = json_decode($takenQuest->submission, true) ?? [];
-                    $quest->submission_images = $submissionImages;
-                } else {
-                    $quest->submission_images = [];
-                }
-                
-                // Get team members for this quest
-                $teammates = TakenQuest::where('quest_id', $quest->quest_id)
-                    ->where('user_id', '!=', Auth::user()->user_id)
-                    ->with('user:user_id,name,avatar,level')
-                    ->get()
-                    ->map(function($takenQuest) {
-                        return $takenQuest->user;
-                    });
-                
-                $quest->teammates = $teammates;
+            // Add status and submission images to the quest
+            $quest->is_completed = !is_null($takenQuest->submission ?? null);
+            $quest->is_taken = true;
+            
+            // Parse the JSON submission field if it exists
+            if ($takenQuest && !is_null($takenQuest->submission)) {
+                $submissionImages = json_decode($takenQuest->submission, true) ?? [];
+                $quest->submission_images = $submissionImages;
             } else {
-                $quest->is_completed = false;
-                $quest->is_taken = false;
                 $quest->submission_images = [];
-                $quest->teammates = [];
             }
+            
+            // Get team members for this quest
+            $teammates = TakenQuest::where('quest_id', $quest->quest_id)
+                ->where('user_id', '!=', $user->user_id)
+                ->with('user:user_id,name,avatar,level')
+                ->get()
+                ->map(function($takenQuest) {
+                    return $takenQuest->user;
+                });
+            
+            $quest->teammates = $teammates;
+            
+            return $quest;
+        });
+        
+        // Enhance available quests with status information
+        $enhancedAvailableQuests = $availableQuests->map(function ($quest) use ($user, $takenQuestIds) {
+            // These quests are not taken by the current user
+            $quest->is_completed = false;
+            $quest->is_taken = false;
+            $quest->submission_images = [];
+            $quest->teammates = [];
             
             return $quest;
         });
 
         return Inertia::render('Quests/QuestBoard', [
-            'quests' => $enhancedQuests,
+            'takenQuests' => $enhancedTakenQuests,
+            'availableQuests' => $enhancedAvailableQuests,
         ]);
     }
     
