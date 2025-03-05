@@ -390,18 +390,32 @@ class QuestController extends Controller
                 $takenQuest->submission = json_encode($imagePaths);
                 $takenQuest->save();
 
-                // If this is an advanced quest and all team members have submitted,
-                // change the quest status to completed
+                // Different handling for Advanced quests
                 if ($quest->type === 'Advanced') {
-                    $allTeamMembers = TakenQuest::where('quest_id', $quest->quest_id)->get();
-                    $allSubmitted = $allTeamMembers->every(function ($member) {
-                        return !is_null($member->submission);
-                    });
-
-                    if ($allSubmitted) {
-                        $quest->status = 'completed';
-                        $quest->finished_at = now();
+                    // If this is an Advanced quest, update the status to "submitted"
+                    if ($quest->status === 'in progress') {
+                        $quest->status = 'submitted';
                         $quest->save();
+
+                        logger('Advanced quest status updated to submitted', [
+                            'quest_id' => $quest->quest_id,
+                            'status' => $quest->status
+                        ]);
+                    }
+
+                    // Copy the submission to all teammates' taken_quests
+                    $teammateQuests = TakenQuest::where('quest_id', $quest->quest_id)
+                        ->where('user_id', '!=', $user->user_id) // Skip current user
+                        ->get();
+
+                    foreach ($teammateQuests as $teammateQuest) {
+                        $teammateQuest->submission = json_encode($imagePaths);
+                        $teammateQuest->save();
+
+                        logger('Copied submission to teammate', [
+                            'teammate_id' => $teammateQuest->user_id,
+                            'quest_id' => $quest->quest_id
+                        ]);
                     }
                 }
 

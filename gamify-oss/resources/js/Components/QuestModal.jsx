@@ -65,6 +65,8 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log('Submit clicked with files:', selectedFiles);
+    console.log('Current form data:', data);
 
     // Create FormData object for file uploads
     const formData = new FormData();
@@ -72,17 +74,40 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
 
     // Append each file to the FormData with proper naming
     selectedFiles.forEach((file, index) => {
-      formData.append(`images[]`, file);
+      formData.append(`images[${index}]`, file);
+      console.log(`Added file to FormData: images[${index}]`, file.name);
     });
+
+    // Log the FormData entries (for debugging)
+    for (let [key, value] of formData.entries()) {
+      console.log(`FormData contains: ${key} => ${value instanceof File ? value.name : value}`);
+    }
+
+    // Set up form submission config with detailed feedback
+    console.log('Submitting to:', route('quest.submit'));
 
     post(route('quest.submit'), formData, {
       forceFormData: true,
+      preserveScroll: true,
+      onBefore: () => console.log('Before submission'),
+      onStart: () => console.log('Submission started'),
+      onProgress: (progress) => console.log('Upload progress:', progress),
       onSuccess: () => {
+        console.log('Submission successful');
         reset();
         setSelectedFiles([]);
         setPreviews([]);
         onClose();
+
+        // Force page reload to show updated status
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
       },
+      onError: (errors) => {
+        console.error('Submission failed with errors:', errors);
+      },
+      onFinish: () => console.log('Submission finished')
     });
   };
 
