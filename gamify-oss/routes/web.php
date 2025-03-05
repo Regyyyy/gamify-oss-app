@@ -61,14 +61,14 @@ Route::get('/badges', function () {
     return Inertia::render('Badges');
 })->middleware(['auth', 'verified'])->name('badges');
 
-Route::get('/receptionist', function () {
-    return Inertia::render('Admin/Receptionist');
-})->middleware(['auth', 'verified'])->name('receptionist');
-
-// Admin only routes
 Route::middleware(['auth', 'verified', \App\Http\Middleware\AdminMiddleware::class])->group(function () {
+    // Existing routes
     Route::get('/quests/create', [QuestController::class, 'create'])->name('quests.create');
     Route::post('/quests', [QuestController::class, 'store'])->name('quests.store');
+    
+    // New routes for admin receptionist
+    Route::get('/receptionist', [QuestController::class, 'receptionist'])->name('receptionist');
+    Route::post('/admin/quest/action', [QuestController::class, 'handleAdminAction'])->name('admin.quest.action');
 });
 
 Route::middleware('auth')->group(function () {

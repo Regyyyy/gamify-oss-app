@@ -3,6 +3,7 @@ import { Box, Typography, TextField, FormControl, InputLabel, Select, MenuItem, 
 import AddIcon from '@mui/icons-material/Add';
 import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
+import PrimaryButton from '@/Components/PrimaryButton';
 
 export default function AddNewQuest() {
     const { data, setData, post, processing, errors, reset, setError } = useForm({
@@ -166,7 +167,7 @@ export default function AddNewQuest() {
                         </Box>
 
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <Button
+                            <PrimaryButton
                                 type="submit"
                                 variant="contained"
                                 color="primary"
@@ -175,7 +176,7 @@ export default function AddNewQuest() {
                                 startIcon={<AddIcon />}
                             >
                                 Add Quest
-                            </Button>
+                            </PrimaryButton>
                         </Box>
                     </form>
                 </Paper>

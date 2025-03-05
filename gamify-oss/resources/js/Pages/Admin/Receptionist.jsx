@@ -1,15 +1,28 @@
 import MainLayout from '@/Layouts/MainLayout';
-import { Head } from '@inertiajs/react';
-import { Box, Typography, Link } from '@mui/material';
-
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import QuestCard from '@/Components/QuestCard';
+import { Head, usePage } from '@inertiajs/react';
+import { Box, Typography, Link, Divider } from '@mui/material';
 import RoomServiceRoundedIcon from '@mui/icons-material/RoomServiceRounded';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import AdminQuestCard from '@/Components/AdminQuestCard';
+import { useEffect, useState } from 'react';
 
 export default function Receptionist() {
+    const { quests } = usePage().props;
+    
+    const [waitingQuests, setWaitingQuests] = useState([]);
+    const [submittedQuests, setSubmittedQuests] = useState([]);
+
+    useEffect(() => {
+        // Separate quests into waiting and submitted
+        if (quests) {
+            console.log("Received quests:", quests); // Debug log
+            setWaitingQuests(quests.filter(quest => quest.status === 'waiting'));
+            setSubmittedQuests(quests.filter(quest => quest.status === 'submitted'));
+        }
+    }, [quests]);
+
     return (
-        <MainLayout
-        >
+        <MainLayout>
             <Head title="Receptionist" />
 
             <Box>
@@ -26,7 +39,7 @@ export default function Receptionist() {
                             </Box>
                             <Box sx={{ py: 1 }}>
                                 <Typography>
-                                    Start your journey with us by taking these quests, leveling up, and unlock new challenges!
+                                    Manage quest requests and submissions from team members. Review, approve, or decline quests as needed.
                                 </Typography>
                             </Box>
 
@@ -45,55 +58,81 @@ export default function Receptionist() {
                                 </Typography>
                             </Box>
 
-                            {/* Quest List */}
-                            <Box sx={{
+                            {/* Pending Requests Section */}
+                            <Box sx={{ py: 2 }}>
+                                <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
+                                    Pending Requests
+                                </Typography>
+                                
+                                {waitingQuests && waitingQuests.length > 0 ? (
+                                    waitingQuests.map((quest) => (
+                                        <AdminQuestCard
+                                            key={`request-${quest.quest_id}`}
+                                            questId={quest.quest_id}
+                                            questTitle={quest.title}
+                                            questDescription={quest.description}
+                                            difficulty={quest.difficulty}
+                                            xpReward={quest.xp_reward}
+                                            role={quest.role ?? 'Any'}
+                                            proficiencyReward={quest.proficiency_reward ?? 0}
+                                            status="waiting"
+                                            requestDate={quest.request_date}
+                                            issueLink={quest.issue_link}
+                                            teammates={quest.teammates || []}
+                                        />
+                                    ))
+                                ) : (
+                                    <Box sx={{ 
+                                        p: 4, 
+                                        border: '1px dashed #ccc', 
+                                        borderRadius: 2, 
+                                        textAlign: 'center' 
+                                    }}>
+                                        <Typography variant="body1" color="text.secondary">
+                                            No pending quest requests at the moment.
+                                        </Typography>
+                                    </Box>
+                                )}
+                            </Box>
 
-                            }}>
-                                <QuestCard
-                                    questTitle='Membuka repository project dan baca README'
-                                    playerLevel='1'
-                                    requiredLevel='1'
-                                    difficulty='Easy'
-                                    xpReward='75'
-                                    role='Game Designer'
-                                    proficiencyReward='0'
-                                />
-                                <QuestCard
-                                    questTitle='Memberi komentar kepada 3 issues yang berbeda'
-                                    playerLevel='1'
-                                    requiredLevel='1'
-                                    difficulty='Easy'
-                                    xpReward='150'
-                                    role='Game Programmer'
-                                    proficiencyReward='0'
-                                />
-                                <QuestCard
-                                    questTitle='Membuat fork dari project repository'
-                                    playerLevel='1'
-                                    requiredLevel='1'
-                                    difficulty='Easy'
-                                    xpReward='75'
-                                    role='Game Artist'
-                                    proficiencyReward='0'
-                                />
-                                <QuestCard
-                                    questTitle='Melakukan pull request kepada project repository'
-                                    playerLevel='1'
-                                    requiredLevel='2'
-                                    difficulty='Medium'
-                                    xpReward='150'
-                                    role='Game Artist'
-                                    proficiencyReward='0'
-                                />
-                                <QuestCard
-                                    questTitle='Membuat issue baru terkait ide/masukan/temuan pada project'
-                                    playerLevel='1'
-                                    requiredLevel='2'
-                                    difficulty='Medium'
-                                    xpReward='150'
-                                    role='Game Artist'
-                                    proficiencyReward='0'
-                                />
+                            <Divider sx={{ my: 4 }} />
+
+                            {/* Pending Submissions Section */}
+                            <Box sx={{ py: 2 }}>
+                                <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
+                                    Pending Submissions
+                                </Typography>
+                                
+                                {submittedQuests && submittedQuests.length > 0 ? (
+                                    submittedQuests.map((quest) => (
+                                        <AdminQuestCard
+                                            key={`submission-${quest.quest_id}`}
+                                            questId={quest.quest_id}
+                                            questTitle={quest.title}
+                                            questDescription={quest.description}
+                                            difficulty={quest.difficulty}
+                                            xpReward={quest.xp_reward}
+                                            role={quest.role ?? 'Any'}
+                                            proficiencyReward={quest.proficiency_reward ?? 0}
+                                            status="submitted"
+                                            submitDate={quest.submit_date}
+                                            submissionImages={quest.submission_images || []}
+                                            issueLink={quest.issue_link}
+                                            teammates={quest.teammates || []}
+                                        />
+                                    ))
+                                ) : (
+                                    <Box sx={{ 
+                                        p: 4, 
+                                        border: '1px dashed #ccc', 
+                                        borderRadius: 2, 
+                                        textAlign: 'center' 
+                                    }}>
+                                        <Typography variant="body1" color="text.secondary">
+                                            No pending quest submissions at the moment.
+                                        </Typography>
+                                    </Box>
+                                )}
                             </Box>
                         </Box>
                     </div>

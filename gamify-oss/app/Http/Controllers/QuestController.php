@@ -21,25 +21,25 @@ class QuestController extends Controller
     {
         $quests = Quest::where('type', 'Beginner')->get();
         $user = Auth::user();
-        
+
         // Get all quest IDs
         $questIds = $quests->pluck('quest_id')->toArray();
-        
+
         // Get all taken quests for this user that match these quest IDs
         $takenQuests = TakenQuest::where('user_id', $user->user_id)
             ->whereIn('quest_id', $questIds)
             ->whereNotNull('submission')
             ->get()
             ->keyBy('quest_id');
-        
+
         // Enhance the quests with completion status and submission data
         $enhancedQuests = $quests->map(function ($quest) use ($takenQuests) {
             $takenQuest = $takenQuests->get($quest->quest_id);
-            
+
             if ($takenQuest) {
                 // Add completed status and submission images to the quest
                 $quest->is_completed = true;
-                
+
                 // Parse the JSON submission field
                 $submissionImages = json_decode($takenQuest->submission, true) ?? [];
                 $quest->submission_images = $submissionImages;
@@ -47,7 +47,7 @@ class QuestController extends Controller
                 $quest->is_completed = false;
                 $quest->submission_images = [];
             }
-            
+
             return $quest;
         });
 
@@ -62,34 +62,34 @@ class QuestController extends Controller
     public function questBoard(Request $request): Response
     {
         $user = Auth::user();
-        
+
         // Get quests taken by the current user (status not "open" or "finished")
         $takenQuestIds = TakenQuest::where('user_id', $user->user_id)
             ->pluck('quest_id')
             ->toArray();
-            
+
         $takenQuests = Quest::where('type', 'Advanced')
             ->whereIn('quest_id', $takenQuestIds)
             ->whereNotIn('status', ['open', 'finished'])
             ->orderBy('created_at', 'desc')
             ->get();
-            
+
         // Get available quests (status "open")
         $availableQuests = Quest::where('type', 'Advanced')
             ->where('status', 'open')
             ->orderBy('created_at', 'desc')
             ->get();
-        
+
         // Enhance taken quests with team information and submission data
         $enhancedTakenQuests = $takenQuests->map(function ($quest) use ($user) {
             $takenQuest = TakenQuest::where('quest_id', $quest->quest_id)
                 ->where('user_id', $user->user_id)
                 ->first();
-                
+
             // Add status and submission images to the quest
             $quest->is_completed = !is_null($takenQuest->submission ?? null);
             $quest->is_taken = true;
-            
+
             // Parse the JSON submission field if it exists
             if ($takenQuest && !is_null($takenQuest->submission)) {
                 $submissionImages = json_decode($takenQuest->submission, true) ?? [];
@@ -97,20 +97,20 @@ class QuestController extends Controller
             } else {
                 $quest->submission_images = [];
             }
-            
+
             // Get team members for this quest
             $teammates = TakenQuest::where('quest_id', $quest->quest_id)
                 ->with('user:user_id,name,avatar,level')
                 ->get()
-                ->map(function($takenQuest) {
+                ->map(function ($takenQuest) {
                     return $takenQuest->user;
                 });
-            
+
             $quest->teammates = $teammates;
-            
+
             return $quest;
         });
-        
+
         // Enhance available quests with status information
         $enhancedAvailableQuests = $availableQuests->map(function ($quest) use ($user, $takenQuestIds) {
             // These quests are not taken by the current user
@@ -118,7 +118,7 @@ class QuestController extends Controller
             $quest->is_taken = false;
             $quest->submission_images = [];
             $quest->teammates = [];
-            
+
             return $quest;
         });
 
@@ -127,17 +127,17 @@ class QuestController extends Controller
             'availableQuests' => $enhancedAvailableQuests,
         ]);
     }
-    
+
     /**
      * Display quests that have been taken by other users (not the current user)
      */
     public function communityTakenQuests(Request $request): Response
     {
         $user = Auth::user();
-        
+
         // Get quests that are not "open" (have been taken by someone)
         $takenQuestIds = TakenQuest::pluck('quest_id')->unique()->toArray();
-        
+
         // Get quests that are:
         // 1. taken (status is not "open")
         // 2. of type "Advanced"
@@ -147,46 +147,46 @@ class QuestController extends Controller
             ->where('type', 'Advanced') // Only show Advanced quests
             ->orderBy('created_at', 'desc')
             ->get();
-            
+
         // Get quests that the current user has taken
         $userTakenQuestIds = TakenQuest::where('user_id', $user->user_id)
             ->pluck('quest_id')
             ->toArray();
-        
+
         // Enhance the quests with team information and other metadata
         $enhancedQuests = $quests->map(function ($quest) use ($userTakenQuestIds) {
             // Skip quests that the current user has taken
             if (in_array($quest->quest_id, $userTakenQuestIds)) {
                 return null;
             }
-            
+
             // Get all users who have taken this quest
             $questTakers = TakenQuest::where('quest_id', $quest->quest_id)
                 ->with('user:user_id,name,avatar,level')
                 ->get();
-                
+
             // Check if any team member has completed the quest
-            $anyCompleted = $questTakers->some(function($takenQuest) {
+            $anyCompleted = $questTakers->some(function ($takenQuest) {
                 return !is_null($takenQuest->submission);
             });
-            
+
             // This quest is taken by other users, so mark it as taken
             $quest->is_taken = true;
             $quest->is_completed = $anyCompleted;
-            
+
             // Get the team members who are working on this quest
-            $quest->teammates = $questTakers->map(function($takenQuest) {
+            $quest->teammates = $questTakers->map(function ($takenQuest) {
                 return $takenQuest->user;
             });
-            
+
             // Required level based on difficulty
             $quest->required_level = $quest->difficulty === "Hard" ? 4 : 3;
-            
+
             return $quest;
         })
-        ->filter() // Remove null values (quests taken by current user)
-        ->values(); // Re-index the array
-        
+            ->filter() // Remove null values (quests taken by current user)
+            ->values(); // Re-index the array
+
         return Inertia::render('Quests/TakenQuests', [
             'quests' => $enhancedQuests,
         ]);
@@ -246,7 +246,7 @@ class QuestController extends Controller
 
         $quest = Quest::findOrFail($request->quest_id);
         $requiredLevel = 0;
-        
+
         // Set required level based on quest difficulty
         if ($quest->difficulty === 'Hard') {
             $requiredLevel = 4;
@@ -255,7 +255,7 @@ class QuestController extends Controller
         } else {
             $requiredLevel = 2;
         }
-        
+
         // Check if current user meets the level requirement
         $currentUser = Auth::user();
         if ((int)$currentUser->level < (int)$requiredLevel) {
@@ -277,7 +277,7 @@ class QuestController extends Controller
             ->toArray();
 
         // Filter out users who have already taken this quest
-        $availableUsers = $eligibleUsers->filter(function($user) use ($takenUserIds) {
+        $availableUsers = $eligibleUsers->filter(function ($user) use ($takenUserIds) {
             return !in_array($user->user_id, $takenUserIds);
         })->values();
 
@@ -301,7 +301,7 @@ class QuestController extends Controller
 
         $quest = Quest::findOrFail($request->quest_id);
         $currentUser = Auth::user();
-        
+
         // Check if user meets the level requirement
         $requiredLevel = $quest->difficulty === "Hard" ? 4 : 3; // Same logic as in QuestBoard.jsx
         if ((int)$currentUser->level < (int)$requiredLevel) {
@@ -331,7 +331,7 @@ class QuestController extends Controller
                 $existingMemberTaken = TakenQuest::where('user_id', $memberId)
                     ->where('quest_id', $quest->quest_id)
                     ->first();
-                
+
                 if (!$existingMemberTaken) {
                     TakenQuest::create([
                         'user_id' => $memberId,
@@ -394,10 +394,10 @@ class QuestController extends Controller
                 // change the quest status to completed
                 if ($quest->type === 'Advanced') {
                     $allTeamMembers = TakenQuest::where('quest_id', $quest->quest_id)->get();
-                    $allSubmitted = $allTeamMembers->every(function($member) {
+                    $allSubmitted = $allTeamMembers->every(function ($member) {
                         return !is_null($member->submission);
                     });
-                    
+
                     if ($allSubmitted) {
                         $quest->status = 'completed';
                         $quest->finished_at = now();
@@ -407,7 +407,7 @@ class QuestController extends Controller
 
                 return redirect()->back()->with('success', 'Quest submission successful!');
             }
-            
+
             return redirect()->back()->withErrors(['images' => 'No images were uploaded.']);
         } catch (\Exception $e) {
             // Cleanup partially uploaded files
@@ -417,5 +417,130 @@ class QuestController extends Controller
 
             return redirect()->back()->withErrors(['error' => 'Failed to upload images: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * Display quests that need admin approval/review.
+     */
+    public function receptionist(Request $request): Response
+    {
+        // Get quests waiting for initial approval (status = 'waiting')
+        $waitingQuests = Quest::where('status', 'waiting')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Get quests that have been submitted (we'll check for actual submissions)
+        $inProgressQuests = Quest::where('status', 'in progress')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Find quests where at least one team member has submitted something
+        $submittedQuests = collect();
+        foreach ($inProgressQuests as $quest) {
+            $hasSubmission = TakenQuest::where('quest_id', $quest->quest_id)
+                ->whereNotNull('submission')
+                ->exists();
+
+            if ($hasSubmission) {
+                // Mark as submitted for the frontend
+                $quest->status = 'submitted';
+                $submittedQuests->push($quest);
+            }
+        }
+
+        // Combine waiting and submitted quests
+        $allQuests = $waitingQuests->concat($submittedQuests);
+
+        // Add necessary information to each quest
+        $enhancedQuests = collect();
+        foreach ($allQuests as $quest) {
+            // Get all taken quests for this quest
+            $takenQuests = TakenQuest::where('quest_id', $quest->quest_id)->get();
+
+            // Skip if there are no taken quests
+            if ($takenQuests->isEmpty()) {
+                continue;
+            }
+
+            // Get team members
+            $teammates = collect();
+            foreach ($takenQuests as $takenQuest) {
+                $user = User::where('user_id', $takenQuest->user_id)
+                    ->select('user_id', 'name', 'avatar', 'level')
+                    ->first();
+
+                if ($user) {
+                    $teammates->push($user);
+                }
+            }
+
+            // Add team members to the quest
+            $quest->teammates = $teammates;
+
+            // For waiting quests, get request date
+            if ($quest->status === 'waiting') {
+                $firstTakenQuest = $takenQuests->sortBy('created_at')->first();
+                if ($firstTakenQuest) {
+                    $quest->request_date = $firstTakenQuest->created_at;
+                }
+            }
+
+            // For submitted quests, get submission info
+            if ($quest->status === 'submitted') {
+                // Find the taken quest with a submission
+                $submittedTakenQuest = $takenQuests->filter(function ($takenQuest) {
+                    return !is_null($takenQuest->submission);
+                })->first();
+
+                if ($submittedTakenQuest) {
+                    $quest->submit_date = $submittedTakenQuest->updated_at;
+                    $quest->submission_images = json_decode($submittedTakenQuest->submission, true) ?? [];
+                }
+            }
+
+            $enhancedQuests->push($quest);
+        }
+
+        return Inertia::render('Admin/Receptionist', [
+            'quests' => $enhancedQuests,
+        ]);
+    }
+
+    /**
+     * Handle admin actions for approving or declining quests.
+     */
+    public function handleAdminAction(Request $request)
+    {
+        $request->validate([
+            'quest_id' => 'required|exists:quests,quest_id',
+            'action' => 'required|in:accept,decline',
+        ]);
+
+        $quest = Quest::findOrFail($request->quest_id);
+        $currentStatus = $quest->status;
+
+        if ($request->action === 'accept') {
+            if ($currentStatus === 'waiting') {
+                // If approving a waiting quest, change status to "in progress"
+                $quest->status = 'in progress';
+                $quest->save();
+            } elseif ($currentStatus === 'submitted') {
+                // If approving a submitted quest, change status to "completed" and set finished_at
+                $quest->status = 'completed';
+                $quest->finished_at = now();
+                $quest->save();
+
+                // Note: XP rewards and proficiency points will be handled in a future update
+            }
+        } else {
+            // If declining either a waiting or submitted quest, revert to "open"
+            $quest->status = 'open';
+            $quest->save();
+
+            // Delete all taken_quests entries for this quest
+            TakenQuest::where('quest_id', $quest->quest_id)->delete();
+        }
+
+        return redirect()->route('receptionist')->with('success', 'Quest has been ' . ($request->action === 'accept' ? 'approved' : 'declined') . ' successfully.');
     }
 }
