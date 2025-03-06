@@ -1,23 +1,18 @@
 import MainLayout from '@/Layouts/MainLayout';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { Box, Typography, Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import LeaderboardRoundedIcon from '@mui/icons-material/LeaderboardRounded';
+import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
 import { blue, green, grey, orange, red, yellow } from "@mui/material/colors";
 
-const players = [
-    { avatar: '/avatars/player1.png', name: 'Alice', xp: 1200 },
-    { avatar: '/avatars/player2.png', name: 'Bob', xp: 950 },
-    { avatar: '/avatars/player3.png', name: 'Charlie', xp: 800 },
-    { avatar: '/avatars/player4.png', name: 'Dave', xp: 600 },
-    { avatar: '/avatars/player5.png', name: 'Eve', xp: 500 }
-];
-
-const sortedPlayers = [...players].sort((a, b) => b.xp - a.xp);
-
-// Colors for top 3 players
-const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32']; // Gold, Silver, Bronze
-
 export default function Leaderboard() {
+    // Get users data passed from the controller
+    const { users } = usePage().props;
+
+    // Colors for top 3 players
+    const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32']; // Gold, Silver, Bronze
+    const rankBgColors = ['rgba(255, 215, 0, 0.1)', 'rgba(192, 192, 192, 0.1)', 'rgba(205, 127, 50, 0.1)']; // Light versions
+
     return (
         <MainLayout>
             <Head title="Leaderboard" />
@@ -30,45 +25,95 @@ export default function Leaderboard() {
                 <Typography sx={{ py: 1 }}>See your progress along with others! Take more quests for more XPs to climb the leaderboard.</Typography>
 
                 {/* Leaderboard Table */}
-                <TableContainer component={Paper} sx={{ mt: 3, borderRadius: 2, overflow: 'hidden', px: 2 }}>
+                <TableContainer component={Paper} sx={{ mt: 3, borderRadius: 2, overflow: 'hidden', px: 2, py: 2 }}>
                     <Table sx={{ borderCollapse: 'separate', borderSpacing: '0 8px', width: '100%' }}>
                         <TableHead>
                             <TableRow sx={{
                                 '& th': {
-                                    color: 'grey.500'
+                                    color: 'grey.500',
+                                    fontWeight: 'bold',
+                                    borderBottom: '2px solid #f5f5f5'
                                 }
                             }}>
                                 <TableCell>Rank</TableCell>
-                                <TableCell>Player</TableCell>
-                                <TableCell>XP</TableCell>
+                                <TableCell sx={{ pl: 4 }}>Player</TableCell>
+                                <TableCell sx={{ pl: 4 }}>XP</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {sortedPlayers.map((player, index) => {
-                                const borderColor = index < 3 ? rankColors[index] : 'black'; // Top 3 get color, others grey
+                            {users.map((user, index) => {
+                                const isTopThree = index < 3;
+                                const borderColor = isTopThree ? rankColors[index] : 'transparent';
+                                const backgroundColor = isTopThree ? rankBgColors[index] : 'transparent';
 
                                 return (
                                     <TableRow
-                                        key={player.name}
+                                        key={user.user_id}
                                         sx={{
-                                            border: `3px solid ${borderColor}`,
-                                            borderRadius: '12px',
-                                            '& td': { borderBottom: 'none' }, // Remove inner row lines
+                                            height: '64px',
+                                            backgroundColor: backgroundColor,
+                                            '& > td': {
+                                                borderTop: isTopThree ? `2px solid ${borderColor}` : '1px solid #eaeaea',
+                                                borderBottom: isTopThree ? `2px solid ${borderColor}` : '1px solid #eaeaea',
+                                            },
+                                            '& > td:first-of-type': {
+                                                borderTopLeftRadius: '12px',
+                                                borderBottomLeftRadius: '12px',
+                                                borderLeft: isTopThree ? `2px solid ${borderColor}` : '1px solid #eaeaea',
+                                            },
+                                            '& > td:last-child': {
+                                                borderTopRightRadius: '12px',
+                                                borderBottomRightRadius: '12px',
+                                                borderRight: isTopThree ? `2px solid ${borderColor}` : '1px solid #eaeaea',
+                                            },
+                                            '&:hover': {
+                                                backgroundColor: isTopThree ? `${rankBgColors[index]}` : 'rgba(0,0,0,0.02)',
+                                                transition: 'all 0.2s'
+                                            }
                                         }}
                                     >
-                                        <TableCell sx={{ width: '10%' }}>
-                                            <Typography sx={{ fontWeight: 'bold', color: borderColor }}>
+                                        <TableCell sx={{ width: '10%', pl: 3 }}>
+                                            <Typography sx={{ 
+                                                fontWeight: 'bold', 
+                                                color: isTopThree ? borderColor : 'inherit',
+                                                fontSize: isTopThree ? '1.2rem' : '1rem'
+                                            }}>
                                                 {index + 1}
                                             </Typography>
                                         </TableCell>
                                         <TableCell>
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <Avatar src={player.avatar} alt={player.name} />
-                                                <Typography>{player.name}</Typography>
+                                                <Avatar 
+                                                    src={user.avatar ? `/storage/${user.avatar}` : "/default-avatar.png"} 
+                                                    alt={user.name}
+                                                    sx={{
+                                                        width: isTopThree ? 48 : 40,
+                                                        height: isTopThree ? 48 : 40,
+                                                        border: isTopThree ? `2px solid ${borderColor}` : 'none'
+                                                    }}
+                                                />
+                                                <Typography
+                                                    sx={{ 
+                                                        fontWeight: isTopThree ? 'bold' : 'normal',
+                                                        fontSize: isTopThree ? '1.1rem' : '1rem'
+                                                    }}
+                                                >
+                                                    {user.name}
+                                                </Typography>
                                             </Box>
                                         </TableCell>
-                                        <TableCell sx={{ width: '10%' }}>
-                                            <Typography fontWeight="bold">{player.xp}</Typography>
+                                        <TableCell sx={{ width: '15%' }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <BoltRoundedIcon sx={{ 
+                                                    color: "#FFC107",
+                                                    fontSize: isTopThree ? 28 : 24
+                                                }} />
+                                                <Typography fontWeight="bold" sx={{
+                                                    fontSize: isTopThree ? '1.1rem' : '1rem'
+                                                }}>
+                                                    {user.xp_point}
+                                                </Typography>
+                                            </Box>
                                         </TableCell>
                                     </TableRow>
                                 );

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuestController;
 use Illuminate\Foundation\Application;
@@ -82,5 +83,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::get('/leaderboard', [LeaderboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('leaderboard');
 
 require __DIR__ . '/auth.php';
