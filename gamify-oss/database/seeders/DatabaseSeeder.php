@@ -66,14 +66,6 @@ class DatabaseSeeder extends Seeder
             'xp_point' => 300,
         ]);
 
-        // Avatar Frames
-        $avatarFrame1 = AvatarFrame::create(['name' => 'Golden Frame', 'description' => 'A luxurious golden avatar frame.']);
-        $avatarFrame2 = AvatarFrame::create(['name' => 'Silver Frame', 'description' => 'A sleek silver avatar frame.']);
-
-        // Achievements
-        Achievement::create(['name' => 'First Steps', 'description' => 'Complete your first quest.', 'xp_reward' => 100, 'avatar_frame_reward_id' => $avatarFrame1->avatar_frame_id]);
-        Achievement::create(['name' => 'Pro Explorer', 'description' => 'Complete 10 quests.', 'xp_reward' => 500, 'avatar_frame_reward_id' => $avatarFrame2->avatar_frame_id]);
-
         // Badges
         $badge1 = Badge::create(['name' => 'Beginner', 'description' => 'Awarded for starting the journey.']);
         $badge2 = Badge::create(['name' => 'Veteran', 'description' => 'Awarded for exceptional contributions.']);
@@ -169,10 +161,6 @@ class DatabaseSeeder extends Seeder
         TakenQuest::create(['quest_id' => $quest1->quest_id, 'user_id' => 2, 'submission' => null]);
         TakenQuest::create(['quest_id' => $quest2->quest_id, 'user_id' => 3, 'submission' => null]);
 
-        // User Achievements
-        UserAchievement::create(['user_id' => 2, 'achievement_id' => 1, 'status' => 'completed']);
-        UserAchievement::create(['user_id' => 3, 'achievement_id' => 2, 'status' => 'in-progress']);
-
         // User Badges
         UserBadge::create(['user_id' => 2, 'badge_id' => $badge1->badge_id, 'created_at' => now(), 'finished_at' => null]);
         UserBadge::create(['user_id' => 3, 'badge_id' => $badge2->badge_id, 'created_at' => now(), 'finished_at' => null]);
@@ -184,10 +172,6 @@ class DatabaseSeeder extends Seeder
         // User UI Customizations
         UserUICustomization::create(['user_id' => 2, 'ui_customization_id' => $ui1->ui_customization_id, 'is_enabled' => true, 'created_at' => now(), 'finished_at' => null]);
         UserUICustomization::create(['user_id' => 3, 'ui_customization_id' => $ui2->ui_customization_id, 'is_enabled' => false, 'created_at' => now(), 'finished_at' => null]);
-
-        // User Avatar Frames
-        UserAvatarFrame::create(['user_id' => 2, 'avatar_frame_id' => $avatarFrame1->avatar_frame_id, 'is_used' => true, 'created_at' => now(), 'finished_at' => null]);
-        UserAvatarFrame::create(['user_id' => 3, 'avatar_frame_id' => $avatarFrame2->avatar_frame_id, 'is_used' => false, 'created_at' => now(), 'finished_at' => null]);
 
         // User Proficiencies
         UserProficiency::create(['user_id' => 2, 'proficiency_id' => $proficiency1->proficiency_id, 'point' => 200, 'created_at' => now(), 'finished_at' => null]);
