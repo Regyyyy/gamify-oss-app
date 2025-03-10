@@ -11,6 +11,7 @@ use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use App\Events\QuestCompletedEvent;
 
 class QuestController extends Controller
 {
@@ -410,6 +411,28 @@ class QuestController extends Controller
                 $takenQuest->submission = json_encode($imagePaths);
                 $takenQuest->save();
                 logger('Taken quest updated with submission', ['paths' => $imagePaths]);
+
+                try {
+                    // Log before dispatch
+                    \Illuminate\Support\Facades\Log::info("Dispatching QuestCompletedEvent", [
+                        'user_id' => $user->user_id,
+                        'user_name' => $user->name,
+                        'quest_id' => $quest->quest_id,
+                        'quest_title' => $quest->title
+                    ]);
+
+                    // Dispatch the event
+                    event(new QuestCompletedEvent($user, $quest));
+
+                    // Log after successful dispatch
+                    \Illuminate\Support\Facades\Log::info("QuestCompletedEvent dispatched successfully");
+                } catch (\Exception $e) {
+                    // Log any errors
+                    \Illuminate\Support\Facades\Log::error("Error dispatching QuestCompletedEvent", [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                }
 
                 // Different handling for Advanced quests
                 if ($quest->type === 'Advanced') {

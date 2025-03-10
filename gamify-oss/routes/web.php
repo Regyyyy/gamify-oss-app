@@ -54,18 +54,17 @@ Route::get('/leaderboard', function () {
     return Inertia::render('Leaderboard');
 })->middleware(['auth', 'verified'])->name('leaderboard');
 
-Route::get('/achievements', function () {
-    return Inertia::render('Achievements');
-})->middleware(['auth', 'verified'])->name('achievements');
+Route::get('/achievements', [App\Http\Controllers\AchievementController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('achievements');
+
+Route::post('/achievements/claim', [App\Http\Controllers\AchievementController::class, 'claim'])
+    ->middleware(['auth', 'verified'])
+    ->name('achievements.claim');
 
 Route::get('/badges', function () {
     return Inertia::render('Badges');
 })->middleware(['auth', 'verified'])->name('badges');
-
-// REMOVE THIS LINE as it's being replaced by the admin middleware group below
-// Route::get('/receptionist', function () {
-//     return Inertia::render('Admin/Receptionist');
-// })->middleware(['auth', 'verified'])->name('receptionist');
 
 // Admin only routes
 Route::middleware(['auth', 'verified', \App\Http\Middleware\AdminMiddleware::class])->group(function () {

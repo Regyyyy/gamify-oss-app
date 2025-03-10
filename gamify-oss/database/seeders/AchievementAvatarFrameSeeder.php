@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Achievement;
 use App\Models\AvatarFrame;
+use App\Models\UserAchievement;
 use App\Models\Quest;
 use Illuminate\Database\Seeder;
 
@@ -122,5 +123,19 @@ class AchievementAvatarFrameSeeder extends Seeder
                 'updated_at' => now()
             ]);
         }
+
+        UserAchievement::create([
+            'user_id' => 5,
+            'achievement_id' => 1,
+            'status' => 'completed',
+            'created_at' => now()
+        ]);
+        
+        UserAchievement::create([
+            'user_id' => 5,
+            'achievement_id' => 2,
+            'status' => 'claimed',
+            'created_at' => now()
+        ]);
     }
 }

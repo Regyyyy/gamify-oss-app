@@ -8,8 +8,10 @@ export default function AchievementCard({
     achievementDescription = "Achievement description goes here. This text will be truncated if it's too long.",
     xpReward = 100,
     extraReward = false,
+    extraRewardName = null,
     isCompleted = false,
     isClaimed = false,
+    onClaimReward = () => {},
 }) {
     return (
         <Card
@@ -22,6 +24,11 @@ export default function AchievementCard({
                 my: 2,
                 px: 1,
                 position: "relative",
+                transition: "all 0.2s ease-in-out",
+                "&:hover": {
+                    transform: "translateY(-6px)",
+                    boxShadow: 8,
+                },
             }}
         >
             <CardContent sx={{ flexGrow: 1 }}>
@@ -35,7 +42,7 @@ export default function AchievementCard({
                         flexDirection: 'column'
                     }}>
                         <Box>
-                            {/* Achivement Info */}
+                            {/* Achievement Info */}
                             <Typography variant="h6" fontWeight="bold">
                                 {achievementName}
                             </Typography>
@@ -67,7 +74,7 @@ export default function AchievementCard({
                             />
                             {extraReward && (
                                 <Chip
-                                    label="Avatar Frame"
+                                    label={extraRewardName ? `Avatar Frame "${extraRewardName}"` : "Avatar Frame"}
                                     sx={{
                                         bgcolor: blue[200],
                                         border: "1px solid" + blue[800],
@@ -95,7 +102,7 @@ export default function AchievementCard({
                                 Completed
                             </Typography>
                         ) : (
-                            <PrimaryButton>
+                            <PrimaryButton onClick={onClaimReward}>
                                 Claim Reward
                             </PrimaryButton>
                         )}
