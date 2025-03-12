@@ -519,7 +519,7 @@ class QuestController extends Controller
                 }
 
                 logger('Submission successful, redirecting back');
-                return redirect()->back()->with('success', 'Quest submission successful!');
+                return redirect()->back()->with('success', 'Quest submission successful!')->with('user', $user);;
             } else {
                 logger('No images were uploaded in the request');
                 return redirect()->back()->withErrors(['images' => 'No images were uploaded.']);

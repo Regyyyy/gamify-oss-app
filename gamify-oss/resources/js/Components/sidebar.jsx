@@ -52,23 +52,36 @@ export default function Sidebar({ username = "username", width = 275, role, avat
     10: 3650
   };
 
+  // Calculate current level based on XP - this will update dynamically when XP changes
+  const determineLevel = (xp) => {
+    // Start from the highest level and work backwards
+    for (let level = 10; level > 1; level--) {
+      if (xp >= levelThresholds[level]) {
+        return level;
+      }
+    }
+    return 1; // Default to level 1
+  };
+
+  // Calculate the current level based on XP
+  const calculatedLevel = determineLevel(parseInt(user.xp_point));
+
   const isAdmin = role === "admin";
-
   const isQuestPage = ["/questboard", "/beginnerquests", "/takenquests", "/questhistory"].includes(url);
-
   const [openQuests, setOpenQuests] = useState(isQuestPage);
 
   useEffect(() => {
     setOpenQuests(isQuestPage);
   }, [url]);
-
+  
   const handleToggleQuests = () => {
     setOpenQuests(!openQuests);
   };
 
   // Calculate XP progress percentage for the current level
   const calculateXpProgress = () => {
-    const currentLevel = parseInt(user.level);
+    // Use calculated level instead of user.level
+    const currentLevel = calculatedLevel;
     const currentXP = parseInt(user.xp_point);
 
     // If at max level, show 100%
@@ -125,7 +138,7 @@ export default function Sidebar({ username = "username", width = 275, role, avat
             }}
           />
           <Typography variant="body2" sx={{ color: theme.palette.primary.light, fontWeight: "bold" }}>
-            {parseInt(user.level) >= 10 ? "MAX Level" : `Level ${user.level}`}
+            {calculatedLevel >= 10 ? "MAX Level" : `Level ${calculatedLevel}`}
           </Typography>
         </Box>
       </Box>
