@@ -3,6 +3,8 @@
 namespace App\Listeners;
 
 use App\Events\XpIncreasedEvent;
+use App\Models\UserAchievement;
+use App\Models\Achievement;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -55,19 +57,19 @@ class UpdateUserLevelListener implements ShouldQueue
                 // Need to update XP and check level
                 $previousXp = $user->xp_point;
                 $newXp = $previousXp + $xpAmount;
-                
+
                 // Update database directly
                 DB::table('users')
                     ->where('user_id', $user->user_id)
                     ->update(['xp_point' => $newXp]);
-                
+
                 Log::info("XP updated in DB for advanced quest", [
                     'user_id' => $user->user_id,
                     'previous_xp' => $previousXp,
                     'new_xp' => $newXp,
                     'difference' => $xpAmount
                 ]);
-                
+
                 // Reload user with updated XP to check level
                 $user->refresh();
                 $this->checkAndUpdateLevel($user);
@@ -78,24 +80,24 @@ class UpdateUserLevelListener implements ShouldQueue
                 // Need to update XP and check level
                 $previousXp = $user->xp_point;
                 $newXp = $previousXp + $xpAmount;
-                
+
                 // Update database directly
                 DB::table('users')
                     ->where('user_id', $user->user_id)
                     ->update(['xp_point' => $newXp]);
-                
+
                 Log::info("XP updated in DB for claimed achievement", [
                     'user_id' => $user->user_id,
                     'previous_xp' => $previousXp,
                     'new_xp' => $newXp,
                     'difference' => $xpAmount
                 ]);
-                
+
                 // Reload user with updated XP to check level
                 $user->refresh();
                 $this->checkAndUpdateLevel($user);
                 break;
-                
+
             // Unknown source - log warning but still check level
             default:
                 Log::warning("Unknown XP source received", [
@@ -107,39 +109,100 @@ class UpdateUserLevelListener implements ShouldQueue
         }
     }
 
-    /**
-     * Check if user should level up and update if needed
-     */
     private function checkAndUpdateLevel($user): void
     {
         // Get current XP and level
         $currentXp = $user->xp_point;
         $currentLevel = $user->level;
-        
+
         // Determine appropriate level based on XP
         $newLevel = $this->determineLevel($currentXp);
-        
-        // Log level check
+
+        // Log level check with additional information about the level 5 condition
         Log::info("Checking level for user", [
             'user_id' => $user->user_id,
             'current_xp' => $currentXp,
             'current_level' => $currentLevel,
-            'calculated_level' => $newLevel
+            'calculated_level' => $newLevel,
+            'will_trigger_level5' => ($newLevel >= 5 && $currentLevel < 5)
         ]);
-        
+
         // Only update if level has increased
         if ($newLevel > $currentLevel) {
             // Update level directly in database
             DB::table('users')
                 ->where('user_id', $user->user_id)
                 ->update(['level' => $newLevel]);
-                
+
             Log::info("User leveled up", [
                 'user_id' => $user->user_id,
                 'user_name' => $user->name,
                 'from_level' => $currentLevel,
                 'to_level' => $newLevel,
                 'current_xp' => $currentXp
+            ]);
+
+            // Extra logging for level 5 condition
+            Log::info("Checking level 5 achievement condition", [
+                'user_id' => $user->user_id,
+                'newLevel' => $newLevel,
+                'currentLevel' => $currentLevel,
+                'condition_result' => ($newLevel >= 5 && $currentLevel < 5)
+            ]);
+
+            // Check if user reached level 5 for the first time
+            if ($newLevel >= 5 && $currentLevel < 5) {
+                Log::info("Level 5 condition is TRUE, calling unlockLevel5Achievement");
+                $this->unlockLevel5Achievement($user);
+            } else {
+                Log::info("Level 5 condition is FALSE, not unlocking achievement");
+            }
+        }
+    }
+
+    private function unlockLevel5Achievement($user): void
+    {
+        try {
+            // Achievement ID 7 is for reaching level 5
+            $achievementId = 7;
+
+            // Check if user already has this achievement
+            $existingAchievement = \App\Models\UserAchievement::where('user_id', $user->user_id)
+                ->where('achievement_id', $achievementId)
+                ->first();
+
+            if (!$existingAchievement) {
+                // Verify the achievement exists
+                $achievement = \App\Models\Achievement::find($achievementId);
+
+                if (!$achievement) {
+                    Log::error("Cannot unlock level 5 achievement - achievement ID {$achievementId} not found");
+                    return;
+                }
+
+                Log::info("Unlocking 'Reach level 5' achievement for user {$user->name}", [
+                    'user_id' => $user->user_id,
+                    'achievement_id' => $achievementId,
+                    'achievement_name' => $achievement->name
+                ]);
+
+                // Create the achievement record with "completed" status
+                \App\Models\UserAchievement::create([
+                    'user_id' => $user->user_id,
+                    'achievement_id' => $achievementId,
+                    'status' => 'completed',
+                    'created_at' => now()
+                ]);
+
+                Log::info("Level 5 achievement successfully created for user {$user->name}");
+            } else {
+                Log::info("User {$user->name} already has the level 5 achievement");
+            }
+        } catch (\Exception $e) {
+            Log::error("Error unlocking level 5 achievement", [
+                'user_id' => $user->user_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
         }
     }
@@ -155,7 +218,7 @@ class UpdateUserLevelListener implements ShouldQueue
                 return $level;
             }
         }
-        
+
         return 1; // Default to level 1
     }
 }

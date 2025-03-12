@@ -1,6 +1,6 @@
 import { Button } from "@mui/material";
 
-export default function PrimaryButton({ className = '', disabled, children, ...props }) {
+export default function PrimaryButton({ className = '', disabled, children, sx = {}, ...props }) {
     return (
         <Button
             {...props}
@@ -16,6 +16,7 @@ export default function PrimaryButton({ className = '', disabled, children, ...p
                 py: 0.5,
                 borderRadius: '6px',
                 color: 'white',
+                ...sx // Added support for custom styling
             }}
         >
             {children}
