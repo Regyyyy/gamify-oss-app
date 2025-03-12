@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use App\Events\QuestCompletedEvent;
+use App\Events\XpIncreasedEvent;
 
 class QuestController extends Controller
 {
@@ -418,17 +419,58 @@ class QuestController extends Controller
                         'user_id' => $user->user_id,
                         'user_name' => $user->name,
                         'quest_id' => $quest->quest_id,
-                        'quest_title' => $quest->title
+                        'quest_title' => $quest->title,
+                        'quest_type' => $quest->type
                     ]);
 
-                    // Dispatch the event
+                    // Dispatch the event for achievement tracking
                     event(new QuestCompletedEvent($user, $quest));
+
+                    // Award XP for beginner quests that DON'T have corresponding achievements
+                    if ($quest->type === 'Beginner') {
+                        // Quests that have achievements - XP will be awarded when claimed
+                        $achievementQuests = [1, 2, 4, 5]; 
+                        
+                        if (!in_array($quest->quest_id, $achievementQuests)) {
+                            \Illuminate\Support\Facades\Log::info("Directly awarding XP for beginner quest without achievement", [
+                                'user_id' => $user->user_id,
+                                'quest_id' => $quest->quest_id,
+                                'xp_amount' => $quest->xp_reward
+                            ]);
+                            
+                            // Use DB update instead of $user->save()
+                            $previousXp = $user->xp_point;
+                            $newXp = $previousXp + $quest->xp_reward;
+                            
+                            // Update directly in the database
+                            \App\Models\User::where('user_id', $user->user_id)
+                                ->update(['xp_point' => $newXp]);
+                            
+                            \Illuminate\Support\Facades\Log::info("XP updated directly in database", [
+                                'user_id' => $user->user_id,
+                                'previous_xp' => $previousXp,
+                                'new_xp' => $newXp,
+                                'xp_added' => $quest->xp_reward
+                            ]);
+                            
+                            // Refresh the user model from database
+                            $user = \App\Models\User::find($user->user_id);
+                            
+                            // Dispatch event for level check
+                            event(new XpIncreasedEvent($user, 0, 'beginner_quest_direct'));
+                        } else {
+                            \Illuminate\Support\Facades\Log::info("Not awarding XP for quest with achievement - will be awarded on claim", [
+                                'user_id' => $user->user_id,
+                                'quest_id' => $quest->quest_id
+                            ]);
+                        }
+                    }
 
                     // Log after successful dispatch
                     \Illuminate\Support\Facades\Log::info("QuestCompletedEvent dispatched successfully");
                 } catch (\Exception $e) {
                     // Log any errors
-                    \Illuminate\Support\Facades\Log::error("Error dispatching QuestCompletedEvent", [
+                    \Illuminate\Support\Facades\Log::error("Error in quest submission process", [
                         'error' => $e->getMessage(),
                         'trace' => $e->getTraceAsString()
                     ]);
@@ -615,7 +657,42 @@ class QuestController extends Controller
                 $quest->save();
                 logger('Quest status updated to finished');
 
-                // Note: XP rewards and proficiency points will be handled in a future update
+                // Get all team members who worked on this quest
+                $takenQuests = TakenQuest::where('quest_id', $quest->quest_id)->get();
+                $teamSize = $takenQuests->count();
+
+                // Calculate XP reward based on team size
+                $xpReward = $quest->xp_reward;
+                $xpReduction = 0;
+
+                // Apply team size reduction
+                if ($teamSize > 1) {
+                    // Team size reduction: 10% per additional member
+                    $xpReduction = min(0.4, ($teamSize - 1) * 0.1);
+                    $xpReward = intval($xpReward * (1 - $xpReduction));
+
+                    logger('XP reward adjusted for team size', [
+                        'quest_id' => $quest->quest_id,
+                        'team_size' => $teamSize,
+                        'original_xp' => $quest->xp_reward,
+                        'reduction_percent' => $xpReduction * 100 . '%',
+                        'adjusted_xp' => $xpReward
+                    ]);
+                }
+
+                // Award XP to each team member
+                foreach ($takenQuests as $takenQuest) {
+                    $user = User::find($takenQuest->user_id);
+                    if ($user) {
+                        event(new \App\Events\XpIncreasedEvent($user, $xpReward, 'advanced_quest'));
+                        logger('XP awarded to user', [
+                            'user_id' => $user->user_id,
+                            'user_name' => $user->name,
+                            'xp_amount' => $xpReward,
+                            'quest_id' => $quest->quest_id
+                        ]);
+                    }
+                }
             }
         } else {
             // If declining either a waiting or submitted quest, revert to "open"

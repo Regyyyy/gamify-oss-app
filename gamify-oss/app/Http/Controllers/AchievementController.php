@@ -7,6 +7,7 @@ use App\Models\AvatarFrame;
 use App\Models\UserAchievement;
 use App\Models\UserAvatarFrame;
 use App\Events\AchievementClaimedEvent;
+use App\Events\XpIncreasedEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -93,8 +94,17 @@ class AchievementController extends Controller
             // Log the successful claim
             \Illuminate\Support\Facades\Log::info("User {$user->name} claimed achievement: {$achievement->name}");
 
-            // Dispatch event (other systems can listen for this to handle rewards)
-            event(new \App\Events\AchievementClaimedEvent($user, $achievement));
+            // Award XP for the achievement
+            $xpReward = $achievement->xp_reward;
+            \Illuminate\Support\Facades\Log::info("Awarding XP for claimed achievement", [
+                'user_id' => $user->user_id,
+                'achievement_id' => $achievement->achievement_id,
+                'achievement_name' => $achievement->name,
+                'xp_amount' => $xpReward
+            ]);
+
+            // Dispatch XP increased event with the achievement reward
+            event(new XpIncreasedEvent($user, $xpReward, 'achievement_claimed'));
 
             return redirect()->back()->with('success', 'Achievement claimed successfully!');
         } catch (\Exception $e) {

@@ -15,9 +15,6 @@ class AchievementTrackerListener implements ShouldQueue
     /**
      * Handle the event.
      */
-    /**
-     * Handle the event.
-     */
     public function handle(QuestCompletedEvent $event): void
     {
         $user = $event->user;
@@ -31,7 +28,6 @@ class AchievementTrackerListener implements ShouldQueue
             'quest_title' => $quest->title
         ]);
 
-        // These method calls were missing!
         // Check for specific quest completion achievements
         $this->checkSpecificQuestAchievements($user, $quest);
 
@@ -80,6 +76,7 @@ class AchievementTrackerListener implements ShouldQueue
                 ]);
 
                 // Create the achievement record with "completed" status
+                // BUT DO NOT award XP here - that happens only when claimed
                 $userAchievement = UserAchievement::create([
                     'user_id' => $user->user_id,
                     'achievement_id' => $achievementId,
@@ -87,11 +84,14 @@ class AchievementTrackerListener implements ShouldQueue
                     'created_at' => now()
                 ]);
 
-                \Illuminate\Support\Facades\Log::info("Achievement record created", [
-                    'user_achievement_id' => $userAchievement->user_achievement_id ?? 'failed'
+                \Illuminate\Support\Facades\Log::info("Achievement record created - NO XP awarded yet", [
+                    'user_achievement_id' => $userAchievement->user_achievement_id ?? 'failed',
+                    'status' => 'completed'
                 ]);
             }
         }
+        // Important: Do NOT award XP here for ANY beginner quests
+        // This prevents double awards - let the controller handle it
     }
 
     /**
@@ -123,7 +123,7 @@ class AchievementTrackerListener implements ShouldQueue
             if ($hasCompletedAllBeginnerQuests) {
                 Log::info("Unlocking 'all beginner quests' achievement for user {$user->name}");
 
-                // Create the achievement record
+                // Create the achievement record but DO NOT award XP
                 UserAchievement::create([
                     'user_id' => $user->user_id,
                     'achievement_id' => $allBeginnerQuestsAchievementId,
