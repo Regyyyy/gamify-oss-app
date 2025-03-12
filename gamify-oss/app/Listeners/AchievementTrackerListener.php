@@ -9,6 +9,7 @@ use App\Models\TakenQuest;
 use App\Models\UserAchievement;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class AchievementTrackerListener implements ShouldQueue
 {
@@ -35,9 +36,6 @@ class AchievementTrackerListener implements ShouldQueue
         $this->checkAllBeginnerQuestsAchievement($user);
     }
 
-    /**
-     * Check and unlock achievements for specific quest completions
-     */
     private function checkSpecificQuestAchievements($user, $quest): void
     {
         // Map quest IDs to achievement IDs
@@ -84,14 +82,43 @@ class AchievementTrackerListener implements ShouldQueue
                     'created_at' => now()
                 ]);
 
-                \Illuminate\Support\Facades\Log::info("Achievement record created - NO XP awarded yet", [
+                \Illuminate\Support\Facades\Log::info("Achievement record created", [
                     'user_achievement_id' => $userAchievement->user_achievement_id ?? 'failed',
                     'status' => 'completed'
                 ]);
             }
         }
-        // Important: Do NOT award XP here for ANY beginner quests
-        // This prevents double awards - let the controller handle it
+    }
+
+    /**
+     * The XP thresholds for each level
+     */
+    protected $levelThresholds = [
+        1 => 0,
+        2 => 200,
+        3 => 450,
+        4 => 750,
+        5 => 1100,
+        6 => 1500,
+        7 => 1950,
+        8 => 2450,
+        9 => 3050,
+        10 => 3650
+    ];
+
+    /**
+     * Determine the appropriate level based on XP
+     */
+    private function determineLevel(int $xp): int
+    {
+        // Start from the highest level and work backwards
+        for ($level = 10; $level > 1; $level--) {
+            if ($xp >= $this->levelThresholds[$level]) {
+                return $level;
+            }
+        }
+
+        return 1; // Default to level 1
     }
 
     /**
@@ -123,7 +150,7 @@ class AchievementTrackerListener implements ShouldQueue
             if ($hasCompletedAllBeginnerQuests) {
                 Log::info("Unlocking 'all beginner quests' achievement for user {$user->name}");
 
-                // Create the achievement record but DO NOT award XP
+                // Create the achievement record
                 UserAchievement::create([
                     'user_id' => $user->user_id,
                     'achievement_id' => $allBeginnerQuestsAchievementId,

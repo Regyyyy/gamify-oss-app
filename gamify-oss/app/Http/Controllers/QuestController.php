@@ -16,6 +16,32 @@ use App\Events\XpIncreasedEvent;
 
 class QuestController extends Controller
 {
+    // Level threshold helper function
+    private function determineLevel(int $xp): int
+    {
+        $levelThresholds = [
+            1 => 0,
+            2 => 200,
+            3 => 450,
+            4 => 750,
+            5 => 1100,
+            6 => 1500,
+            7 => 1950,
+            8 => 2450,
+            9 => 3050,
+            10 => 3650
+        ];
+
+        // Start from the highest level and work backwards
+        for ($level = 10; $level > 1; $level--) {
+            if ($xp >= $levelThresholds[$level]) {
+                return $level;
+            }
+        }
+
+        return 1; // Default to level 1
+    }
+
     /**
      * Display a listing of beginner quests.
      */
@@ -423,48 +449,33 @@ class QuestController extends Controller
                         'quest_type' => $quest->type
                     ]);
 
+                    // Award XP for ALL beginner quests directly in the controller
+                    if ($quest->type === 'Beginner') {
+                        // Use DB update instead of $user->save()
+                        $previousXp = $user->xp_point;
+                        $newXp = $previousXp + $quest->xp_reward;
+
+                        // Update directly in the database
+                        \App\Models\User::where('user_id', $user->user_id)
+                            ->update(['xp_point' => $newXp]);
+
+                        \Illuminate\Support\Facades\Log::info("XP awarded for beginner quest", [
+                            'user_id' => $user->user_id,
+                            'quest_id' => $quest->quest_id,
+                            'previous_xp' => $previousXp,
+                            'new_xp' => $newXp,
+                            'xp_added' => $quest->xp_reward
+                        ]);
+
+                        // Refresh the user model from database
+                        $user = \App\Models\User::find($user->user_id);
+
+                        // Dispatch event for level check
+                        event(new XpIncreasedEvent($user, 0, 'beginner_quest_direct'));
+                    }
+
                     // Dispatch the event for achievement tracking
                     event(new QuestCompletedEvent($user, $quest));
-
-                    // Award XP for beginner quests that DON'T have corresponding achievements
-                    if ($quest->type === 'Beginner') {
-                        // Quests that have achievements - XP will be awarded when claimed
-                        $achievementQuests = [1, 2, 4, 5]; 
-                        
-                        if (!in_array($quest->quest_id, $achievementQuests)) {
-                            \Illuminate\Support\Facades\Log::info("Directly awarding XP for beginner quest without achievement", [
-                                'user_id' => $user->user_id,
-                                'quest_id' => $quest->quest_id,
-                                'xp_amount' => $quest->xp_reward
-                            ]);
-                            
-                            // Use DB update instead of $user->save()
-                            $previousXp = $user->xp_point;
-                            $newXp = $previousXp + $quest->xp_reward;
-                            
-                            // Update directly in the database
-                            \App\Models\User::where('user_id', $user->user_id)
-                                ->update(['xp_point' => $newXp]);
-                            
-                            \Illuminate\Support\Facades\Log::info("XP updated directly in database", [
-                                'user_id' => $user->user_id,
-                                'previous_xp' => $previousXp,
-                                'new_xp' => $newXp,
-                                'xp_added' => $quest->xp_reward
-                            ]);
-                            
-                            // Refresh the user model from database
-                            $user = \App\Models\User::find($user->user_id);
-                            
-                            // Dispatch event for level check
-                            event(new XpIncreasedEvent($user, 0, 'beginner_quest_direct'));
-                        } else {
-                            \Illuminate\Support\Facades\Log::info("Not awarding XP for quest with achievement - will be awarded on claim", [
-                                'user_id' => $user->user_id,
-                                'quest_id' => $quest->quest_id
-                            ]);
-                        }
-                    }
 
                     // Log after successful dispatch
                     \Illuminate\Support\Facades\Log::info("QuestCompletedEvent dispatched successfully");
@@ -684,13 +695,39 @@ class QuestController extends Controller
                 foreach ($takenQuests as $takenQuest) {
                     $user = User::find($takenQuest->user_id);
                     if ($user) {
-                        event(new \App\Events\XpIncreasedEvent($user, $xpReward, 'advanced_quest'));
-                        logger('XP awarded to user', [
+                        // Instead of dispatching an event, update XP directly
+                        $previousXp = $user->xp_point;
+                        $newXp = $previousXp + $xpReward;
+
+                        // Update XP directly in the database
+                        \Illuminate\Support\Facades\DB::table('users')
+                            ->where('user_id', $user->user_id)
+                            ->update(['xp_point' => $newXp]);
+
+                        logger('XP awarded to user directly', [
                             'user_id' => $user->user_id,
                             'user_name' => $user->name,
+                            'previous_xp' => $previousXp,
+                            'new_xp' => $newXp,
                             'xp_amount' => $xpReward,
                             'quest_id' => $quest->quest_id
                         ]);
+
+                        // Check for level up
+                        $currentLevel = $user->level;
+                        $newLevel = $this->determineLevel($newXp);
+
+                        if ($newLevel > $currentLevel) {
+                            \Illuminate\Support\Facades\DB::table('users')
+                                ->where('user_id', $user->user_id)
+                                ->update(['level' => $newLevel]);
+
+                            logger('User leveled up from advanced quest', [
+                                'user_id' => $user->user_id,
+                                'previous_level' => $currentLevel,
+                                'new_level' => $newLevel
+                            ]);
+                        }
                     }
                 }
             }

@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Events\XpIncreasedEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class UpdateUserLevelListener implements ShouldQueue
 {
@@ -33,38 +34,114 @@ class UpdateUserLevelListener implements ShouldQueue
         $xpAmount = $event->xpAmount;
         $source = $event->source;
 
-        // Log the event
-        Log::info("XP increased for user", [
+        // Log the received event
+        Log::info("XP increased event received", [
             'user_id' => $user->user_id,
             'user_name' => $user->name,
             'xp_amount' => $xpAmount,
-            'source' => $source,
-            'previous_xp' => $user->xp_point,
-            'new_xp' => $user->xp_point + $xpAmount
+            'source' => $source
         ]);
 
-        // Update user's XP
-        $user->xp_point += $xpAmount;
+        // Handle different sources appropriately
+        switch ($source) {
+            // For events that already updated XP directly in DB
+            case 'beginner_quest_direct':
+                // No XP update needed, just check and update level if needed
+                $this->checkAndUpdateLevel($user);
+                break;
+
+            // For advanced quests awarded by admin
+            case 'advanced_quest':
+                // Need to update XP and check level
+                $previousXp = $user->xp_point;
+                $newXp = $previousXp + $xpAmount;
+                
+                // Update database directly
+                DB::table('users')
+                    ->where('user_id', $user->user_id)
+                    ->update(['xp_point' => $newXp]);
+                
+                Log::info("XP updated in DB for advanced quest", [
+                    'user_id' => $user->user_id,
+                    'previous_xp' => $previousXp,
+                    'new_xp' => $newXp,
+                    'difference' => $xpAmount
+                ]);
+                
+                // Reload user with updated XP to check level
+                $user->refresh();
+                $this->checkAndUpdateLevel($user);
+                break;
+
+            // For claimed achievements
+            case 'achievement_claimed':
+                // Need to update XP and check level
+                $previousXp = $user->xp_point;
+                $newXp = $previousXp + $xpAmount;
+                
+                // Update database directly
+                DB::table('users')
+                    ->where('user_id', $user->user_id)
+                    ->update(['xp_point' => $newXp]);
+                
+                Log::info("XP updated in DB for claimed achievement", [
+                    'user_id' => $user->user_id,
+                    'previous_xp' => $previousXp,
+                    'new_xp' => $newXp,
+                    'difference' => $xpAmount
+                ]);
+                
+                // Reload user with updated XP to check level
+                $user->refresh();
+                $this->checkAndUpdateLevel($user);
+                break;
+                
+            // Unknown source - log warning but still check level
+            default:
+                Log::warning("Unknown XP source received", [
+                    'source' => $source,
+                    'user_id' => $user->user_id
+                ]);
+                $this->checkAndUpdateLevel($user);
+                break;
+        }
+    }
+
+    /**
+     * Check if user should level up and update if needed
+     */
+    private function checkAndUpdateLevel($user): void
+    {
+        // Get current XP and level
+        $currentXp = $user->xp_point;
+        $currentLevel = $user->level;
         
         // Determine appropriate level based on XP
-        $newLevel = $this->determineLevel($user->xp_point);
+        $newLevel = $this->determineLevel($currentXp);
         
-        // Check if the user has leveled up
-        if ($newLevel > $user->level) {
+        // Log level check
+        Log::info("Checking level for user", [
+            'user_id' => $user->user_id,
+            'current_xp' => $currentXp,
+            'current_level' => $currentLevel,
+            'calculated_level' => $newLevel
+        ]);
+        
+        // Only update if level has increased
+        if ($newLevel > $currentLevel) {
+            // Update level directly in database
+            DB::table('users')
+                ->where('user_id', $user->user_id)
+                ->update(['level' => $newLevel]);
+                
             Log::info("User leveled up", [
                 'user_id' => $user->user_id,
                 'user_name' => $user->name,
-                'previous_level' => $user->level,
-                'new_level' => $newLevel
+                'from_level' => $currentLevel,
+                'to_level' => $newLevel,
+                'current_xp' => $currentXp
             ]);
-            
-            $user->level = $newLevel;
-            
-            // Here you could dispatch another event if needed for level up notifications
         }
-        
-        // Save the updated user
-        $user->save();
     }
 
     /**

@@ -59,6 +59,37 @@ class AchievementController extends Controller
     }
 
     /**
+     * The XP thresholds for each level
+     */
+    protected $levelThresholds = [
+        1 => 0,
+        2 => 200,
+        3 => 450,
+        4 => 750,
+        5 => 1100,
+        6 => 1500,
+        7 => 1950,
+        8 => 2450,
+        9 => 3050,
+        10 => 3650
+    ];
+
+    /**
+     * Determine the appropriate level based on XP
+     */
+    private function determineLevel(int $xp): int
+    {
+        // Start from the highest level and work backwards
+        for ($level = 10; $level > 1; $level--) {
+            if ($xp >= $this->levelThresholds[$level]) {
+                return $level;
+            }
+        }
+
+        return 1; // Default to level 1
+    }
+
+    /**
      * Handle claiming of achievements - status change only
      */
     public function claim(Request $request)
@@ -94,17 +125,42 @@ class AchievementController extends Controller
             // Log the successful claim
             \Illuminate\Support\Facades\Log::info("User {$user->name} claimed achievement: {$achievement->name}");
 
-            // Award XP for the achievement
+            // Award XP for the achievement - DIRECTLY UPDATE DATABASE instead of dispatching event
             $xpReward = $achievement->xp_reward;
-            \Illuminate\Support\Facades\Log::info("Awarding XP for claimed achievement", [
+            $previousXp = $user->xp_point;
+            $newXp = $previousXp + $xpReward;
+
+            \Illuminate\Support\Facades\Log::info("Awarding XP for claimed achievement (direct DB update)", [
                 'user_id' => $user->user_id,
                 'achievement_id' => $achievement->achievement_id,
                 'achievement_name' => $achievement->name,
-                'xp_amount' => $xpReward
+                'xp_amount' => $xpReward,
+                'previous_xp' => $previousXp,
+                'new_xp' => $newXp
             ]);
 
-            // Dispatch XP increased event with the achievement reward
-            event(new XpIncreasedEvent($user, $xpReward, 'achievement_claimed'));
+            // Update XP directly in the database
+            \Illuminate\Support\Facades\DB::table('users')
+                ->where('user_id', $user->user_id)
+                ->update(['xp_point' => $newXp]);
+
+            // Refresh user and check for level up
+            // Get fresh user data from the database
+            $user = \App\Models\User::find($user->user_id);
+            $currentLevel = $user->level;
+            $newLevel = $this->determineLevel($newXp);
+
+            if ($newLevel > $currentLevel) {
+                \Illuminate\Support\Facades\DB::table('users')
+                    ->where('user_id', $user->user_id)
+                    ->update(['level' => $newLevel]);
+
+                \Illuminate\Support\Facades\Log::info("User leveled up from claimed achievement", [
+                    'user_id' => $user->user_id,
+                    'previous_level' => $currentLevel,
+                    'new_level' => $newLevel
+                ]);
+            }
 
             return redirect()->back()->with('success', 'Achievement claimed successfully!');
         } catch (\Exception $e) {
