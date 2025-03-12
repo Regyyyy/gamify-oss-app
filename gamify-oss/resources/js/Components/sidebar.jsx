@@ -125,7 +125,7 @@ export default function Sidebar({ username = "username", width = 275, role, avat
             }}
           />
           <Typography variant="body2" sx={{ color: theme.palette.primary.light, fontWeight: "bold" }}>
-            Level {user.level}
+            {parseInt(user.level) >= 10 ? "MAX Level" : `Level ${user.level}`}
           </Typography>
         </Box>
       </Box>

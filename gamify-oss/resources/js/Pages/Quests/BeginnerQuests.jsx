@@ -14,7 +14,7 @@ export default function BeginnerQuest() {
     useEffect(() => {
         console.log("Received quests:", quests);
     }, [quests]);
-
+    
     return (
         <MainLayout>
             <Head title="BeginnerQuest" />

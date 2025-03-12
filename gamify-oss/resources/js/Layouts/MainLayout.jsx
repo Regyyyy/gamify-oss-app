@@ -32,7 +32,7 @@ export default function MainLayout({ children }) {
     const user = usePage().props.auth.user;
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
-
+    
     const drawerWidth = 275;
 
     return (
