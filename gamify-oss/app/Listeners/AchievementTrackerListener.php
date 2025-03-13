@@ -34,6 +34,52 @@ class AchievementTrackerListener implements ShouldQueue
 
         // Check for "all beginner quests" achievement
         $this->checkAllBeginnerQuestsAchievement($user);
+
+        // Add this new check for first hard advanced quest
+        $this->checkFirstHardAdvancedQuestAchievement($user, $quest);
+    }
+
+    /**
+     * Check if this is the user's first hard advanced quest
+     */
+    private function checkFirstHardAdvancedQuestAchievement($user, $quest): void
+    {
+        // Only proceed if the current quest is Advanced type and Hard difficulty
+        if ($quest->type === 'Advanced' && $quest->difficulty === 'Hard') {
+            \Illuminate\Support\Facades\Log::info("Checking first hard advanced quest achievement", [
+                'user_id' => $user->user_id,
+                'quest_id' => $quest->quest_id,
+                'difficulty' => $quest->difficulty,
+                'type' => $quest->type
+            ]);
+
+            // Achievement ID for first hard quest
+            $firstHardQuestAchievementId = 6;
+
+            // Check if user already has this achievement
+            $existingAchievement = UserAchievement::where('user_id', $user->user_id)
+                ->where('achievement_id', $firstHardQuestAchievementId)
+                ->first();
+
+            if (!$existingAchievement) {
+                \Illuminate\Support\Facades\Log::info("Unlocking 'First Hard Quest' achievement for user", [
+                    'user_id' => $user->user_id,
+                    'user_name' => $user->name
+                ]);
+
+                // Create the achievement record with "completed" status
+                UserAchievement::create([
+                    'user_id' => $user->user_id,
+                    'achievement_id' => $firstHardQuestAchievementId,
+                    'status' => 'completed',
+                    'created_at' => now()
+                ]);
+            } else {
+                \Illuminate\Support\Facades\Log::info("User already has first hard quest achievement", [
+                    'user_id' => $user->user_id
+                ]);
+            }
+        }
     }
 
     private function checkSpecificQuestAchievements($user, $quest): void

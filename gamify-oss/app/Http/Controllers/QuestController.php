@@ -729,6 +729,15 @@ class QuestController extends Controller
                             ]);
                         }
                     }
+
+                    // After awarding XP, dispatch the event for this team member
+                    event(new QuestCompletedEvent($user, $quest));
+
+                    \Illuminate\Support\Facades\Log::info("QuestCompletedEvent dispatched for team member", [
+                        'user_id' => $user->user_id,
+                        'user_name' => $user->name,
+                        'quest_id' => $quest->quest_id
+                    ]);
                 }
             }
         } else {
