@@ -73,8 +73,8 @@ export default function Leaderboard() {
                                         }}
                                     >
                                         <TableCell sx={{ width: '10%', pl: 3 }}>
-                                            <Typography sx={{ 
-                                                fontWeight: 'bold', 
+                                            <Typography sx={{
+                                                fontWeight: 'bold',
                                                 color: isTopThree ? borderColor : 'inherit',
                                                 fontSize: isTopThree ? '1.2rem' : '1rem'
                                             }}>
@@ -83,17 +83,41 @@ export default function Leaderboard() {
                                         </TableCell>
                                         <TableCell>
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <Avatar 
-                                                    src={user.avatar ? `/storage/${user.avatar}` : "/default-avatar.png"} 
-                                                    alt={user.name}
-                                                    sx={{
-                                                        width: isTopThree ? 48 : 40,
-                                                        height: isTopThree ? 48 : 40,
-                                                        border: isTopThree ? `2px solid ${borderColor}` : 'none'
-                                                    }}
-                                                />
+                                                {/* Avatar with frame */}
+                                                <Box>
+                                                    <Box sx={{ position: 'relative', width: isTopThree ? 75 : 48, height: isTopThree ? 75 : 48 }}>
+                                                        {/* User avatar */}
+                                                        <Avatar
+                                                            src={user.avatar ? `/storage/${user.avatar}` : "/default-avatar.png"}
+                                                            alt={user.name}
+                                                            sx={{
+                                                                width: isTopThree ? 60 : 40,
+                                                                height: isTopThree ? 60 : 40,
+                                                                position: 'absolute',
+                                                                top: '50%',
+                                                                left: '50%',
+                                                                transform: 'translate(-50%, -50%)',
+                                                                zIndex: 1
+                                                            }}
+                                                        />
+                                                        {/* Avatar frame */}
+                                                        <img
+                                                            src={user.avatar_frame_path || "/images/avatar-frames/default-frame.svg"}
+                                                            alt="Avatar Frame"
+                                                            style={{
+                                                                position: 'absolute',
+                                                                width: '100%',
+                                                                height: '100%',
+                                                                top: 0,
+                                                                left: 0,
+                                                                zIndex: 2,
+                                                                filter: isTopThree ? `drop-shadow(0 0 2px ${borderColor})` : 'none'
+                                                            }}
+                                                        />
+                                                    </Box>
+                                                </Box>
                                                 <Typography
-                                                    sx={{ 
+                                                    sx={{
                                                         fontWeight: isTopThree ? 'bold' : 'normal',
                                                         fontSize: isTopThree ? '1.1rem' : '1rem'
                                                     }}
@@ -104,7 +128,7 @@ export default function Leaderboard() {
                                         </TableCell>
                                         <TableCell sx={{ width: '15%' }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <BoltRoundedIcon sx={{ 
+                                                <BoltRoundedIcon sx={{
                                                     color: "#FFC107",
                                                     fontSize: isTopThree ? 28 : 24
                                                 }} />

@@ -29,11 +29,18 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        return [
-            ...parent::share($request),
+        return array_merge(parent::share($request), [
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user() ? $this->addAvatarFrameToUser($request->user()) : null,
             ],
-        ];
+            // Your other shared data
+        ]);
+    }
+
+    protected function addAvatarFrameToUser($user)
+    {
+        // Add avatar_frame_path property to user object
+        $user->avatar_frame_path = \App\Http\Controllers\AvatarFrameController::getUserActiveFramePath($user);
+        return $user;
     }
 }

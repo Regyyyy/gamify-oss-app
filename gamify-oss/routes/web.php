@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AvatarFrameController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuestController;
@@ -81,6 +82,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // Avatar Frame Routes
+    Route::get('/avatar-frames', [AvatarFrameController::class, 'index'])->name('avatar-frames.index');
+    Route::put('/avatar-frames', [AvatarFrameController::class, 'update'])->name('avatar-frames.update');
 });
 
 Route::get('/leaderboard', [LeaderboardController::class, 'index'])
