@@ -125,6 +125,30 @@ class AchievementController extends Controller
             // Log the successful claim
             \Illuminate\Support\Facades\Log::info("User {$user->name} claimed achievement: {$achievement->name}");
 
+            // If the achievement has an avatar frame reward, give it to the user
+            if ($achievement->avatar_frame_reward_id) {
+                // Check if user already has this avatar frame
+                $existingFrame = UserAvatarFrame::where('user_id', $user->user_id)
+                    ->where('avatar_frame_id', $achievement->avatar_frame_reward_id)
+                    ->first();
+
+                if (!$existingFrame) {
+                    // Create a new entry in user_avatar_frames
+                    UserAvatarFrame::create([
+                        'user_id' => $user->user_id,
+                        'avatar_frame_id' => $achievement->avatar_frame_reward_id,
+                        'is_used' => false, // Default to not used
+                        'created_at' => now()
+                    ]);
+
+                    \Illuminate\Support\Facades\Log::info("Awarded avatar frame to user for achievement", [
+                        'user_id' => $user->user_id,
+                        'achievement_id' => $achievement->achievement_id,
+                        'avatar_frame_id' => $achievement->avatar_frame_reward_id
+                    ]);
+                }
+            }
+
             // Award XP for the achievement - DIRECTLY UPDATE DATABASE instead of dispatching event
             $xpReward = $achievement->xp_reward;
             $previousXp = $user->xp_point;
