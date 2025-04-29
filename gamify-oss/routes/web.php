@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AvatarFrameController;
+use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuestController;
