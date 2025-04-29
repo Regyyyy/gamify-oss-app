@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AvatarFrameController;
 use App\Http\Controllers\AchievementController;
+use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuestController;
@@ -92,5 +93,27 @@ Route::middleware('auth')->group(function () {
 Route::get('/leaderboard', [LeaderboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('leaderboard');
+
+Route::get('/badges', [App\Http\Controllers\BadgeController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('badges');
+
+// Admin routes for badge management
+Route::middleware(['auth', 'verified', \App\Http\Middleware\AdminMiddleware::class])->group(function () {
+    // Show badge award page
+    Route::get('/admin/badges/award', [App\Http\Controllers\BadgeController::class, 'showAwardBadge'])
+        ->name('admin.badges.award');
+        
+    // Process badge award
+    Route::post('/admin/badges/award', [App\Http\Controllers\BadgeController::class, 'storeAwardBadge'])
+        ->name('admin.badges.award.store');
+        
+    // API routes for fetching data
+    Route::get('/admin/badges/list', [App\Http\Controllers\BadgeController::class, 'adminBadgesList'])
+        ->name('admin.badges.list');
+        
+    Route::get('/admin/users/list', [App\Http\Controllers\BadgeController::class, 'adminUsersList'])
+        ->name('admin.users.list');
+});
 
 require __DIR__ . '/auth.php';
