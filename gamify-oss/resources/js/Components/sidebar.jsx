@@ -32,6 +32,7 @@ import {
 
 import { router } from "@inertiajs/react";
 import { useTheme } from "@mui/material/styles";
+import AvatarProfile from "./AvatarProfile";
 
 export default function Sidebar({ username = "username", width = 275, role, avatar = '' }) {
   const theme = useTheme();
@@ -118,33 +119,13 @@ export default function Sidebar({ username = "username", width = 275, role, avat
     >
       <Box>
         {/* Avatar */}
-        <Box sx={{ position: "relative", width: 130, height: 130 }}>
-          {/* Avatar image */}
-          <Avatar
-            alt="User Avatar"
+        <Box>
+          <AvatarProfile
             src={avatar}
-            sx={{
-              width: 100,
-              height: 100,
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              zIndex: 1
-            }}
-          />
-          {/* Avatar frame */}
-          <img
-            src={user.avatar_frame_path || "/images/avatar-frames/default-frame.svg"}
-            alt="Avatar Frame"
-            style={{
-              position: "absolute",
-              width: 130,
-              height: 130,
-              top: 0,
-              left: 0,
-              zIndex: 2
-            }}
+            alt="User Avatar"
+            frameSrc={user.avatar_frame_path || "/images/avatar-frames/default-frame.svg"}
+            size={100}
+            frameSize={130}
           />
         </Box>
       </Box>

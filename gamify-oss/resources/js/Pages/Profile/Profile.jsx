@@ -18,6 +18,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import StarIcon from '@mui/icons-material/Star';
 import EditIcon from '@mui/icons-material/Edit';
 import { green, blue, orange, purple } from '@mui/material/colors';
+import MainLayout from '@/Layouts/MainLayout';
 
 export default function Profile({ profileUser, achievements, badges, proficiencies, isOwnProfile }) {
     // XP Progress calculation

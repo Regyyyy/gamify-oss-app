@@ -27,7 +27,7 @@ export default function AdminQuestModal({ open, onClose, quest }) {
     const handleAction = (action) => {
         console.log(`Submitting action: ${action} for quest ID: ${quest.questId}`);
         setIsProcessing(true);
-        
+
         // Use router.post instead of useForm's post
         router.post(route('admin.quest.action'), {
             quest_id: quest.questId,
@@ -150,8 +150,8 @@ export default function AdminQuestModal({ open, onClose, quest }) {
                                 }}
                             />
                             <Typography variant="body2" fontWeight="bold">
-                                {status === "waiting" 
-                                    ? `Requested on: ${formatDate(quest.requestDate)}` 
+                                {status === "waiting"
+                                    ? `Requested on: ${formatDate(quest.requestDate)}`
                                     : `Submitted on: ${formatDate(quest.submitDate)}`}
                             </Typography>
                         </Box>
@@ -239,25 +239,27 @@ export default function AdminQuestModal({ open, onClose, quest }) {
                                 <Typography variant="h6" gutterBottom>
                                     Team Members
                                 </Typography>
-                                
+
                                 {teammates && teammates.length > 0 ? (
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                         {teammates.map(member => (
-                                            <Box 
-                                                key={member.user_id} 
-                                                sx={{ 
-                                                    display: 'flex', 
-                                                    alignItems: 'center', 
+                                            <Box
+                                                key={member.user_id}
+                                                sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
                                                     gap: 2,
                                                     p: 2,
                                                     borderRadius: 2,
                                                     bgcolor: 'rgba(0, 0, 0, 0.03)'
                                                 }}
                                             >
-                                                <Avatar
+                                                <AvatarProfile
                                                     src={member.avatar ? `/storage/${member.avatar}` : "/default-avatar.png"}
                                                     alt={member.name}
-                                                    sx={{ width: 40, height: 40 }}
+                                                    userId={member.user_id}
+                                                    size={40}
+                                                    tooltipText={`View ${member.name}'s profile`}
                                                 />
                                                 <Box>
                                                     <Typography variant="subtitle2">{member.name}</Typography>
@@ -281,18 +283,18 @@ export default function AdminQuestModal({ open, onClose, quest }) {
                                     Admin Actions
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                    {status === "waiting" 
-                                        ? "Approve or decline this quest request." 
+                                    {status === "waiting"
+                                        ? "Approve or decline this quest request."
                                         : "Accept or decline this quest submission."}
                                 </Typography>
-                                
+
                                 <Box sx={{ display: 'flex', gap: 2 }}>
                                     <PrimaryButton
                                         fullWidth
                                         disabled={isProcessing}
                                         onClick={() => handleAction('decline')}
                                         startIcon={<CloseIcon />}
-                                        sx={{ 
+                                        sx={{
                                             backgroundColor: red[600],
                                             '&:hover': {
                                                 backgroundColor: red[800],
@@ -301,13 +303,13 @@ export default function AdminQuestModal({ open, onClose, quest }) {
                                     >
                                         Decline
                                     </PrimaryButton>
-                                    
+
                                     <PrimaryButton
                                         fullWidth
                                         disabled={isProcessing}
                                         onClick={() => handleAction('accept')}
                                         startIcon={<CheckIcon />}
-                                        sx={{ 
+                                        sx={{
                                             backgroundColor: green[600],
                                             '&:hover': {
                                                 backgroundColor: green[800],

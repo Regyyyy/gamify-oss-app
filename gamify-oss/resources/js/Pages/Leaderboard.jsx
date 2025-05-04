@@ -1,9 +1,10 @@
 import MainLayout from '@/Layouts/MainLayout';
 import { Head, usePage } from '@inertiajs/react';
-import { Box, Typography, Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import LeaderboardRoundedIcon from '@mui/icons-material/LeaderboardRounded';
 import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
 import { blue, green, grey, orange, red, yellow } from "@mui/material/colors";
+import AvatarProfile from '@/Components/AvatarProfile';
 
 export default function Leaderboard() {
     // Get users data passed from the controller
@@ -83,39 +84,17 @@ export default function Leaderboard() {
                                         </TableCell>
                                         <TableCell>
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                {/* Avatar with frame */}
-                                                <Box>
-                                                    <Box sx={{ position: 'relative', width: isTopThree ? 75 : 48, height: isTopThree ? 75 : 48 }}>
-                                                        {/* User avatar */}
-                                                        <Avatar
-                                                            src={user.avatar ? `/storage/${user.avatar}` : "/default-avatar.png"}
-                                                            alt={user.name}
-                                                            sx={{
-                                                                width: isTopThree ? 60 : 40,
-                                                                height: isTopThree ? 60 : 40,
-                                                                position: 'absolute',
-                                                                top: '50%',
-                                                                left: '50%',
-                                                                transform: 'translate(-50%, -50%)',
-                                                                zIndex: 1
-                                                            }}
-                                                        />
-                                                        {/* Avatar frame */}
-                                                        <img
-                                                            src={user.avatar_frame_path || "/images/avatar-frames/default-frame.svg"}
-                                                            alt="Avatar Frame"
-                                                            style={{
-                                                                position: 'absolute',
-                                                                width: '100%',
-                                                                height: '100%',
-                                                                top: 0,
-                                                                left: 0,
-                                                                zIndex: 2,
-                                                                filter: isTopThree ? `drop-shadow(0 0 2px ${borderColor})` : 'none'
-                                                            }}
-                                                        />
-                                                    </Box>
-                                                </Box>
+                                                {/* Using AvatarProfile component with frame */}
+                                                <AvatarProfile
+                                                    src={user.avatar ? `/storage/${user.avatar}` : "/default-avatar.png"}
+                                                    alt={user.name}
+                                                    userId={user.user_id}
+                                                    frameSrc={user.avatar_frame_path || "/images/avatar-frames/default-frame.svg"}
+                                                    size={isTopThree ? 60 : 40}
+                                                    frameSize={isTopThree ? 75 : 48}
+                                                    tooltipText={`View ${user.name}'s profile`}
+                                                    frameSx={isTopThree ? {filter: `drop-shadow(0 0 2px ${borderColor})`} : {}}
+                                                />
                                                 <Typography
                                                     sx={{
                                                         fontWeight: isTopThree ? 'bold' : 'normal',

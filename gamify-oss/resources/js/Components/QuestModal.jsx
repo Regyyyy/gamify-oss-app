@@ -16,6 +16,7 @@ import GroupIcon from "@mui/icons-material/Group";
 import PersonIcon from "@mui/icons-material/Person";
 import Avatar from "@mui/material/Avatar";
 import AvatarGroup from "@mui/material/AvatarGroup";
+import AvatarProfile from "./AvatarProfile";
 
 export default function QuestModal({ open, onClose, quest, questType = "Beginner" }) {
   if (!quest) return null;
@@ -346,7 +347,7 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
             Quest Finished
           </Typography>
 
-          {/* Team information */}
+          {/* Team information with AvatarProfile component */}
           <Box sx={{ mb: 3 }}>
             <Typography variant="subtitle2" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <GroupIcon sx={{ mr: 1, fontSize: 20 }} />
@@ -367,10 +368,13 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
                       bgcolor: 'rgba(0, 0, 0, 0.03)'
                     }}
                   >
-                    <Avatar
+                    <AvatarProfile
                       src={member.avatar ? `/storage/${member.avatar}` : "/default-avatar.png"}
                       alt={member.name}
-                      sx={{ width: 40, height: 40 }}
+                      userId={member.user_id}
+                      size={40}
+                      frameSize={40}
+                      tooltipText={`View ${member.name}'s profile`}
                     />
                     <Box>
                       <Typography variant="subtitle2">{member.name}</Typography>
@@ -442,7 +446,7 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
             Quest Under Review
           </Typography>
 
-          {/* Team information */}
+          {/* Team information with AvatarProfile component */}
           <Box sx={{ mb: 3 }}>
             <Typography variant="subtitle2" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <GroupIcon sx={{ mr: 1, fontSize: 20 }} />
@@ -463,10 +467,12 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
                       bgcolor: 'rgba(0, 0, 0, 0.03)'
                     }}
                   >
-                    <Avatar
+                    <AvatarProfile
                       src={member.avatar ? `/storage/${member.avatar}` : "/default-avatar.png"}
                       alt={member.name}
-                      sx={{ width: 40, height: 40 }}
+                      userId={member.user_id}
+                      size={40}
+                      tooltipText={`View ${member.name}'s profile`}
                     />
                     <Box>
                       <Typography variant="subtitle2">{member.name}</Typography>
@@ -550,7 +556,7 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
             Quest In Progress
           </Typography>
 
-          {/* Team information */}
+          {/* Team information with AvatarProfile component */}
           <Box sx={{ mb: 3 }}>
             <Typography variant="subtitle2" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <GroupIcon sx={{ mr: 1, fontSize: 20 }} />
@@ -571,10 +577,12 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
                       bgcolor: 'rgba(0, 0, 0, 0.03)'
                     }}
                   >
-                    <Avatar
+                    <AvatarProfile
                       src={member.avatar ? `/storage/${member.avatar}` : "/default-avatar.png"}
                       alt={member.name}
-                      sx={{ width: 40, height: 40 }}
+                      userId={member.user_id}
+                      size={40}
+                      tooltipText={`View ${member.name}'s profile`}
                     />
                     <Box>
                       <Typography variant="subtitle2">{member.name}</Typography>
@@ -695,7 +703,7 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
             Quest Awaiting Approval
           </Typography>
 
-          {/* Team information */}
+          {/* Team information with AvatarProfile component */}
           <Box sx={{ mb: 3 }}>
             <Typography variant="subtitle2" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <GroupIcon sx={{ mr: 1, fontSize: 20 }} />
@@ -716,10 +724,12 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
                       bgcolor: 'rgba(0, 0, 0, 0.03)'
                     }}
                   >
-                    <Avatar
+                    <AvatarProfile
                       src={member.avatar ? `/storage/${member.avatar}` : "/default-avatar.png"}
                       alt={member.name}
-                      sx={{ width: 40, height: 40 }}
+                      userId={member.user_id}
+                      size={40}
+                      tooltipText={`View ${member.name}'s profile`}
                     />
                     <Box>
                       <Typography variant="subtitle2">{member.name}</Typography>
