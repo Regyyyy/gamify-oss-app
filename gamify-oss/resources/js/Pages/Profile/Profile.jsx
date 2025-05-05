@@ -17,6 +17,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import StarIcon from '@mui/icons-material/Star';
 import EditIcon from '@mui/icons-material/Edit';
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import { useTheme } from '@mui/material/styles';
 
 export default function Profile({ profileUser, achievements, badges, proficiencies, isOwnProfile }) {
@@ -54,6 +55,9 @@ export default function Profile({ profileUser, achievements, badges, proficienci
 
         return Math.min(100, Math.max(0, (xpProgress / xpNeeded) * 100));
     };
+
+    // Filter proficiencies to only show those with points > 0
+    const userProficiencies = proficiencies.filter(proficiency => proficiency.points > 0);
 
     return (
         <SettingsLayout>
@@ -139,60 +143,93 @@ export default function Profile({ profileUser, achievements, badges, proficienci
                         </Box>
 
                         {/* Proficiencies Section - Horizontal Layout */}
-                        <Box sx={{ mb: 4 }}>
-                            <Typography variant="h6" fontWeight="bold" gutterBottom>
-                                Proficiencies
-                            </Typography>
-                            <Grid2 container spacing={2}>
-                                {proficiencies.map((proficiency) => (
-                                    <Grid2 item xs={12} sm={6} md={3} lg={3} key={proficiency.id}>
-                                        <Card elevation={2} sx={{
-                                            width: 200,
-                                            height: '100%',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                        }}>
-                                            <CardContent sx={{
-                                                flexGrow: 1,
-                                                pb: 2,
+                        {userProficiencies.length > 0 && (
+                            <Box sx={{ mb: 4 }}>
+                                <Typography variant="h6" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center' }} gutterBottom>
+                                    <WorkspacePremiumIcon sx={{ mr: 1 }} />
+                                    Proficiencies
+                                </Typography>
+                                <Grid2 container spacing={2}>
+                                    {userProficiencies.map((proficiency) => (
+                                        <Grid2 item xs={12} sm={6} md={3} lg={3} key={proficiency.id}>
+                                            <Card elevation={2} sx={{
+                                                width: 200,
+                                                height: '100%',
                                                 display: 'flex',
                                                 flexDirection: 'column',
-                                                justifyContent: 'space-between'
                                             }}>
-                                                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                                                    {proficiency.name}
-                                                </Typography>
+                                                <CardContent sx={{
+                                                    flexGrow: 1,
+                                                    pb: 2,
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'space-between'
+                                                }}>
+                                                    <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                                                        {proficiency.name}
+                                                    </Typography>
 
-                                                <Box sx={{ mt: 'auto' }}>
-                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                                                        <Typography variant="body2" color="text.secondary">
-                                                            {proficiency.points} / {proficiency.max_points}
-                                                        </Typography>
-                                                        <Typography variant="body2" fontWeight="bold" sx={{ color: theme.palette.primary.main }}>
-                                                            {proficiency.percentage >= 100 ? 'MAX' : `${Math.round(proficiency.percentage)}%`}
-                                                        </Typography>
-                                                    </Box>
+                                                    <Box sx={{ mt: 'auto' }}>
+                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                                            {proficiency.percentage >= 100 ? (
+                                                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                                                                    <Typography variant="body2" fontWeight="bold" sx={{ color: theme.palette.primary.main }}>
+                                                                        MAX
+                                                                    </Typography>
+                                                                </Box>
+                                                            ) : (
+                                                                <>
+                                                                    <Typography variant="body2" color="text.secondary">
+                                                                        {proficiency.points} / {proficiency.max_points}
+                                                                    </Typography>
+                                                                    <Typography variant="body2" fontWeight="bold" sx={{ color: theme.palette.primary.main }}>
+                                                                        {`${Math.round(proficiency.percentage)}%`}
+                                                                    </Typography>
+                                                                </>
+                                                            )}
+                                                        </Box>
 
-                                                    <Box sx={{
-                                                        width: '100%'
-                                                    }}>
-                                                        <LinearProgress
-                                                            variant="determinate"
-                                                            value={proficiency.percentage}
-                                                            color="primary"
-                                                            sx={{
-                                                                height: 8,
-                                                                borderRadius: 4
-                                                            }}
-                                                        />
+                                                        <Box sx={{
+                                                            width: '100%'
+                                                        }}>
+                                                            <LinearProgress
+                                                                variant="determinate"
+                                                                value={proficiency.percentage}
+                                                                color="primary"
+                                                                sx={{
+                                                                    height: 8,
+                                                                    borderRadius: 4
+                                                                }}
+                                                            />
+                                                        </Box>
                                                     </Box>
-                                                </Box>
-                                            </CardContent>
-                                        </Card>
-                                    </Grid2>
-                                ))}
-                            </Grid2>
-                        </Box>
+                                                </CardContent>
+                                            </Card>
+                                        </Grid2>
+                                    ))}
+                                </Grid2>
+                            </Box>
+                        )}
+
+                        {userProficiencies.length === 0 && (
+                            <Box sx={{ mb: 4 }}>
+                                <Typography variant="h6" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center' }} gutterBottom>
+                                    <WorkspacePremiumIcon sx={{ mr: 1 }} />
+                                    Proficiencies
+                                </Typography>
+                                <Box sx={{ 
+                                    p: 3, 
+                                    border: '1px solid', 
+                                    borderColor: 'divider', 
+                                    borderRadius: 2, 
+                                    textAlign: 'center'
+                                }}>
+                                    <Typography variant="body1" color="text.secondary">
+                                        No proficiencies earned yet. Complete quests with specific roles to earn proficiency points!
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        )}
 
                         <Divider sx={{ my: 4 }} />
 
