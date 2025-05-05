@@ -7,6 +7,7 @@ import { router } from "@inertiajs/react"; // Import router instead of useForm
 import PrimaryButton from "@/Components/PrimaryButton";
 import Avatar from "@mui/material/Avatar";
 import AvatarGroup from "@mui/material/AvatarGroup";
+import AvatarProfile from "./AvatarProfile";
 
 export default function AdminQuestModal({ open, onClose, quest }) {
     if (!quest) return null;
@@ -259,6 +260,7 @@ export default function AdminQuestModal({ open, onClose, quest }) {
                                                     alt={member.name}
                                                     userId={member.user_id}
                                                     size={40}
+                                                    frameSize={40}
                                                     tooltipText={`View ${member.name}'s profile`}
                                                 />
                                                 <Box>

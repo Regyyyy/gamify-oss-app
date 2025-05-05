@@ -472,6 +472,7 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
                       alt={member.name}
                       userId={member.user_id}
                       size={40}
+                      frameSize={40}
                       tooltipText={`View ${member.name}'s profile`}
                     />
                     <Box>
@@ -582,6 +583,7 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
                       alt={member.name}
                       userId={member.user_id}
                       size={40}
+                      frameSize={40}
                       tooltipText={`View ${member.name}'s profile`}
                     />
                     <Box>
@@ -729,6 +731,7 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
                       alt={member.name}
                       userId={member.user_id}
                       size={40}
+                      frameSize={40}
                       tooltipText={`View ${member.name}'s profile`}
                     />
                     <Box>

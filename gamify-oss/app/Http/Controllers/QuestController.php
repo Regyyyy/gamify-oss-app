@@ -667,21 +667,21 @@ class QuestController extends Controller
                 $quest->finished_at = now();
                 $quest->save();
                 logger('Quest status updated to finished');
-
+        
                 // Get all team members who worked on this quest
                 $takenQuests = TakenQuest::where('quest_id', $quest->quest_id)->get();
                 $teamSize = $takenQuests->count();
-
+        
                 // Calculate XP reward based on team size
                 $xpReward = $quest->xp_reward;
                 $xpReduction = 0;
-
+        
                 // Apply team size reduction
                 if ($teamSize > 1) {
                     // Team size reduction: 10% per additional member
                     $xpReduction = min(0.4, ($teamSize - 1) * 0.1);
                     $xpReward = intval($xpReward * (1 - $xpReduction));
-
+        
                     logger('XP reward adjusted for team size', [
                         'quest_id' => $quest->quest_id,
                         'team_size' => $teamSize,
@@ -690,7 +690,7 @@ class QuestController extends Controller
                         'adjusted_xp' => $xpReward
                     ]);
                 }
-
+        
                 // Award XP to each team member
                 foreach ($takenQuests as $takenQuest) {
                     $user = User::find($takenQuest->user_id);
@@ -698,12 +698,12 @@ class QuestController extends Controller
                         // Instead of dispatching an event, update XP directly
                         $previousXp = $user->xp_point;
                         $newXp = $previousXp + $xpReward;
-
+        
                         // Update XP directly in the database
                         \Illuminate\Support\Facades\DB::table('users')
                             ->where('user_id', $user->user_id)
                             ->update(['xp_point' => $newXp]);
-
+        
                         logger('XP awarded to user directly', [
                             'user_id' => $user->user_id,
                             'user_name' => $user->name,
@@ -712,16 +712,79 @@ class QuestController extends Controller
                             'xp_amount' => $xpReward,
                             'quest_id' => $quest->quest_id
                         ]);
-
+        
+                        // Check if quest has a role (proficiency) and reward
+                        if ($quest->role && $quest->proficiency_reward > 0) {
+                            // Map quest role to proficiency ID
+                            $proficiencyMap = [
+                                'Game Designer' => 1,
+                                'Game Artist' => 2,
+                                'Game Programmer' => 3,
+                                'Audio Composer' => 4,
+                            ];
+                            
+                            $proficiencyId = $proficiencyMap[$quest->role] ?? null;
+                            
+                            if ($proficiencyId) {
+                                // Check if user already has this proficiency
+                                $userProficiency = \App\Models\UserProficiency::where('user_id', $user->user_id)
+                                    ->where('proficiency_id', $proficiencyId)
+                                    ->first();
+                                    
+                                // Calculate proficiency reward with same team reduction as XP
+                                $proficiencyReward = $quest->proficiency_reward;
+                                if ($teamSize > 1) {
+                                    $proficiencyReward = intval($proficiencyReward * (1 - $xpReduction));
+                                }
+                                
+                                if ($userProficiency) {
+                                    // Update existing proficiency
+                                    $previousPoint = $userProficiency->point;
+                                    $newPoint = $previousPoint + $proficiencyReward;
+                                    
+                                    $userProficiency->point = $newPoint;
+                                    $userProficiency->save();
+                                    
+                                    logger('Proficiency points updated for user', [
+                                        'user_id' => $user->user_id,
+                                        'user_name' => $user->name,
+                                        'proficiency' => $quest->role,
+                                        'proficiency_id' => $proficiencyId,
+                                        'previous_points' => $previousPoint,
+                                        'new_points' => $newPoint,
+                                        'points_added' => $proficiencyReward,
+                                        'quest_id' => $quest->quest_id
+                                    ]);
+                                } else {
+                                    // Create new proficiency for user
+                                    \App\Models\UserProficiency::create([
+                                        'user_id' => $user->user_id,
+                                        'proficiency_id' => $proficiencyId,
+                                        'point' => $proficiencyReward,
+                                        'created_at' => now()
+                                    ]);
+                                    
+                                    logger('New proficiency created for user', [
+                                        'user_id' => $user->user_id,
+                                        'user_name' => $user->name,
+                                        'proficiency' => $quest->role,
+                                        'proficiency_id' => $proficiencyId,
+                                        'points' => $proficiencyReward,
+                                        'quest_id' => $quest->quest_id
+                                    ]);
+                                }
+                            }
+                        }
+        
                         // Check for level up
                         $currentLevel = $user->level;
                         $newLevel = $this->determineLevel($newXp);
-
+        
                         if ($newLevel > $currentLevel) {
                             \Illuminate\Support\Facades\DB::table('users')
                                 ->where('user_id', $user->user_id)
                                 ->update(['level' => $newLevel]);
-
+        
                             logger('User leveled up from advanced quest', [
                                 'user_id' => $user->user_id,
                                 'previous_level' => $currentLevel,
@@ -729,10 +792,10 @@ class QuestController extends Controller
                             ]);
                         }
                     }
-
+        
                     // After awarding XP, dispatch the event for this team member
                     event(new QuestCompletedEvent($user, $quest));
-
+        
                     \Illuminate\Support\Facades\Log::info("QuestCompletedEvent dispatched for team member", [
                         'user_id' => $user->user_id,
                         'user_name' => $user->name,
