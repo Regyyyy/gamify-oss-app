@@ -108,7 +108,7 @@ export default function Profile({ profileUser, achievements, badges, proficienci
                                 {/* Level and XP */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
                                     <Typography variant="body1" fontWeight="bold" sx={{ mr: 1, color: theme.palette.primary.light }}>
-                                        Level {profileUser.level}
+                                        {profileUser.level >= 10 ? `Level ${profileUser.level} (MAX)` : `Level ${profileUser.level}`}
                                     </Typography>
                                     {isOwnProfile && (
                                         <Typography variant="body2" color="text.secondary">
