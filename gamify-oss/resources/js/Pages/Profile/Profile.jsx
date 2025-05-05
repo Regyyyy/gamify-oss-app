@@ -1,26 +1,27 @@
 import React from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import SettingsLayout from '@/Layouts/SettingsLayout';
-import { 
-    Box, 
-    Typography, 
-    Paper, 
-    Avatar, 
-    Grid2, 
-    LinearProgress, 
-    Chip,
+import {
+    Box,
+    Typography,
+    Paper,
+    Avatar,
+    Grid2,
+    LinearProgress,
     Divider,
     Card,
-    CardContent
+    CardContent,
+    Button
 } from '@mui/material';
 import PrimaryButton from '@/Components/PrimaryButton';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import StarIcon from '@mui/icons-material/Star';
 import EditIcon from '@mui/icons-material/Edit';
-import { green, blue, orange, purple } from '@mui/material/colors';
-import MainLayout from '@/Layouts/MainLayout';
+import { useTheme } from '@mui/material/styles';
 
 export default function Profile({ profileUser, achievements, badges, proficiencies, isOwnProfile }) {
+    const theme = useTheme();
+
     // XP Progress calculation
     const calculateXpProgress = () => {
         // Level thresholds
@@ -54,14 +55,6 @@ export default function Profile({ profileUser, achievements, badges, proficienci
         return Math.min(100, Math.max(0, (xpProgress / xpNeeded) * 100));
     };
 
-    // Color based on proficiency value
-    const getProficiencyColor = (percentage) => {
-        if (percentage < 25) return green[600];
-        if (percentage < 50) return blue[600];
-        if (percentage < 75) return orange[600];
-        return purple[600];
-    };
-
     return (
         <SettingsLayout>
             <Head title={`Profile - ${profileUser.name}`} />
@@ -69,128 +62,153 @@ export default function Profile({ profileUser, achievements, badges, proficienci
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
                     <Paper className="bg-white p-6 shadow sm:rounded-lg">
-                        {/* First Row: User Info and Proficiencies */}
-                        <Grid2 container spacing={4}>
-                            {/* User Information Section */}
-                            <Grid2 item xs={12} md={4}>
-                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
-                                    {/* Profile Picture with Frame */}
-                                    <Box sx={{ position: 'relative', width: 180, height: 180, mb: 2 }}>
-                                        <Avatar
-                                            src={profileUser.avatar}
-                                            alt={profileUser.name}
-                                            sx={{
-                                                width: 150,
-                                                height: 150,
-                                                position: 'absolute',
-                                                top: '50%',
-                                                left: '50%',
-                                                transform: 'translate(-50%, -50%)',
-                                                zIndex: 1
-                                            }}
-                                        />
-                                        <img
-                                            src={profileUser.avatar_frame_path}
-                                            alt="Avatar Frame"
-                                            style={{
-                                                position: 'absolute',
-                                                width: '100%',
-                                                height: '100%',
-                                                top: 0,
-                                                left: 0,
-                                                zIndex: 2
-                                            }}
-                                        />
-                                    </Box>
+                        {/* First Row: User Info - Horizontal Layout */}
+                        <Box sx={{ display: 'flex', flexDirection: 'row', mb: 3, alignItems: 'center' }}>
+                            {/* Profile Picture with Frame */}
+                            <Box sx={{ position: 'relative', width: 250, height: 250, mr: 3 }}>
+                                <Avatar
+                                    src={profileUser.avatar}
+                                    alt={profileUser.name}
+                                    sx={{
+                                        width: 200,
+                                        height: 200,
+                                        position: 'absolute',
+                                        top: '50%',
+                                        left: '50%',
+                                        transform: 'translate(-50%, -50%)',
+                                        zIndex: 1
+                                    }}
+                                />
+                                <img
+                                    src={profileUser.avatar_frame_path}
+                                    alt="Avatar Frame"
+                                    style={{
+                                        position: 'absolute',
+                                        width: '100%',
+                                        height: '100%',
+                                        top: 0,
+                                        left: 0,
+                                        zIndex: 2
+                                    }}
+                                />
+                            </Box>
 
-                                    {/* Username */}
-                                    <Typography variant="h5" fontWeight="bold" align="center">
+                            {/* User info section */}
+                            <Box sx={{ flexGrow: 1 }}>
+                                {/* Username and Email */}
+                                <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 1 }}>
+                                    <Typography variant="h5" fontWeight="bold">
                                         {profileUser.name}
                                     </Typography>
+                                    <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
+                                        {profileUser.email}
+                                    </Typography>
+                                </Box>
 
-                                    {/* Role Badge */}
-                                    <Chip 
-                                        label={profileUser.role === 'admin' ? 'Administrator' : 'Member'} 
-                                        color={profileUser.role === 'admin' ? 'primary' : 'default'} 
-                                        size="small" 
-                                        sx={{ mt: 1, mb: 2 }}
-                                    />
+                                {/* Level and XP */}
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                                    <Typography variant="body1" fontWeight="bold" sx={{ mr: 1, color: theme.palette.primary.light }}>
+                                        Level {profileUser.level}
+                                    </Typography>
+                                    {isOwnProfile && (
+                                        <Typography variant="body2" color="text.secondary">
+                                            {profileUser.xp_point} XP
+                                        </Typography>
+                                    )}
+                                </Box>
 
-                                    {/* Level and XP */}
-                                    <Box sx={{ width: '100%', mt: 1 }}>
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                                            <Typography variant="body2" fontWeight="bold">
-                                                Level {profileUser.level}
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                                {profileUser.xp_point} XP
-                                            </Typography>
-                                        </Box>
-                                        <LinearProgress 
-                                            variant="determinate" 
-                                            value={calculateXpProgress()} 
-                                            sx={{ 
-                                                height: 8, 
+                                {/* XP Progress Bar (only shown for own profile) */}
+                                {isOwnProfile && (
+                                    <Box sx={{
+                                        width: { xs: '100%', sm: '90%', md: '80%', lg: '70%' },
+                                        maxWidth: '400px',
+                                        mr: 4
+                                    }}>
+                                        <LinearProgress
+                                            variant="determinate"
+                                            value={calculateXpProgress()}
+                                            sx={{
+                                                height: 8,
                                                 borderRadius: 4,
                                                 mb: 0.5
-                                            }} 
+                                            }}
                                         />
-                                        <Typography variant="caption" color="text.secondary" align="right" sx={{ display: 'block' }}>
-                                            {profileUser.level < 10 ? `Progress to Level ${profileUser.level + 1}` : 'Max Level'}
-                                        </Typography>
                                     </Box>
-                                </Box>
-                            </Grid2>
+                                )}
+                            </Box>
+                        </Box>
 
-                            {/* Proficiencies Section */}
-                            <Grid2 item xs={12} md={8}>
-                                <Typography variant="h6" fontWeight="bold" gutterBottom>
-                                    Proficiencies
-                                </Typography>
-                                <Grid2 container spacing={2}>
-                                    {proficiencies.map((proficiency) => (
-                                        <Grid2 item xs={12} sm={6} key={proficiency.id}>
-                                            <Card elevation={2} sx={{ height: '100%' }}>
-                                                <CardContent>
-                                                    <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                                                        {proficiency.name}
-                                                    </Typography>
+                        {/* Proficiencies Section - Horizontal Layout */}
+                        <Box sx={{ mb: 4 }}>
+                            <Typography variant="h6" fontWeight="bold" gutterBottom>
+                                Proficiencies
+                            </Typography>
+                            <Grid2 container spacing={2}>
+                                {proficiencies.map((proficiency) => (
+                                    <Grid2 item xs={12} sm={6} md={3} lg={3} key={proficiency.id}>
+                                        <Card elevation={2} sx={{
+                                            width: 200,
+                                            height: '100%',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                        }}>
+                                            <CardContent sx={{
+                                                flexGrow: 1,
+                                                pb: 2,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                justifyContent: 'space-between'
+                                            }}>
+                                                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                                                    {proficiency.name}
+                                                </Typography>
+
+                                                <Box sx={{ mt: 'auto' }}>
                                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                                                         <Typography variant="body2" color="text.secondary">
                                                             {proficiency.points} / {proficiency.max_points}
                                                         </Typography>
-                                                        <Typography variant="body2" fontWeight="bold" sx={{ color: getProficiencyColor(proficiency.percentage) }}>
-                                                            {Math.round(proficiency.percentage)}%
+                                                        <Typography variant="body2" fontWeight="bold" sx={{ color: theme.palette.primary.main }}>
+                                                            {proficiency.percentage >= 100 ? 'MAX' : `${Math.round(proficiency.percentage)}%`}
                                                         </Typography>
                                                     </Box>
-                                                    <LinearProgress 
-                                                        variant="determinate" 
-                                                        value={proficiency.percentage} 
-                                                        sx={{ 
-                                                            height: 8, 
-                                                            borderRadius: 4,
-                                                            '& .MuiLinearProgress-bar': {
-                                                                backgroundColor: getProficiencyColor(proficiency.percentage)
-                                                            }
-                                                        }} 
-                                                    />
-                                                </CardContent>
-                                            </Card>
-                                        </Grid2>
-                                    ))}
-                                </Grid2>
+
+                                                    <Box sx={{
+                                                        width: '100%'
+                                                    }}>
+                                                        <LinearProgress
+                                                            variant="determinate"
+                                                            value={proficiency.percentage}
+                                                            color="primary"
+                                                            sx={{
+                                                                height: 8,
+                                                                borderRadius: 4
+                                                            }}
+                                                        />
+                                                    </Box>
+                                                </Box>
+                                            </CardContent>
+                                        </Card>
+                                    </Grid2>
+                                ))}
                             </Grid2>
-                        </Grid2>
+                        </Box>
 
                         <Divider sx={{ my: 4 }} />
 
-                        {/* Second Row: Achievements and Badges */}
+                        {/* Achievements & Badges Section Header */}
+                        <Typography variant="h6" fontWeight="bold" sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
+                            <EmojiEventsIcon sx={{ mr: 1 }} />
+                            Achievements & Badges
+                        </Typography>
+
+                        {/* Achievements and Badges Content */}
                         <Grid2 container spacing={4}>
                             {/* Achievements Section */}
                             <Grid2 item xs={12} md={4}>
-                                <Box sx={{ 
-                                    display: 'flex', 
-                                    flexDirection: 'column', 
+                                <Box sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
                                     alignItems: 'center',
                                     p: 3,
                                     border: '1px solid',
@@ -205,40 +223,37 @@ export default function Profile({ profileUser, achievements, badges, proficienci
                                     <Typography variant="subtitle1" gutterBottom>
                                         Achievements Completed
                                     </Typography>
-                                    <Box sx={{ width: '100%', mt: 2 }}>
-                                        <LinearProgress 
-                                            variant="determinate" 
-                                            value={achievements.percentage} 
-                                            sx={{ 
-                                                height: 8, 
-                                                borderRadius: 4,
-                                            }} 
-                                        />
-                                        <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1 }}>
-                                            {achievements.percentage}% Complete
-                                        </Typography>
+
+                                    {/* Removed progress bar and percentage */}
+
+                                    <Box sx={{ mt: 'auto' }}>
+                                        <Link href="/achievements">
+                                            <Button
+                                                variant="outlined"
+                                                sx={{
+                                                    color: theme.palette.primary.main,
+                                                    borderColor: theme.palette.primary.main,
+                                                    '&:hover': {
+                                                        backgroundColor: theme.palette.primary.light + '20',
+                                                        borderColor: theme.palette.primary.main,
+                                                    }
+                                                }}
+                                            >
+                                                View All Achievements
+                                            </Button>
+                                        </Link>
                                     </Box>
-                                    <Link href="/achievements" style={{ marginTop: 'auto' }}>
-                                        <PrimaryButton>
-                                            View All Achievements
-                                        </PrimaryButton>
-                                    </Link>
                                 </Box>
                             </Grid2>
 
                             {/* Badges Section */}
                             <Grid2 item xs={12} md={8}>
-                                <Box sx={{ height: '100%' }}>
-                                    <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                                        <EmojiEventsIcon sx={{ mr: 1 }} />
-                                        Badges Earned
-                                    </Typography>
-
+                                <Box sx={{ height: '100%', border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 3 }}>
                                     {badges.length > 0 ? (
-                                        <Grid2 container spacing={2} sx={{ mt: 1 }}>
+                                        <Grid2 container spacing={2}>
                                             {badges.map((badge) => (
                                                 <Grid2 item xs={6} sm={4} md={3} key={badge.id}>
-                                                    <Box sx={{ 
+                                                    <Box sx={{
                                                         display: 'flex',
                                                         flexDirection: 'column',
                                                         alignItems: 'center',
@@ -253,12 +268,12 @@ export default function Profile({ profileUser, achievements, badges, proficienci
                                                             transition: 'all 0.2s'
                                                         }
                                                     }}>
-                                                        <img 
-                                                            src={badge.image_path} 
+                                                        <img
+                                                            src={badge.image_path}
                                                             alt={badge.name}
-                                                            style={{ 
-                                                                width: 80, 
-                                                                height: 80, 
+                                                            style={{
+                                                                width: 80,
+                                                                height: 80,
                                                                 objectFit: 'contain',
                                                                 marginBottom: 8
                                                             }}
@@ -271,14 +286,11 @@ export default function Profile({ profileUser, achievements, badges, proficienci
                                             ))}
                                         </Grid2>
                                     ) : (
-                                        <Box sx={{ 
-                                            display: 'flex', 
-                                            justifyContent: 'center', 
-                                            alignItems: 'center', 
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
                                             height: '70%',
-                                            border: '1px dashed',
-                                            borderColor: 'divider',
-                                            borderRadius: 2,
                                             p: 3
                                         }}>
                                             <Typography variant="body1" color="text.secondary" align="center">
@@ -289,9 +301,19 @@ export default function Profile({ profileUser, achievements, badges, proficienci
 
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                                         <Link href="/badges">
-                                            <PrimaryButton>
+                                            <Button
+                                                variant="outlined"
+                                                sx={{
+                                                    color: theme.palette.primary.main,
+                                                    borderColor: theme.palette.primary.main,
+                                                    '&:hover': {
+                                                        backgroundColor: theme.palette.primary.light + '20',
+                                                        borderColor: theme.palette.primary.main,
+                                                    }
+                                                }}
+                                            >
                                                 View All Badges
-                                            </PrimaryButton>
+                                            </Button>
                                         </Link>
                                     </Box>
                                 </Box>
