@@ -39,25 +39,50 @@ export default function UpdateProfileInformation({
         e.preventDefault();
 
         const formData = new FormData();
-        formData.append('name', data.name);
-        
-        // Only append email if it's different from the current one
-        if (data.email && data.email !== user.email) {
-            formData.append('email', data.email);
-        } else {
-            formData.append('email', user.email); // Use the user's current email
+        let hasChanges = false;
+
+        // Only append fields that have been modified
+        if (data.name !== user.name) {
+            formData.append('name', data.name);
+            hasChanges = true;
         }
 
+        if (data.email !== user.email) {
+            formData.append('email', data.email);
+            hasChanges = true;
+        }
+
+        // Only append avatar if a new file was selected
         if (data.avatar) {
             formData.append('avatar', data.avatar);
+            hasChanges = true;
         }
 
-        post(route('profile.update'), {
-            body: formData,
-            forceFormData: true, // Ensures file uploads work properly
-        });
-    };
+        // Only send the form if at least one field has been modified
+        if (hasChanges) {
+            // Important: Send the original values for fields that weren't changed
+            // This ensures the backend knows which fields to ignore
+            if (!formData.has('name')) {
+                formData.append('_name_unchanged', 'true');
+            }
 
+            if (!formData.has('email')) {
+                formData.append('_email_unchanged', 'true');
+            }
+
+            if (!data.avatar) {
+                formData.append('_avatar_unchanged', 'true');
+            }
+
+            post(route('profile.update'), {
+                body: formData,
+                forceFormData: true, // Ensures file uploads work properly
+            });
+        } else {
+            // If nothing changed, just show a message
+            console.log('No changes detected');
+        }
+    };
 
     return (
         <section className={className}>

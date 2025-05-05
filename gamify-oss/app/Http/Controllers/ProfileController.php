@@ -35,37 +35,76 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request): RedirectResponse
     {
         $user = $request->user();
-        
-        // Only update specific fields
+
+        // Build validation rules based on what fields are actually being updated
+        $rules = [];
+
+        // Only validate name if it's being changed (and not marked as unchanged)
+        if ($request->has('name') && !$request->has('_name_unchanged')) {
+            $rules['name'] = ['required', 'string', 'max:255'];
+        }
+
+        // Only validate email if it's being changed (and not marked as unchanged)
+        if ($request->has('email') && !$request->has('_email_unchanged')) {
+            $rules['email'] = [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('users')->ignore($user->user_id, 'user_id')
+            ];
+        }
+
+        // Only validate avatar if it's being uploaded (and not marked as unchanged)
+        if ($request->hasFile('avatar') && !$request->has('_avatar_unchanged')) {
+            $rules['avatar'] = ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'];
+        }
+
+        // Create validator with our dynamic rules
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        // Only update specific fields that were submitted and not marked as unchanged
         $updateData = [];
-        
-        // Add name to update data if provided
-        if ($request->has('name')) {
+
+        // Update name if it's being changed
+        if ($request->has('name') && !$request->has('_name_unchanged')) {
             $updateData['name'] = $request->name;
         }
-        
-        // Add email to update data if provided and different
-        if ($request->has('email') && $request->email !== $user->email) {
+
+        // Update email if it's being changed
+        if ($request->has('email') && !$request->has('_email_unchanged')) {
             $updateData['email'] = $request->email;
+
+            // If the user is updating their email and email verification is required
+            if ($user instanceof MustVerifyEmail) {
+                $updateData['email_verified_at'] = null;
+            }
         }
-        
-        // Handle avatar upload separately
-        if ($request->hasFile('avatar')) {
+
+        // Handle avatar upload if it's being changed
+        if ($request->hasFile('avatar') && !$request->has('_avatar_unchanged')) {
+            // Delete old avatar if it exists
             if ($user->avatar) {
                 Storage::disk('public')->delete($user->avatar);
             }
-            
+
             $avatarPath = $request->file('avatar')->store('avatars', 'public');
             $updateData['avatar'] = $avatarPath;
         }
-        
-        // Use update method with only the specific fields
-        User::where('user_id', $user->user_id)
-            ->update($updateData);
-        
+
+        // Only proceed with update if there are fields to update
+        if (!empty($updateData)) {
+            User::where('user_id', $user->user_id)
+                ->update($updateData);
+        }
+
         return back()->with('success', 'Profile updated successfully.');
     }
 
