@@ -155,6 +155,7 @@ class ProfileController extends Controller
             'profileUser' => [
                 'id' => $user->user_id,
                 'name' => $user->name,
+                'email' => $user->email,
                 'avatar' => $user->avatar ? '/storage/' . $user->avatar : '/default-avatar.png',
                 'avatar_frame_path' => $avatarFramePath,
                 'level' => $user->level,

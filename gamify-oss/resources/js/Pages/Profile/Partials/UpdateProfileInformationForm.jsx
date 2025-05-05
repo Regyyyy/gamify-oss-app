@@ -8,7 +8,6 @@ import {
     Box,
     Avatar,
 } from '@mui/material';
-import AddCircleIcon from "@mui/icons-material/AddCircle";
 import CreateRoundedIcon from '@mui/icons-material/CreateRounded';
 import { useState } from "react";
 
@@ -41,17 +40,16 @@ export default function UpdateProfileInformation({
 
         const formData = new FormData();
         formData.append('name', data.name);
-        // Only append email if it's different
+        
+        // Only append email if it's different from the current one
         if (data.email && data.email !== user.email) {
             formData.append('email', data.email);
         } else {
-            formData.append('email', 'tes@gmail.com');
+            formData.append('email', user.email); // Use the user's current email
         }
 
         if (data.avatar) {
             formData.append('avatar', data.avatar);
-        } else {
-            formData.append('avatar', `/storage/${user.avatar}`);
         }
 
         post(route('profile.update'), {

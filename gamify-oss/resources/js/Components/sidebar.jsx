@@ -123,6 +123,7 @@ export default function Sidebar({ username = "username", width = 275, role, avat
           <AvatarProfile
             src={avatar}
             alt="User Avatar"
+            userId={user.user_id}
             frameSrc={user.avatar_frame_path || "/images/avatar-frames/default-frame.svg"}
             size={100}
             frameSize={130}

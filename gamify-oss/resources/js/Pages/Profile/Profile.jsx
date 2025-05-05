@@ -100,11 +100,11 @@ export default function Profile({ profileUser, achievements, badges, proficienci
                             {/* User info section */}
                             <Box sx={{ flexGrow: 1 }}>
                                 {/* Username and Email */}
-                                <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 1 }}>
+                                <Box sx={{ mb: 1 }}>
                                     <Typography variant="h5" fontWeight="bold">
                                         {profileUser.name}
                                     </Typography>
-                                    <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
+                                    <Typography variant="body2" color="text.secondary">
                                         {profileUser.email}
                                     </Typography>
                                 </Box>
@@ -217,11 +217,11 @@ export default function Profile({ profileUser, achievements, badges, proficienci
                                     <WorkspacePremiumIcon sx={{ mr: 1 }} />
                                     Proficiencies
                                 </Typography>
-                                <Box sx={{ 
-                                    p: 3, 
-                                    border: '1px solid', 
-                                    borderColor: 'divider', 
-                                    borderRadius: 2, 
+                                <Box sx={{
+                                    p: 3,
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                    borderRadius: 2,
                                     textAlign: 'center'
                                 }}>
                                     <Typography variant="body1" color="text.secondary">
