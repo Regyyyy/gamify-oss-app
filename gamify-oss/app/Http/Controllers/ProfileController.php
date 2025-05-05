@@ -38,25 +38,34 @@ class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
-
-        // Get validated input (ignores missing fields)
-        $validated = $request->safe()->only(['name', 'email']);
-
-        // Update user details
-        $user->fill($validated);
-
-        // Handle avatar upload
+        
+        // Only update specific fields
+        $updateData = [];
+        
+        // Add name to update data if provided
+        if ($request->has('name')) {
+            $updateData['name'] = $request->name;
+        }
+        
+        // Add email to update data if provided and different
+        if ($request->has('email') && $request->email !== $user->email) {
+            $updateData['email'] = $request->email;
+        }
+        
+        // Handle avatar upload separately
         if ($request->hasFile('avatar')) {
             if ($user->avatar) {
                 Storage::disk('public')->delete($user->avatar);
             }
-
+            
             $avatarPath = $request->file('avatar')->store('avatars', 'public');
-            $user->avatar = $avatarPath;
+            $updateData['avatar'] = $avatarPath;
         }
-
-        $user->save();
-
+        
+        // Use update method with only the specific fields
+        User::where('user_id', $user->user_id)
+            ->update($updateData);
+        
         return back()->with('success', 'Profile updated successfully.');
     }
 
