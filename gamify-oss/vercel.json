@@ -1,24 +1,28 @@
 {
     "version": 2,
-    "framework": "vite",
-    "buildCommand": "npm run build",
-    "outputDirectory": "public/build",
-    "routes": [
-      {
-        "src": "/assets/(.*)",
-        "dest": "/assets/$1"
-      },
-      {
-        "src": "/build/(.*)",
-        "dest": "/build/$1" 
-      },
-      {
-        "handle": "filesystem"
-      },
-      {
-        "src": "/.*",
-        "dest": "/app.jsx"
+    "framework": "laravel",
+    "functions": {
+      "api/*.php": {
+        "runtime": "vercel-php@0.6.0"
       }
+    },
+    "routes": [
+      { "src": "/(css|js)/(.*)", "dest": "/public/$1/$2" },
+      { "src": "/(favicon.ico|robots.txt|sitemap.xml)", "dest": "/public/$1" },
+      { "src": "/build/(.*)", "dest": "/public/build/$1" },
+      { "src": "/(.*)", "dest": "/api/index.php" }
     ],
-    "devCommand": "npm run dev"
+    "env": {
+      "APP_CONFIG_CACHE": "/tmp/config.php",
+      "APP_EVENTS_CACHE": "/tmp/events.php",
+      "APP_PACKAGES_CACHE": "/tmp/packages.php",
+      "APP_ROUTES_CACHE": "/tmp/routes.php",
+      "APP_SERVICES_CACHE": "/tmp/services.php",
+      "VIEW_COMPILED_PATH": "/tmp",
+      "CACHE_DRIVER": "array",
+      "LOG_CHANNEL": "stderr",
+      "SESSION_DRIVER": "cookie",
+      "APP_ENV": "production",
+      "APP_DEBUG": "false"
+    }
   }
