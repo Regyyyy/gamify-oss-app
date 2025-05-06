@@ -472,6 +472,22 @@ class QuestController extends Controller
 
                         // Dispatch event for level check
                         event(new XpIncreasedEvent($user, 0, 'beginner_quest_direct'));
+
+                        // Directly call the leaderboard achievement check
+                        try {
+                            $achievementTracker = new \App\Listeners\AchievementTrackerListener();
+                            $achievementTracker->checkLeaderboardAchievements($user);
+
+                            \Illuminate\Support\Facades\Log::info("Direct leaderboard check after XP update", [
+                                'user_id' => $user->user_id,
+                                'xp_point' => $user->xp_point
+                            ]);
+                        } catch (\Exception $e) {
+                            \Illuminate\Support\Facades\Log::error("Error in direct leaderboard check", [
+                                'user_id' => $user->user_id,
+                                'error' => $e->getMessage()
+                            ]);
+                        }
                     }
 
                     // Dispatch the event for achievement tracking
@@ -789,6 +805,24 @@ class QuestController extends Controller
                                 'user_id' => $user->user_id,
                                 'previous_level' => $currentLevel,
                                 'new_level' => $newLevel
+                            ]);
+                        }
+
+                        $user = \App\Models\User::find($user->user_id);
+
+                        // Directly call the leaderboard achievement check
+                        try {
+                            $achievementTracker = new \App\Listeners\AchievementTrackerListener();
+                            $achievementTracker->checkLeaderboardAchievements($user);
+
+                            \Illuminate\Support\Facades\Log::info("Direct leaderboard check after advanced quest XP update", [
+                                'user_id' => $user->user_id,
+                                'xp_point' => $user->xp_point
+                            ]);
+                        } catch (\Exception $e) {
+                            \Illuminate\Support\Facades\Log::error("Error in direct leaderboard check for advanced quest", [
+                                'user_id' => $user->user_id,
+                                'error' => $e->getMessage()
                             ]);
                         }
                     }

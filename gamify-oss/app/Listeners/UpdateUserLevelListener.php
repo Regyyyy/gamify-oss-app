@@ -108,21 +108,26 @@ class UpdateUserLevelListener implements ShouldQueue
                 break;
         }
 
-        // Inside the handle method in UpdateUserLevelListener.php
-        // Add this after the level up check
-
-        // Check for leaderboard achievements if the user's XP has changed
         if ($xpAmount > 0 || $source === 'beginner_quest_direct' || $source === 'achievement_claimed') {
             try {
-                // Create a new instance of AchievementTrackerListener to use its methods
+                // Important: Get a fresh user instance with the latest XP
+                $freshUser = \App\Models\User::find($user->user_id);
+
+                Log::info("Refreshed user data for leaderboard check", [
+                    'user_id' => $freshUser->user_id,
+                    'user_name' => $freshUser->name,
+                    'updated_xp' => $freshUser->xp_point,
+                    'updated_level' => $freshUser->level
+                ]);
+
+                // Create a new instance of AchievementTrackerListener
                 $achievementTracker = new \App\Listeners\AchievementTrackerListener();
 
-                // Call method to check leaderboard position and award achievements
-                $achievementTracker->checkLeaderboardAchievements($user);
+                // Call method with the fresh user data
+                $achievementTracker->checkLeaderboardAchievements($freshUser);
 
-                Log::info("Leaderboard achievements check completed after XP change", [
-                    'user_id' => $user->user_id,
-                    'user_name' => $user->name,
+                Log::info("Leaderboard achievements check completed", [
+                    'user_id' => $freshUser->user_id,
                     'source' => $source
                 ]);
             } catch (\Exception $e) {

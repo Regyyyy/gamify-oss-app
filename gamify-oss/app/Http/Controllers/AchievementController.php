@@ -186,6 +186,21 @@ class AchievementController extends Controller
                 ]);
             }
 
+            try {
+                $achievementTracker = new \App\Listeners\AchievementTrackerListener();
+                $achievementTracker->checkLeaderboardAchievements($user);
+
+                \Illuminate\Support\Facades\Log::info("Direct leaderboard check after achievement claim", [
+                    'user_id' => $user->user_id,
+                    'xp_point' => $user->xp_point
+                ]);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Error in direct leaderboard check after achievement claim", [
+                    'user_id' => $user->user_id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+
             return redirect()->back()->with('success', 'Achievement claimed successfully!');
         } catch (\Exception $e) {
             // Log the error

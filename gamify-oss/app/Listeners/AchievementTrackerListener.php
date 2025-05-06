@@ -222,10 +222,31 @@ class AchievementTrackerListener implements ShouldQueue
             return;
         }
 
+        // Log the start of the check with user data
+        \Illuminate\Support\Facades\Log::info("Starting leaderboard check with fresh user data", [
+            'user_id' => $user->user_id,
+            'user_name' => $user->name,
+            'xp_point' => $user->xp_point,
+            'level' => $user->level
+        ]);
+
         // Get all users ordered by XP points (descending)
         $usersByXp = \App\Models\User::where('xp_point', '>', 0)
             ->orderBy('xp_point', 'desc')
             ->get();
+
+        // Log top 5 users for debugging
+        $top5Users = $usersByXp->take(5)->map(function ($u) {
+            return [
+                'user_id' => $u->user_id,
+                'name' => $u->name,
+                'xp_point' => $u->xp_point
+            ];
+        });
+
+        \Illuminate\Support\Facades\Log::info("Top 5 users in leaderboard", [
+            'top_users' => $top5Users->toArray()
+        ]);
 
         // Find the position of the current user
         $position = 0;
@@ -236,15 +257,20 @@ class AchievementTrackerListener implements ShouldQueue
             }
         }
 
-        \Illuminate\Support\Facades\Log::info("User leaderboard position check", [
+        \Illuminate\Support\Facades\Log::info("User leaderboard position determined", [
             'user_id' => $user->user_id,
             'user_name' => $user->name,
             'xp_point' => $user->xp_point,
-            'position' => $position
+            'position' => $position,
+            'total_users' => $usersByXp->count()
         ]);
 
         // If user isn't in the top 3, no need to proceed
         if ($position > 3 || $position === 0) {
+            \Illuminate\Support\Facades\Log::info("User not in top 3, skipping leaderboard achievements", [
+                'user_id' => $user->user_id,
+                'position' => $position
+            ]);
             return;
         }
 
@@ -256,7 +282,6 @@ class AchievementTrackerListener implements ShouldQueue
         ];
 
         // Award achievements based on position (cascading)
-        // If user reaches 1st place, they should also get 2nd and 3rd place achievements
         for ($pos = 3; $pos >= $position; $pos--) {
             $achievementId = $leaderboardAchievements[$pos];
 
@@ -264,6 +289,13 @@ class AchievementTrackerListener implements ShouldQueue
             $existingAchievement = \App\Models\UserAchievement::where('user_id', $user->user_id)
                 ->where('achievement_id', $achievementId)
                 ->first();
+
+            \Illuminate\Support\Facades\Log::info("Checking if user already has leaderboard achievement", [
+                'user_id' => $user->user_id,
+                'position' => $pos,
+                'achievement_id' => $achievementId,
+                'already_has' => ($existingAchievement !== null)
+            ]);
 
             if (!$existingAchievement) {
                 // Get achievement details for logging
