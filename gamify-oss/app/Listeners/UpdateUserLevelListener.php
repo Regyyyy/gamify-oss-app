@@ -107,6 +107,32 @@ class UpdateUserLevelListener implements ShouldQueue
                 $this->checkAndUpdateLevel($user);
                 break;
         }
+
+        // Inside the handle method in UpdateUserLevelListener.php
+        // Add this after the level up check
+
+        // Check for leaderboard achievements if the user's XP has changed
+        if ($xpAmount > 0 || $source === 'beginner_quest_direct' || $source === 'achievement_claimed') {
+            try {
+                // Create a new instance of AchievementTrackerListener to use its methods
+                $achievementTracker = new \App\Listeners\AchievementTrackerListener();
+
+                // Call method to check leaderboard position and award achievements
+                $achievementTracker->checkLeaderboardAchievements($user);
+
+                Log::info("Leaderboard achievements check completed after XP change", [
+                    'user_id' => $user->user_id,
+                    'user_name' => $user->name,
+                    'source' => $source
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Error checking leaderboard achievements", [
+                    'user_id' => $user->user_id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+            }
+        }
     }
 
     private function checkAndUpdateLevel($user): void
@@ -118,7 +144,7 @@ class UpdateUserLevelListener implements ShouldQueue
         // Determine appropriate level based on XP
         $newLevel = $this->determineLevel($currentXp);
 
-        // Log level check with additional information about the level 5 condition
+        // Log level check
         Log::info("Checking level for user", [
             'user_id' => $user->user_id,
             'current_xp' => $currentXp,
@@ -126,6 +152,9 @@ class UpdateUserLevelListener implements ShouldQueue
             'calculated_level' => $newLevel,
             'will_trigger_level5' => ($newLevel >= 5 && $currentLevel < 5)
         ]);
+
+        // Store if level 5 should be triggered
+        $shouldTriggerLevel5 = ($newLevel >= 5 && $currentLevel < 5);
 
         // Only update if level has increased
         if ($newLevel > $currentLevel) {
@@ -142,16 +171,10 @@ class UpdateUserLevelListener implements ShouldQueue
                 'current_xp' => $currentXp
             ]);
 
-            // Extra logging for level 5 condition
-            Log::info("Checking level 5 achievement condition", [
-                'user_id' => $user->user_id,
-                'newLevel' => $newLevel,
-                'currentLevel' => $currentLevel,
-                'condition_result' => ($newLevel >= 5 && $currentLevel < 5)
-            ]);
-
-            // Check if user reached level 5 for the first time
-            if ($newLevel >= 5 && $currentLevel < 5) {
+            // Check for level 5 achievement using the stored flag
+            if ($shouldTriggerLevel5) {
+                // Important: Refresh the user object to make sure it has the updated level
+                $user->refresh();
                 Log::info("Level 5 condition is TRUE, calling unlockLevel5Achievement");
                 $this->unlockLevel5Achievement($user);
             } else {

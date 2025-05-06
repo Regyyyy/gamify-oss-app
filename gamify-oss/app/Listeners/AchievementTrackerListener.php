@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\QuestCompletedEvent;
+use App\Models\User;
 use App\Models\Achievement;
 use App\Models\Quest;
 use App\Models\TakenQuest;
@@ -202,6 +203,92 @@ class AchievementTrackerListener implements ShouldQueue
                     'achievement_id' => $allBeginnerQuestsAchievementId,
                     'status' => 'completed',
                     'created_at' => now()
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Check and award leaderboard achievements based on user's current position
+     */
+    public function checkLeaderboardAchievements($user): void
+    {
+        // Don't award leaderboard achievements to users with 0 XP
+        if ($user->xp_point <= 0) {
+            \Illuminate\Support\Facades\Log::info("User has 0 XP, skipping leaderboard achievement check", [
+                'user_id' => $user->user_id,
+                'user_name' => $user->name
+            ]);
+            return;
+        }
+
+        // Get all users ordered by XP points (descending)
+        $usersByXp = \App\Models\User::where('xp_point', '>', 0)
+            ->orderBy('xp_point', 'desc')
+            ->get();
+
+        // Find the position of the current user
+        $position = 0;
+        foreach ($usersByXp as $index => $rankedUser) {
+            if ($rankedUser->user_id === $user->user_id) {
+                $position = $index + 1; // Add 1 because array is 0-indexed
+                break;
+            }
+        }
+
+        \Illuminate\Support\Facades\Log::info("User leaderboard position check", [
+            'user_id' => $user->user_id,
+            'user_name' => $user->name,
+            'xp_point' => $user->xp_point,
+            'position' => $position
+        ]);
+
+        // If user isn't in the top 3, no need to proceed
+        if ($position > 3 || $position === 0) {
+            return;
+        }
+
+        // Achievement IDs for leaderboard positions
+        $leaderboardAchievements = [
+            3 => 8, // Bronze (3rd place)
+            2 => 9, // Silver (2nd place)
+            1 => 10, // Gold (1st place)
+        ];
+
+        // Award achievements based on position (cascading)
+        // If user reaches 1st place, they should also get 2nd and 3rd place achievements
+        for ($pos = 3; $pos >= $position; $pos--) {
+            $achievementId = $leaderboardAchievements[$pos];
+
+            // Check if user already has this achievement
+            $existingAchievement = \App\Models\UserAchievement::where('user_id', $user->user_id)
+                ->where('achievement_id', $achievementId)
+                ->first();
+
+            if (!$existingAchievement) {
+                // Get achievement details for logging
+                $achievement = \App\Models\Achievement::find($achievementId);
+
+                \Illuminate\Support\Facades\Log::info("Awarding leaderboard achievement to user", [
+                    'user_id' => $user->user_id,
+                    'user_name' => $user->name,
+                    'position' => $pos,
+                    'achievement_id' => $achievementId,
+                    'achievement_name' => $achievement->name
+                ]);
+
+                // Create the achievement record with "completed" status
+                \App\Models\UserAchievement::create([
+                    'user_id' => $user->user_id,
+                    'achievement_id' => $achievementId,
+                    'status' => 'completed',
+                    'created_at' => now()
+                ]);
+
+                \Illuminate\Support\Facades\Log::info("Leaderboard achievement created for user", [
+                    'user_id' => $user->user_id,
+                    'user_name' => $user->name,
+                    'achievement_id' => $achievementId
                 ]);
             }
         }
