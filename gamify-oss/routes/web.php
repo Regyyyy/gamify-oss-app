@@ -118,6 +118,8 @@ Route::middleware(['auth', 'verified', \App\Http\Middleware\AdminMiddleware::cla
 
     Route::get('/admin/users/list', [App\Http\Controllers\BadgeController::class, 'adminUsersList'])
         ->name('admin.users.list');
+
+    Route::delete('/quests/delete', [QuestController::class, 'deleteQuest'])->name('quests.delete');
 });
 
 require __DIR__ . '/auth.php';

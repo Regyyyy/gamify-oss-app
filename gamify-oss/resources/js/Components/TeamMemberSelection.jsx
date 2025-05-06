@@ -10,17 +10,28 @@ import {
   Stack,
   Chip,
   CircularProgress,
-  Alert
+  Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  IconButton
 } from '@mui/material';
 import PrimaryButton from './PrimaryButton';
+import DeleteIcon from '@mui/icons-material/Delete';
 import axios from 'axios';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import LockIcon from '@mui/icons-material/Lock';
 
 export default function TeamMemberSelection({ quest, onClose, isUnlocked = false }) {
+  const { auth } = usePage().props;
+  const isAdmin = auth.user.role === 'admin';
   const [eligibleUsers, setEligibleUsers] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteProcessing, setDeleteProcessing] = useState(false);
 
   const { data, setData, post, processing, errors } = useForm({
     quest_id: quest.questId,
@@ -77,6 +88,31 @@ export default function TeamMemberSelection({ quest, onClose, isUnlocked = false
         onClose();
       },
     });
+  };
+
+  // Handle delete quest button click
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    setDeleteProcessing(true);
+    try {
+      const response = await axios.delete(route('quests.delete'), {
+        data: { quest_id: quest.questId }
+      });
+      
+      // Close the modal and redirect to quest board
+      onClose();
+      window.location.href = route('questboard');
+    } catch (error) {
+      console.error('Error deleting quest:', error);
+      // You might want to show an error message here
+    } finally {
+      setDeleteProcessing(false);
+      setDeleteDialogOpen(false);
+    }
   };
 
   // Exclude already selected users from options
@@ -223,6 +259,57 @@ export default function TeamMemberSelection({ quest, onClose, isUnlocked = false
           ? `Take Quest with Team (${selectedTeam.length + 1} members)` 
           : "Take Quest Solo"}
       </PrimaryButton>
+
+      {/* Delete Button for Admin (only shown to admins) */}
+      {isAdmin && (
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+          <IconButton 
+            color="error" 
+            onClick={handleDeleteClick}
+            disabled={processing || deleteProcessing}
+            size="small"
+            sx={{ 
+              bgcolor: 'rgba(211, 47, 47, 0.1)', 
+              '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.2)' } 
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">
+          Delete Quest?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete this quest? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <PrimaryButton 
+            onClick={() => setDeleteDialogOpen(false)} 
+            disabled={deleteProcessing}
+            sx={{ bgcolor: 'grey.500' }}
+          >
+            Cancel
+          </PrimaryButton>
+          <PrimaryButton 
+            onClick={handleDeleteConfirm} 
+            disabled={deleteProcessing}
+            sx={{ bgcolor: 'error.main' }}
+          >
+            Delete Quest
+          </PrimaryButton>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

@@ -876,4 +876,33 @@ class QuestController extends Controller
             'finishedQuests' => $enhancedFinishedQuests,
         ]);
     }
+
+    /**
+     * Delete an open advanced quest.
+     * Only quests with status="open" and type="Advanced" can be deleted.
+     */
+    public function deleteQuest(Request $request)
+    {
+        $request->validate([
+            'quest_id' => 'required|exists:quests,quest_id',
+        ]);
+
+        $quest = Quest::findOrFail($request->quest_id);
+
+        // Check if the quest can be deleted (open status and Advanced type)
+        if ($quest->status !== 'open' || $quest->type !== 'Advanced') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only open advanced quests can be deleted.'
+            ], 403);
+        }
+
+        // Delete the quest
+        $quest->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Quest deleted successfully.'
+        ]);
+    }
 }
