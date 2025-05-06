@@ -94,19 +94,19 @@ class QuestController extends Controller
         // Log start of method
         logger('Quest board method called for user', ['user_id' => $user->user_id]);
 
-        // Get quests taken by the current user (with status waiting, in progress, submitted, or finished)
+        // Get quests taken by the current user (with status waiting, in progress, or submitted - NOT finished)
         $takenQuestIds = TakenQuest::where('user_id', $user->user_id)
             ->pluck('quest_id')
             ->toArray();
 
-        // Get all taken quests with any of these statuses
+        // Get all taken quests with active statuses only (exclude finished)
         $takenQuests = Quest::where('type', 'Advanced')
             ->whereIn('quest_id', $takenQuestIds)
-            ->whereIn('status', ['waiting', 'in progress', 'submitted', 'finished'])
+            ->whereIn('status', ['waiting', 'in progress', 'submitted'])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        logger('Taken quests count', ['count' => $takenQuests->count()]);
+        logger('Active taken quests count', ['count' => $takenQuests->count()]);
 
         // Get available quests (status "open")
         $availableQuests = Quest::where('type', 'Advanced')
@@ -667,21 +667,21 @@ class QuestController extends Controller
                 $quest->finished_at = now();
                 $quest->save();
                 logger('Quest status updated to finished');
-        
+
                 // Get all team members who worked on this quest
                 $takenQuests = TakenQuest::where('quest_id', $quest->quest_id)->get();
                 $teamSize = $takenQuests->count();
-        
+
                 // Calculate XP reward based on team size
                 $xpReward = $quest->xp_reward;
                 $xpReduction = 0;
-        
+
                 // Apply team size reduction
                 if ($teamSize > 1) {
                     // Team size reduction: 10% per additional member
                     $xpReduction = min(0.4, ($teamSize - 1) * 0.1);
                     $xpReward = intval($xpReward * (1 - $xpReduction));
-        
+
                     logger('XP reward adjusted for team size', [
                         'quest_id' => $quest->quest_id,
                         'team_size' => $teamSize,
@@ -690,7 +690,7 @@ class QuestController extends Controller
                         'adjusted_xp' => $xpReward
                     ]);
                 }
-        
+
                 // Award XP to each team member
                 foreach ($takenQuests as $takenQuest) {
                     $user = User::find($takenQuest->user_id);
@@ -698,12 +698,12 @@ class QuestController extends Controller
                         // Instead of dispatching an event, update XP directly
                         $previousXp = $user->xp_point;
                         $newXp = $previousXp + $xpReward;
-        
+
                         // Update XP directly in the database
                         \Illuminate\Support\Facades\DB::table('users')
                             ->where('user_id', $user->user_id)
                             ->update(['xp_point' => $newXp]);
-        
+
                         logger('XP awarded to user directly', [
                             'user_id' => $user->user_id,
                             'user_name' => $user->name,
@@ -712,7 +712,7 @@ class QuestController extends Controller
                             'xp_amount' => $xpReward,
                             'quest_id' => $quest->quest_id
                         ]);
-        
+
                         // Check if quest has a role (proficiency) and reward
                         if ($quest->role && $quest->proficiency_reward > 0) {
                             // Map quest role to proficiency ID
@@ -722,29 +722,29 @@ class QuestController extends Controller
                                 'Game Programmer' => 3,
                                 'Audio Composer' => 4,
                             ];
-                            
+
                             $proficiencyId = $proficiencyMap[$quest->role] ?? null;
-                            
+
                             if ($proficiencyId) {
                                 // Check if user already has this proficiency
                                 $userProficiency = \App\Models\UserProficiency::where('user_id', $user->user_id)
                                     ->where('proficiency_id', $proficiencyId)
                                     ->first();
-                                    
+
                                 // Calculate proficiency reward with same team reduction as XP
                                 $proficiencyReward = $quest->proficiency_reward;
                                 if ($teamSize > 1) {
                                     $proficiencyReward = intval($proficiencyReward * (1 - $xpReduction));
                                 }
-                                
+
                                 if ($userProficiency) {
                                     // Update existing proficiency
                                     $previousPoint = $userProficiency->point;
                                     $newPoint = $previousPoint + $proficiencyReward;
-                                    
+
                                     $userProficiency->point = $newPoint;
                                     $userProficiency->save();
-                                    
+
                                     logger('Proficiency points updated for user', [
                                         'user_id' => $user->user_id,
                                         'user_name' => $user->name,
@@ -763,7 +763,7 @@ class QuestController extends Controller
                                         'point' => $proficiencyReward,
                                         'created_at' => now()
                                     ]);
-                                    
+
                                     logger('New proficiency created for user', [
                                         'user_id' => $user->user_id,
                                         'user_name' => $user->name,
@@ -775,16 +775,16 @@ class QuestController extends Controller
                                 }
                             }
                         }
-        
+
                         // Check for level up
                         $currentLevel = $user->level;
                         $newLevel = $this->determineLevel($newXp);
-        
+
                         if ($newLevel > $currentLevel) {
                             \Illuminate\Support\Facades\DB::table('users')
                                 ->where('user_id', $user->user_id)
                                 ->update(['level' => $newLevel]);
-        
+
                             logger('User leveled up from advanced quest', [
                                 'user_id' => $user->user_id,
                                 'previous_level' => $currentLevel,
@@ -792,10 +792,10 @@ class QuestController extends Controller
                             ]);
                         }
                     }
-        
+
                     // After awarding XP, dispatch the event for this team member
                     event(new QuestCompletedEvent($user, $quest));
-        
+
                     \Illuminate\Support\Facades\Log::info("QuestCompletedEvent dispatched for team member", [
                         'user_id' => $user->user_id,
                         'user_name' => $user->name,
@@ -814,5 +814,66 @@ class QuestController extends Controller
         }
 
         return redirect()->route('receptionist')->with('success', 'Quest has been ' . ($request->action === 'accept' ? 'approved' : 'declined') . ' successfully.');
+    }
+
+    /**
+     * Display quests that have been finished by the current user or their team.
+     * Only shows Advanced quests, not Beginner quests.
+     */
+    public function questHistory(Request $request): Response
+    {
+        $user = Auth::user();
+
+        // Log start of method
+        logger('Quest history method called for user', ['user_id' => $user->user_id]);
+
+        // Get all quest IDs that the user has taken
+        $takenQuestIds = TakenQuest::where('user_id', $user->user_id)
+            ->pluck('quest_id')
+            ->toArray();
+
+        // Get only Advanced quests that have been completed (status = 'finished')
+        // and were taken by the current user
+        $finishedQuests = Quest::whereIn('quest_id', $takenQuestIds)
+            ->where('type', 'Advanced')
+            ->where('status', 'finished')
+            ->orderBy('finished_at', 'desc')
+            ->get();
+
+        logger('Finished advanced quests count', ['count' => $finishedQuests->count()]);
+
+        // Enhance quests with team information and submission data
+        $enhancedFinishedQuests = $finishedQuests->map(function ($quest) use ($user) {
+            // Get information about this taken quest
+            $takenQuest = TakenQuest::where('quest_id', $quest->quest_id)
+                ->where('user_id', $user->user_id)
+                ->first();
+
+            // Add submission images to the quest if they exist
+            if ($takenQuest && !is_null($takenQuest->submission)) {
+                $submissionImages = json_decode($takenQuest->submission, true) ?? [];
+                $quest->submission_images = $submissionImages;
+            } else {
+                $quest->submission_images = [];
+            }
+
+            // Get all team members for this quest
+            $allTakenQuests = TakenQuest::where('quest_id', $quest->quest_id)->get();
+
+            // Map to get just the user details
+            $teammates = $allTakenQuests->map(function ($tq) {
+                return User::where('user_id', $tq->user_id)
+                    ->select('user_id', 'name', 'avatar', 'level')
+                    ->first();
+            });
+
+            $quest->teammates = $teammates;
+
+            return $quest;
+        });
+
+        return Inertia::render('Quests/QuestHistory', [
+            'finishedQuests' => $enhancedFinishedQuests,
+        ]);
     }
 }

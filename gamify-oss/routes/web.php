@@ -49,9 +49,9 @@ Route::get('/takenquests', [QuestController::class, 'communityTakenQuests'])
     ->middleware(['auth', 'verified'])
     ->name('takenquests');
 
-Route::get('/questhistory', function () {
-    return Inertia::render('Quests/QuestHistory');
-})->middleware(['auth', 'verified'])->name('questhistory');
+Route::get('/questhistory', [QuestController::class, 'questHistory'])
+    ->middleware(['auth', 'verified'])
+    ->name('questhistory');
 
 Route::get('/leaderboard', function () {
     return Inertia::render('Leaderboard');
@@ -88,7 +88,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
+
     // Avatar Frame Routes
     Route::get('/avatar-frames', [AvatarFrameController::class, 'index'])->name('avatar-frames.index');
     Route::put('/avatar-frames', [AvatarFrameController::class, 'update'])->name('avatar-frames.update');
@@ -107,15 +107,15 @@ Route::middleware(['auth', 'verified', \App\Http\Middleware\AdminMiddleware::cla
     // Show badge award page
     Route::get('/admin/badges/award', [App\Http\Controllers\BadgeController::class, 'showAwardBadge'])
         ->name('admin.badges.award');
-        
+
     // Process badge award
     Route::post('/admin/badges/award', [App\Http\Controllers\BadgeController::class, 'storeAwardBadge'])
         ->name('admin.badges.award.store');
-        
+
     // API routes for fetching data
     Route::get('/admin/badges/list', [App\Http\Controllers\BadgeController::class, 'adminBadgesList'])
         ->name('admin.badges.list');
-        
+
     Route::get('/admin/users/list', [App\Http\Controllers\BadgeController::class, 'adminUsersList'])
         ->name('admin.users.list');
 });
