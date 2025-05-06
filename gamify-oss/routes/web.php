@@ -10,12 +10,11 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// Updated welcome route to use the new Home component
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
+    return Inertia::render('Home', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
     ]);
 });
 
@@ -53,9 +52,9 @@ Route::get('/questhistory', [QuestController::class, 'questHistory'])
     ->middleware(['auth', 'verified'])
     ->name('questhistory');
 
-Route::get('/leaderboard', function () {
-    return Inertia::render('Leaderboard');
-})->middleware(['auth', 'verified'])->name('leaderboard');
+Route::get('/leaderboard', [LeaderboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('leaderboard');
 
 Route::get('/achievements', [App\Http\Controllers\AchievementController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -65,9 +64,9 @@ Route::post('/achievements/claim', [App\Http\Controllers\AchievementController::
     ->middleware(['auth', 'verified'])
     ->name('achievements.claim');
 
-Route::get('/badges', function () {
-    return Inertia::render('Badges');
-})->middleware(['auth', 'verified'])->name('badges');
+Route::get('/badges', [App\Http\Controllers\BadgeController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('badges');
 
 // Admin only routes
 Route::middleware(['auth', 'verified', \App\Http\Middleware\AdminMiddleware::class])->group(function () {
@@ -93,14 +92,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/avatar-frames', [AvatarFrameController::class, 'index'])->name('avatar-frames.index');
     Route::put('/avatar-frames', [AvatarFrameController::class, 'update'])->name('avatar-frames.update');
 });
-
-Route::get('/leaderboard', [LeaderboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
-    ->name('leaderboard');
-
-Route::get('/badges', [App\Http\Controllers\BadgeController::class, 'index'])
-    ->middleware(['auth', 'verified'])
-    ->name('badges');
 
 // Admin routes for badge management
 Route::middleware(['auth', 'verified', \App\Http\Middleware\AdminMiddleware::class])->group(function () {
