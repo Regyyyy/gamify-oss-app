@@ -1,23 +1,23 @@
 {
     "version": 2,
-    "framework": null,
     "functions": {
-        "api/index.php": { "runtime": "vercel-php@0.7.0" }
+        "api/index.php": {
+            "runtime": "vercel-php@0.7.0"
+        }
     },
     "routes": [
         { "src": "/build/(.*)", "dest": "/public/build/$1" },
         { "src": "/storage/(.*)", "dest": "/public/storage/$1" },
         { "src": "/images/(.*)", "dest": "/public/images/$1" },
         { "src": "/favicon.ico", "dest": "/public/favicon.ico" },
-        { "src": "/robots.txt", "dest": "/public/robots.txt" },
+        { "src": "/(css|js)/(.*)", "dest": "/public/$1/$2" },
         { "src": "/(.*)", "dest": "/api/index.php" }
     ],
-    "buildCommand": "npm run build",
+    "buildCommand": "npm run build && mkdir -p public/storage",
     "outputDirectory": "public",
     "env": {
         "APP_ENV": "production",
         "APP_DEBUG": "false",
-        "APP_URL": "https://gamifyoss.com",
         "APP_CONFIG_CACHE": "/tmp/config.php",
         "APP_EVENTS_CACHE": "/tmp/events.php",
         "APP_PACKAGES_CACHE": "/tmp/packages.php",
