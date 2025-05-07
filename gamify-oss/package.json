@@ -2,7 +2,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build && ./vercel-build.sh"
+        "build": "vite build && mkdir -p public/storage"
     },
     "devDependencies": {
         "@headlessui/react": "^2.0.0",
