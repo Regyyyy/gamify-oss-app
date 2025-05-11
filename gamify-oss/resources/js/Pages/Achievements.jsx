@@ -39,7 +39,6 @@ export default function Achievements() {
     return (
         <MainLayout>
             <Head title="Achievements" />
-
             <Box>
                 <div className="overflow-hidden">
                     <Box className="p-10 text-gray-900">

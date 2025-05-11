@@ -57,6 +57,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('questboard', absolute: false));
+        return redirect(route('beginnerquests', absolute: false));
     }
 }
