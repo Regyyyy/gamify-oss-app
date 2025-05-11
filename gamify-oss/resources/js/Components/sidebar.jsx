@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { usePage } from "@inertiajs/react";
 import {
   Box,
-  Avatar,
   Typography,
   LinearProgress,
   List,
@@ -10,7 +9,11 @@ import {
   ListItemIcon,
   ListItemText,
   Collapse,
-  Divider
+  Divider,
+  Drawer,
+  IconButton,
+  useMediaQuery,
+  useTheme
 } from "@mui/material";
 
 import {
@@ -27,15 +30,23 @@ import {
   Settings as SettingsIcon,
   Logout as LogoutIcon,
   LeaderboardRounded as LeaderboardRoundedIcon,
-  RoomServiceRounded as RoomServiceRoundedIcon
+  RoomServiceRounded as RoomServiceRoundedIcon,
+  Close as CloseIcon
 } from "@mui/icons-material";
 
 import { router } from "@inertiajs/react";
-import { useTheme } from "@mui/material/styles";
 import AvatarProfile from "./AvatarProfile";
 
-export default function Sidebar({ username = "username", width = 275, role, avatar = '' }) {
+export default function Sidebar({ 
+  username = "username", 
+  width = 275, 
+  role, 
+  avatar = '',
+  mobileOpen = false,
+  onMobileClose
+}) {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { url } = usePage();
   const { user } = usePage().props.auth;
 
@@ -102,21 +113,34 @@ export default function Sidebar({ username = "username", width = 275, role, avat
     return Math.min(100, Math.max(0, (xpProgress / xpNeeded) * 100));
   };
 
-  return (
+  // Sidebar content
+  const sidebarContent = (
     <Box
       sx={{
-        width: { width },
-        height: "100vh",
+        height: "100%",
         bgcolor: "#2f2f2f",
         color: "#fff",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        position: "fixed",
         p: 2,
-        pt: 7,
+        mt: 3,
+        pt: isMobile ? 2 : 7,
+        overflowX: "hidden"
       }}
     >
+      {isMobile && (
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mb: 2 }}>
+          <IconButton 
+            onClick={onMobileClose} 
+            sx={{ color: 'white' }}
+            aria-label="close sidebar"
+          >
+            <CloseIcon />
+          </IconButton>
+        </Box>
+      )}
+      
       <Box>
         {/* Avatar */}
         <Box>
@@ -157,109 +181,143 @@ export default function Sidebar({ username = "username", width = 275, role, avat
 
       <Divider sx={{ width: "100%", mb: 1, bgcolor: "rgba(255,255,255,0.2)" }} />
 
-      <List className="sidebar" sx={{ width: "100%", alignItems: "left" }} component="nav">
-        {/* Receptionist */}
-        {isAdmin ?
-          <ListItemButton href="/receptionist">
+      {/* Navigation Menu - This section should be scrollable */}
+      <Box
+        sx={{
+          width: "100%",
+          flexGrow: 1,
+          overflowY: "auto",
+          "&::-webkit-scrollbar": {
+            width: "8px",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "rgba(255, 255, 255, 0.2)",
+            borderRadius: "4px",
+          },
+          "&::-webkit-scrollbar-track": {
+            backgroundColor: "#2f2f2f",
+          },
+        }}
+      >
+        <List className="sidebar" sx={{ width: "100%", alignItems: "left" }} component="nav">
+          {/* Receptionist */}
+          {isAdmin && (
+            <ListItemButton 
+              href="/receptionist"
+              onClick={isMobile ? onMobileClose : undefined}
+            >
+              <ListItemIcon>
+                <RoomServiceRoundedIcon sx={{ color: "#fff" }} />
+              </ListItemIcon>
+              <ListItemText primary="Receptionist" />
+            </ListItemButton>
+          )}
+
+          {/* Quest Dropdown */}
+          <ListItemButton onClick={handleToggleQuests}>
             <ListItemIcon>
-              <RoomServiceRoundedIcon sx={{ color: "#fff" }} />
+              <ExploreRoundedIcon sx={{ color: "#fff" }} />
             </ListItemIcon>
-            <ListItemText primary="Receptionist" />
+            <ListItemText primary="Quests" />
+            {openQuests ? <ExpandLessIcon /> : <ExpandMoreIcon />}
           </ListItemButton>
-          :
-          <></>
-        }
 
-        {/* Quest Dropdown */}
-        <ListItemButton onClick={handleToggleQuests}>
-          <ListItemIcon>
-            <ExploreRoundedIcon sx={{ color: "#fff" }} />
-          </ListItemIcon>
-          <ListItemText primary="Quests" />
-          {openQuests ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-        </ListItemButton>
-
-        <Collapse in={openQuests} timeout="auto" unmountOnExit>
-          <Box
-            sx={{
-              maxHeight: 125,
-              overflowY: "auto",
-              "&::-webkit-scrollbar": {
-                width: "8px",
-              },
-              "&::-webkit-scrollbar-thumb": {
-                backgroundColor: "rgba(255, 255, 255, 0.2)",
-                borderRadius: "4px",
-              },
-              "&::-webkit-scrollbar-track": {
-                backgroundColor: "#2f2f2f",
-              },
-            }}
-          >
+          <Collapse in={openQuests} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
-              <ListItemButton href="/questboard" sx={{ pl: 4 }}>
+              <ListItemButton 
+                href="/questboard" 
+                sx={{ pl: 4 }}
+                onClick={isMobile ? onMobileClose : undefined}
+              >
                 <ListItemIcon>
                   <MapRoundedIcon sx={{ color: "#fff" }} />
                 </ListItemIcon>
                 <ListItemText className="sidebar" primary="Quest Board" />
               </ListItemButton>
-              <ListItemButton href="/beginnerquests" sx={{ pl: 4 }}>
+              <ListItemButton 
+                href="/beginnerquests" 
+                sx={{ pl: 4 }}
+                onClick={isMobile ? onMobileClose : undefined}
+              >
                 <ListItemIcon>
                   <LightbulbRoundedIcon sx={{ color: "#fff" }} />
                 </ListItemIcon>
                 <ListItemText className="sidebar" primary="Beginner Quests" />
               </ListItemButton>
-              <ListItemButton href="/takenquests" sx={{ pl: 4 }}>
+              <ListItemButton 
+                href="/takenquests" 
+                sx={{ pl: 4 }}
+                onClick={isMobile ? onMobileClose : undefined}
+              >
                 <ListItemIcon>
                   <FlagRoundedIcon sx={{ color: "#fff" }} />
                 </ListItemIcon>
                 <ListItemText className="sidebar" primary="Taken Quests" />
               </ListItemButton>
-              <ListItemButton href="/questhistory" sx={{ pl: 4 }}>
+              <ListItemButton 
+                href="/questhistory" 
+                sx={{ pl: 4 }}
+                onClick={isMobile ? onMobileClose : undefined}
+              >
                 <ListItemIcon>
                   <HistoryRoundedIcon sx={{ color: "#fff" }} />
                 </ListItemIcon>
                 <ListItemText className="sidebar" primary="Quest History" />
               </ListItemButton>
             </List>
-          </Box>
-        </Collapse>
+          </Collapse>
 
-        <ListItemButton href="/leaderboard">
-          <ListItemIcon>
-            <LeaderboardRoundedIcon sx={{ color: "#fff" }} />
-          </ListItemIcon>
-          <ListItemText primary="Leaderboard" />
-        </ListItemButton>
+          <ListItemButton 
+            href="/leaderboard"
+            onClick={isMobile ? onMobileClose : undefined}
+          >
+            <ListItemIcon>
+              <LeaderboardRoundedIcon sx={{ color: "#fff" }} />
+            </ListItemIcon>
+            <ListItemText primary="Leaderboard" />
+          </ListItemButton>
 
-        <ListItemButton href="/achievements">
-          <ListItemIcon>
-            <StarRoundedIcon sx={{ color: "#fff" }} />
-          </ListItemIcon>
-          <ListItemText primary="Achievements" />
-        </ListItemButton>
+          <ListItemButton 
+            href="/achievements"
+            onClick={isMobile ? onMobileClose : undefined}
+          >
+            <ListItemIcon>
+              <StarRoundedIcon sx={{ color: "#fff" }} />
+            </ListItemIcon>
+            <ListItemText primary="Achievements" />
+          </ListItemButton>
 
-        <ListItemButton href="/badges">
-          <ListItemIcon>
-            <EmojiEventsRoundedIcon sx={{ color: "#fff" }} />
-          </ListItemIcon>
-          <ListItemText primary="Badges" />
-        </ListItemButton>
-      </List>
-
-      <Box sx={{ flexGrow: 1 }} />
+          <ListItemButton 
+            href="/badges"
+            onClick={isMobile ? onMobileClose : undefined}
+          >
+            <ListItemIcon>
+              <EmojiEventsRoundedIcon sx={{ color: "#fff" }} />
+            </ListItemIcon>
+            <ListItemText primary="Badges" />
+          </ListItemButton>
+        </List>
+      </Box>
 
       {/* Settings & Log Out */}
-      <Divider sx={{ width: "100%", mb: 1, bgcolor: "rgba(255,255,255,0.2)" }} />
+      <Divider sx={{ width: "100%", mt: 1, mb: 1, bgcolor: "rgba(255,255,255,0.2)" }} />
       <List className="sidebar" sx={{ width: "100%", mb: 3 }}>
-        <ListItemButton href={route("profile.edit")}>
+        <ListItemButton 
+          href={route("profile.edit")}
+          onClick={isMobile ? onMobileClose : undefined}
+        >
           <ListItemIcon>
             <SettingsIcon sx={{ color: "#fff" }} />
           </ListItemIcon>
           <ListItemText primary="Settings" />
         </ListItemButton>
 
-        <ListItemButton onClick={() => router.post(route("logout"))}>
+        <ListItemButton 
+          onClick={() => {
+            if (isMobile) onMobileClose();
+            router.post(route("logout"));
+          }}
+        >
           <ListItemIcon>
             <LogoutIcon sx={{ color: theme.palette.warning.main }} />
           </ListItemIcon>
@@ -267,5 +325,59 @@ export default function Sidebar({ username = "username", width = 275, role, avat
         </ListItemButton>
       </List>
     </Box>
+  );
+
+  return (
+    <>
+      {/* Permanent sidebar for desktop */}
+      {!isMobile && (
+        <Box
+          component="nav"
+          sx={{
+            width: { sm: width },
+            flexShrink: 0,
+            display: { xs: 'none', md: 'block' },
+          }}
+        >
+          <Drawer
+            variant="permanent"
+            sx={{
+              width: width,
+              flexShrink: 0,
+              '& .MuiDrawer-paper': {
+                width: width,
+                boxSizing: 'border-box',
+                border: 'none'
+              },
+            }}
+            open
+          >
+            {sidebarContent}
+          </Drawer>
+        </Box>
+      )}
+
+      {/* Temporary sidebar for mobile */}
+      {isMobile && (
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={onMobileClose}
+          ModalProps={{
+            keepMounted: true, // Better open performance on mobile
+          }}
+          sx={{
+            display: { xs: 'block', md: 'none' },
+            '& .MuiDrawer-paper': {
+              width: width,
+              boxSizing: 'border-box',
+              border: 'none'
+            },
+          }}
+        >
+          {sidebarContent}
+        </Drawer>
+      )}
+    </>
   );
 }
