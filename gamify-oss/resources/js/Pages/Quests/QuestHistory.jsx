@@ -5,6 +5,7 @@ import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import QuestCard from '@/Components/QuestCard';
 import { useEffect } from 'react';
+import SecondaryButton from '@/Components/SecondaryButton';
 
 export default function QuestHistory() {
     const { finishedQuests, auth } = usePage().props;
@@ -35,7 +36,7 @@ export default function QuestHistory() {
                             </Box>
                             <Box sx={{ py: 1 }}>
                                 <Typography>
-                                Revisit the quests you've finished, whether by your own skill or alongside fellow contributors!
+                                    Revisit the quests you've finished, whether by your own skill or alongside fellow contributors!
                                 </Typography>
                             </Box>
 
@@ -54,14 +55,8 @@ export default function QuestHistory() {
                                 </Typography>
                             </Box>
 
-                            <Divider sx={{ my: 2 }} />
-
                             {/* Quest History Section */}
                             <Box sx={{ py: 2 }}>
-                                <Typography variant="h5" fontWeight="bold" sx={{ mb: 3 }}>
-                                    Completed Quests
-                                </Typography>
-
                                 {finishedQuests && finishedQuests.length > 0 ? (
                                     finishedQuests.map((quest) => (
                                         <QuestCard
@@ -86,9 +81,23 @@ export default function QuestHistory() {
                                         />
                                     ))
                                 ) : (
-                                    <Alert severity="info">
-                                        You haven't completed any advanced quests yet. Take quests from the Quest Board and complete them to see your history here.
-                                    </Alert>
+                                    <Box sx={{
+                                        p: 4,
+                                        border: '1px dashed #ccc',
+                                        borderRadius: 2,
+                                        textAlign: 'center',
+                                    }}>
+                                        <Typography variant="body1" color="text.secondary">
+                                            You haven't completed any advanced quests yet. Take quests from the Quest Board and complete them to see your history here.
+                                        </Typography>
+                                        <Box sx={{ mt: 2 }}>
+                                            <SecondaryButton
+                                                href="/questboard"
+                                            >
+                                                Find Available Quests
+                                            </SecondaryButton>
+                                        </Box>
+                                    </Box>
                                 )}
                             </Box>
                         </Box>
