@@ -12,13 +12,15 @@ export default function Receptionist() {
 
     const [waitingQuests, setWaitingQuests] = useState([]);
     const [submittedQuests, setSubmittedQuests] = useState([]);
+    const [ongoingQuests, setOngoingQuests] = useState([]);
 
     useEffect(() => {
-        // Separate quests into waiting and submitted
+        // Separate quests into waiting, submitted, and ongoing
         if (quests) {
             console.log("Received quests:", quests); // Debug log
             setWaitingQuests(quests.filter(quest => quest.status === 'waiting'));
             setSubmittedQuests(quests.filter(quest => quest.status === 'submitted'));
+            setOngoingQuests(quests.filter(quest => quest.status === 'in progress'));
         }
     }, [quests]);
 
@@ -147,6 +149,46 @@ export default function Receptionist() {
                                     }}>
                                         <Typography variant="body1" color="text.secondary">
                                             No pending quest submissions at the moment.
+                                        </Typography>
+                                    </Box>
+                                )}
+                            </Box>
+
+                            <Divider sx={{ my: 4 }} />
+
+                            {/* Ongoing Quests Section */}
+                            <Box sx={{ py: 2 }}>
+                                <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
+                                    Ongoing Quests
+                                </Typography>
+
+                                {ongoingQuests && ongoingQuests.length > 0 ? (
+                                    ongoingQuests.map((quest) => (
+                                        <AdminQuestCard
+                                            key={`ongoing-${quest.quest_id}`}
+                                            questId={quest.quest_id}
+                                            questTitle={quest.title}
+                                            questDescription={quest.description}
+                                            difficulty={quest.difficulty}
+                                            xpReward={quest.xp_reward}
+                                            role={quest.role ?? 'Any'}
+                                            proficiencyReward={quest.proficiency_reward ?? 0}
+                                            status="in progress"
+                                            requestDate={quest.request_date}
+                                            submitDate={quest.created_at}
+                                            issueLink={quest.issue_link}
+                                            teammates={quest.teammates || []}
+                                        />
+                                    ))
+                                ) : (
+                                    <Box sx={{
+                                        p: 4,
+                                        border: '1px dashed #ccc',
+                                        borderRadius: 2,
+                                        textAlign: 'center'
+                                    }}>
+                                        <Typography variant="body1" color="text.secondary">
+                                            No ongoing quests at the moment.
                                         </Typography>
                                     </Box>
                                 )}

@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Card, CardContent, Typography, Chip, Box } from "@mui/material";
-import { blue, green, grey, orange, red, yellow } from "@mui/material/colors";
+import { blue, green, grey, orange, purple, red, yellow } from "@mui/material/colors";
 import { useTheme } from '@mui/material/styles';
 import AdminQuestModal from "@/Components/AdminQuestModal";
-// Using native JS date formatting instead of date-fns
+import HistoryIcon from '@mui/icons-material/History';
+import RateReviewIcon from '@mui/icons-material/RateReview';
 
 export default function AdminQuestCard({
     questId = 1,
@@ -34,6 +35,44 @@ export default function AdminQuestCard({
         return `${day} ${month} ${year}`;
     };
 
+    // Get status chip props based on status
+    const getStatusChip = () => {
+        switch(status) {
+            case "waiting":
+                return {
+                    label: "Request Pending",
+                    bgcolor: orange[200],
+                    border: `1px solid ${orange[800]}`,
+                    color: 'black'
+                };
+            case "in progress":
+                return {
+                    label: "In Progress",
+                    icon: <HistoryIcon />,
+                    bgcolor: blue[200],
+                    border: `1px solid ${blue[800]}`,
+                    color: 'black'
+                };
+            case "submitted":
+                return {
+                    label: "Reviewing",
+                    icon: <RateReviewIcon />,
+                    bgcolor: purple[200],
+                    border: `1px solid ${purple[800]}`,
+                    color: 'black'
+                };
+            default:
+                return {
+                    label: "Unknown Status",
+                    bgcolor: grey[200],
+                    border: `1px solid ${grey[800]}`,
+                    color: 'black'
+                };
+        }
+    };
+
+    const statusChip = getStatusChip();
+
     return (
         <>
             <Card sx={{
@@ -63,12 +102,16 @@ export default function AdminQuestCard({
                             </Typography>
                             <Box display="flex" alignItems="center" gap={1} my={1}>
                                 <Chip
-                                    label={status === "waiting" ? "Request Pending" : "Submission Pending"}
+                                    label={statusChip.label}
+                                    icon={statusChip.icon}
                                     sx={{
-                                        bgcolor: status === "waiting" ? orange[200] : blue[200],
-                                        border: status === "waiting" ? `1px solid ${orange[800]}` : `1px solid ${blue[800]}`,
+                                        bgcolor: statusChip.bgcolor,
+                                        border: statusChip.border,
                                         fontWeight: 'bold',
                                         px: 0.5,
+                                        '& .MuiChip-icon': {
+                                            color: statusChip.color
+                                        },
                                     }}
                                 />
                             </Box>
@@ -128,15 +171,26 @@ export default function AdminQuestCard({
                         </Box>
                     </Box>
                     
-                    {/* Date section */}
+                    {/* Date section - different labels based on status */}
                     <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2, px: 1 }}>
                         <Typography variant="body2" color="text.secondary">
                             {status === "waiting" ? 
                                 `Request Date: ${formatDate(requestDate)}` : 
-                                `Submit Date: ${formatDate(submitDate)}`}
+                                status === "submitted" ?
+                                    `Submit Date: ${formatDate(submitDate)}` :
+                                    `Start Date: ${formatDate(requestDate || submitDate)}`}
                         </Typography>
-                        <Typography variant="body2" fontWeight="bold" color={status === "waiting" ? orange[800] : blue[800]}>
-                            {status === "waiting" ? "Awaiting Approval" : "Awaiting Review"}
+                        <Typography variant="body2" fontWeight="bold" 
+                            color={status === "waiting" ? 
+                                orange[800] : 
+                                status === "in progress" ? 
+                                    blue[800] : 
+                                    purple[800]}>
+                            {status === "waiting" ? 
+                                "Awaiting Approval" : 
+                                status === "in progress" ?
+                                    "In Progress" :
+                                    "Awaiting Review"}
                         </Typography>
                     </Box>
                 </CardContent>

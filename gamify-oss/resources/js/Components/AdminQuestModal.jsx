@@ -1,19 +1,23 @@
 import React, { useState } from "react";
-import { Modal, Box, Typography, Chip, IconButton, Paper, Link, Button } from "@mui/material";
-import { blue, green, grey, orange, red, yellow } from "@mui/material/colors";
+import { Modal, Box, Typography, Chip, IconButton, Paper, Link, Button, Divider, Alert } from "@mui/material";
+import { blue, green, grey, orange, purple, red, yellow } from "@mui/material/colors";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckIcon from "@mui/icons-material/Check";
-import { router } from "@inertiajs/react"; // Import router instead of useForm
+import CancelIcon from "@mui/icons-material/Cancel";
+import HistoryIcon from '@mui/icons-material/History';
+import RateReviewIcon from '@mui/icons-material/RateReview';
+import { router } from "@inertiajs/react";
 import PrimaryButton from "@/Components/PrimaryButton";
-import Avatar from "@mui/material/Avatar";
-import AvatarGroup from "@mui/material/AvatarGroup";
 import AvatarProfile from "./AvatarProfile";
+import SecondaryButton from "@/Components/SecondaryButton";
 
 export default function AdminQuestModal({ open, onClose, quest }) {
     if (!quest) return null;
 
     const { status, submissionImages = [], teammates = [] } = quest;
     const [isProcessing, setIsProcessing] = useState(false);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmAction, setConfirmAction] = useState('');
 
     // Format date from database format (2025-03-04 19:35:59) to website format (4 Mar 2025)
     const formatDate = (dateString) => {
@@ -23,6 +27,53 @@ export default function AdminQuestModal({ open, onClose, quest }) {
         const month = date.toLocaleString('en-US', { month: 'short' });
         const year = date.getFullYear();
         return `${day} ${month} ${year}`;
+    };
+
+    // Get status chip based on status
+    const getStatusChip = () => {
+        switch(status) {
+            case "waiting":
+                return {
+                    label: "Request Pending",
+                    bgcolor: orange[200],
+                    border: `1px solid ${orange[800]}`,
+                    color: 'black'
+                };
+            case "in progress":
+                return {
+                    label: "In Progress",
+                    icon: <HistoryIcon />,
+                    bgcolor: blue[200],
+                    border: `1px solid ${blue[800]}`,
+                    color: 'black'
+                };
+            case "submitted":
+                return {
+                    label: "Reviewing",
+                    icon: <RateReviewIcon />,
+                    bgcolor: purple[200],
+                    border: `1px solid ${purple[800]}`,
+                    color: 'black'
+                };
+            default:
+                return {
+                    label: "Unknown Status",
+                    bgcolor: grey[200],
+                    border: `1px solid ${grey[800]}`,
+                    color: 'black'
+                };
+        }
+    };
+
+    const statusChip = getStatusChip();
+
+    const handleOpenConfirm = (action) => {
+        setConfirmAction(action);
+        setConfirmOpen(true);
+    };
+
+    const handleCloseConfirm = () => {
+        setConfirmOpen(false);
     };
 
     const handleAction = (action) => {
@@ -100,6 +151,220 @@ export default function AdminQuestModal({ open, onClose, quest }) {
         );
     };
 
+    // Render admin actions based on status
+    const renderAdminActions = () => {
+        if (status === "waiting") {
+            return (
+                <>
+                    <Typography variant="h6" gutterBottom>
+                        Admin Actions
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        Approve or decline this quest request.
+                    </Typography>
+
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            disabled={isProcessing}
+                            onClick={() => handleOpenConfirm('decline')}
+                            startIcon={<CloseIcon />}
+                            sx={{
+                                color: red[600],
+                                borderColor: red[600],
+                                '&:hover': {
+                                    backgroundColor: red[50],
+                                    borderColor: red[800],
+                                }
+                            }}
+                        >
+                            Decline
+                        </Button>
+
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            disabled={isProcessing}
+                            onClick={() => handleOpenConfirm('accept')}
+                            startIcon={<CheckIcon />}
+                            sx={{
+                                color: green[600],
+                                borderColor: green[600],
+                                '&:hover': {
+                                    backgroundColor: green[50],
+                                    borderColor: green[800],
+                                }
+                            }}
+                        >
+                            Accept
+                        </Button>
+                    </Box>
+                </>
+            );
+        } else if (status === "submitted") {
+            return (
+                <>
+                    <Typography variant="h6" gutterBottom>
+                        Admin Actions
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        Accept or decline this quest submission.
+                    </Typography>
+
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            disabled={isProcessing}
+                            onClick={() => handleOpenConfirm('decline')}
+                            startIcon={<CloseIcon />}
+                            sx={{
+                                color: red[600],
+                                borderColor: red[600],
+                                '&:hover': {
+                                    backgroundColor: red[50],
+                                    borderColor: red[800],
+                                }
+                            }}
+                        >
+                            Decline
+                        </Button>
+
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            disabled={isProcessing}
+                            onClick={() => handleOpenConfirm('accept')}
+                            startIcon={<CheckIcon />}
+                            sx={{
+                                color: green[600],
+                                borderColor: green[600],
+                                '&:hover': {
+                                    backgroundColor: green[50],
+                                    borderColor: green[800],
+                                }
+                            }}
+                        >
+                            Accept
+                        </Button>
+                    </Box>
+                </>
+            );
+        } else if (status === "in progress") {
+            return (
+                <>
+                    <Typography variant="h6" gutterBottom>
+                        Admin Actions
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        You can cancel this quest if team members are inactive or if the quest needs to be reassigned.
+                    </Typography>
+
+                    <Alert severity="warning" sx={{ mb: 2 }}>
+                        Canceling a quest will reset it to "open" status and remove all assigned team members. This action cannot be undone.
+                    </Alert>
+
+                    <Button
+                        fullWidth
+                        variant="outlined"
+                        disabled={isProcessing}
+                        onClick={() => handleOpenConfirm('cancel')}
+                        startIcon={<CancelIcon />}
+                        sx={{
+                            color: red[600],
+                            borderColor: red[600],
+                            '&:hover': {
+                                backgroundColor: red[50],
+                                borderColor: red[800],
+                            }
+                        }}
+                    >
+                        Cancel Quest
+                    </Button>
+                </>
+            );
+        }
+
+        return null;
+    };
+
+    // Render confirmation dialog
+    const renderConfirmationDialog = () => {
+        let title, message, confirmText, confirmColor;
+
+        if (confirmAction === 'accept') {
+            title = status === "waiting" ? "Approve Quest Request?" : "Accept Quest Submission?";
+            message = status === "waiting" 
+                ? "Are you sure you want to approve this quest request? The team will be able to start working on it." 
+                : "Are you sure you want to accept this quest submission? Team members will receive XP and proficiency rewards.";
+            confirmText = "Approve";
+            confirmColor = green[600];
+        } else if (confirmAction === 'decline') {
+            title = status === "waiting" ? "Decline Quest Request?" : "Decline Quest Submission?";
+            message = "Are you sure you want to decline this? The quest will be reset to 'open' status and all team assignments will be removed.";
+            confirmText = "Decline";
+            confirmColor = red[600];
+        } else if (confirmAction === 'cancel') {
+            title = "Cancel Ongoing Quest?";
+            message = "Are you sure you want to cancel this quest? The quest will be reset to 'open' status and all team assignments will be removed. This action cannot be undone.";
+            confirmText = "Cancel Quest";
+            confirmColor = red[600];
+        }
+
+        return confirmOpen ? (
+            <Box sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1500,
+            }}>
+                <Paper sx={{
+                    width: 400,
+                    p: 3,
+                    borderRadius: 2,
+                }}>
+                    <Typography variant="h6" gutterBottom>
+                        {title}
+                    </Typography>
+                    <Typography variant="body2" sx={{ mb: 3 }}>
+                        {message}
+                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                        <Button 
+                            variant="outlined" 
+                            onClick={handleCloseConfirm}
+                            disabled={isProcessing}
+                        >
+                            Cancel
+                        </Button>
+                        <Button 
+                            variant="contained"
+                            onClick={() => handleAction(confirmAction === 'accept' ? 'accept' : 'decline')}
+                            disabled={isProcessing}
+                            sx={{ 
+                                backgroundColor: confirmColor,
+                                color: 'white',
+                                '&:hover': {
+                                    backgroundColor: confirmColor,
+                                    filter: 'brightness(0.9)'
+                                }
+                            }}
+                        >
+                            {confirmText}
+                        </Button>
+                    </Box>
+                </Paper>
+            </Box>
+        ) : null;
+    };
+
     return (
         <Modal open={open} onClose={onClose}>
             <Box
@@ -133,6 +398,9 @@ export default function AdminQuestModal({ open, onClose, quest }) {
                     <CloseIcon />
                 </IconButton>
 
+                {/* Confirmation Dialog */}
+                {renderConfirmationDialog()}
+
                 <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3 }}>
                     {/* Left side - Quest Information */}
                     <Box sx={{ flex: { md: 7 / 12 } }}>
@@ -142,17 +410,23 @@ export default function AdminQuestModal({ open, onClose, quest }) {
 
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
                             <Chip
-                                label={status === "waiting" ? "Request Pending" : "Submission Pending"}
+                                label={statusChip.label}
+                                icon={statusChip.icon}
                                 sx={{
-                                    bgcolor: status === "waiting" ? orange[200] : blue[200],
-                                    border: status === "waiting" ? `1px solid ${orange[800]}` : `1px solid ${blue[800]}`,
+                                    bgcolor: statusChip.bgcolor,
+                                    border: statusChip.border,
                                     fontWeight: 'bold',
                                     px: 0.5,
+                                    '& .MuiChip-icon': {
+                                        color: statusChip.color
+                                    },
                                 }}
                             />
                             <Typography variant="body2" fontWeight="bold">
                                 {status === "waiting"
                                     ? `Requested on: ${formatDate(quest.requestDate)}`
+                                    : status === "in progress"
+                                    ? `Started on: ${formatDate(quest.requestDate || quest.submitDate)}`
                                     : `Submitted on: ${formatDate(quest.submitDate)}`}
                             </Typography>
                         </Box>
@@ -188,7 +462,7 @@ export default function AdminQuestModal({ open, onClose, quest }) {
                         )}
 
                         {/* Submission Images - Only show if status is submitted */}
-                        {status !== "waiting" && (
+                        {status === "submitted" && (
                             <Box sx={{ mb: 3 }}>
                                 <Typography variant="h6" gutterBottom>
                                     Submitted Work
@@ -279,48 +553,11 @@ export default function AdminQuestModal({ open, onClose, quest }) {
                                 )}
                             </Box>
 
+                            <Divider />
+
                             {/* Admin Actions */}
                             <Box sx={{ mt: 3 }}>
-                                <Typography variant="h6" gutterBottom>
-                                    Admin Actions
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                    {status === "waiting"
-                                        ? "Approve or decline this quest request."
-                                        : "Accept or decline this quest submission."}
-                                </Typography>
-
-                                <Box sx={{ display: 'flex', gap: 2 }}>
-                                    <PrimaryButton
-                                        fullWidth
-                                        disabled={isProcessing}
-                                        onClick={() => handleAction('decline')}
-                                        startIcon={<CloseIcon />}
-                                        sx={{
-                                            backgroundColor: red[600],
-                                            '&:hover': {
-                                                backgroundColor: red[800],
-                                            }
-                                        }}
-                                    >
-                                        Decline
-                                    </PrimaryButton>
-
-                                    <PrimaryButton
-                                        fullWidth
-                                        disabled={isProcessing}
-                                        onClick={() => handleAction('accept')}
-                                        startIcon={<CheckIcon />}
-                                        sx={{
-                                            backgroundColor: green[600],
-                                            '&:hover': {
-                                                backgroundColor: green[800],
-                                            }
-                                        }}
-                                    >
-                                        Accept
-                                    </PrimaryButton>
-                                </Box>
+                                {renderAdminActions()}
                             </Box>
                         </Box>
                     </Box>

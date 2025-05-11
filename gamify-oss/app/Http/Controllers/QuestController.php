@@ -578,6 +578,12 @@ class QuestController extends Controller
             ->get();
         logger('Submitted quests count', ['count' => $submittedQuests->count()]);
 
+        // Get quests with "in progress" status
+        $inProgressQuests = Quest::where('status', 'in progress')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        logger('In progress quests count', ['count' => $inProgressQuests->count()]);
+
         // Enhance waiting quests with team info and dates
         $enhancedWaitingQuests = $waitingQuests->map(function ($quest) {
             $takenQuests = TakenQuest::where('quest_id', $quest->quest_id)->get();
@@ -637,8 +643,32 @@ class QuestController extends Controller
             return $quest;
         });
 
+        // Enhance in progress quests with team info and dates
+        $enhancedInProgressQuests = $inProgressQuests->map(function ($quest) {
+            $takenQuests = TakenQuest::where('quest_id', $quest->quest_id)->get();
+
+            // Get team members
+            $teammates = $takenQuests->map(function ($takenQuest) {
+                return User::where('user_id', $takenQuest->user_id)
+                    ->select('user_id', 'name', 'avatar', 'level')
+                    ->first();
+            });
+
+            $quest->teammates = $teammates;
+
+            // Get start date (use created_at of quest or first taken_quest)
+            $firstTakenQuest = $takenQuests->sortBy('created_at')->first();
+            if ($firstTakenQuest) {
+                $quest->request_date = $firstTakenQuest->created_at;
+            }
+
+            return $quest;
+        });
+
         // Combine all quests
-        $allQuests = $enhancedWaitingQuests->concat($enhancedSubmittedQuests);
+        $allQuests = $enhancedWaitingQuests
+            ->concat($enhancedSubmittedQuests)
+            ->concat($enhancedInProgressQuests);
 
         logger('Total quests being sent to view', ['count' => $allQuests->count()]);
 
@@ -648,7 +678,7 @@ class QuestController extends Controller
     }
 
     /**
-     * Handle admin actions for approving or declining quests.
+     * Handle admin actions for approving, declining, or canceling quests.
      */
     public function handleAdminAction(Request $request)
     {
@@ -660,7 +690,7 @@ class QuestController extends Controller
 
         $request->validate([
             'quest_id' => 'required|exists:quests,quest_id',
-            'action' => 'required|in:accept,decline',
+            'action' => 'required|in:accept,decline,cancel', // Added 'cancel' as an option
         ]);
 
         $quest = Quest::findOrFail($request->quest_id);
@@ -671,7 +701,20 @@ class QuestController extends Controller
             'current_status' => $currentStatus
         ]);
 
-        if ($request->action === 'accept') {
+        if ($request->action === 'cancel') {
+            // Handle quest cancellation (similar to decline but for in-progress quests)
+            $quest->status = 'open';
+            $quest->save();
+
+            // Delete all taken_quests entries for this quest
+            TakenQuest::where('quest_id', $quest->quest_id)->delete();
+            logger('Quest cancelled by admin, status updated to open and taken_quests entries deleted', [
+                'quest_id' => $quest->quest_id,
+                'previous_status' => $currentStatus
+            ]);
+
+            return redirect()->route('receptionist')->with('success', 'Quest has been cancelled successfully.');
+        } else if ($request->action === 'accept') {
             if ($currentStatus === 'waiting') {
                 // If approving a waiting quest, change status to "in progress"
                 $quest->status = 'in progress';
@@ -711,7 +754,7 @@ class QuestController extends Controller
                 foreach ($takenQuests as $takenQuest) {
                     $user = User::find($takenQuest->user_id);
                     if ($user) {
-                        // Instead of dispatching an event, update XP directly
+                        // Award XP directly
                         $previousXp = $user->xp_point;
                         $newXp = $previousXp + $xpReward;
 
@@ -847,7 +890,60 @@ class QuestController extends Controller
             logger('Quest status updated to open and taken_quests entries deleted');
         }
 
-        return redirect()->route('receptionist')->with('success', 'Quest has been ' . ($request->action === 'accept' ? 'approved' : 'declined') . ' successfully.');
+        return redirect()->route('receptionist')->with('success', 'Quest has been ' . ($request->action === 'accept' ? 'approved' : ($request->action === 'cancel' ? 'cancelled' : 'declined')) . ' successfully.');
+    }
+
+    /**
+     * Allow a user to abandon a quest they're working on.
+     */
+    public function abandonQuest(Request $request)
+    {
+        $request->validate([
+            'quest_id' => 'required|exists:quests,quest_id',
+        ]);
+
+        $quest = Quest::findOrFail($request->quest_id);
+        $user = Auth::user();
+
+        // Check if the user has taken this quest
+        $takenQuest = TakenQuest::where('user_id', $user->user_id)
+            ->where('quest_id', $quest->quest_id)
+            ->first();
+
+        if (!$takenQuest) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You have not taken this quest.'
+            ], 404);
+        }
+
+        // Delete the taken quest record
+        $takenQuest->delete();
+
+        // Check if this was the last team member
+        $remainingTeamMembers = TakenQuest::where('quest_id', $quest->quest_id)->count();
+
+        if ($remainingTeamMembers === 0) {
+            // If no team members left, set quest back to open
+            $quest->status = 'open';
+            $quest->save();
+
+            logger('Last team member abandoned quest, status set to open', [
+                'quest_id' => $quest->quest_id,
+                'user_id' => $user->user_id
+            ]);
+        } else {
+            logger('User abandoned quest, other team members remain', [
+                'quest_id' => $quest->quest_id,
+                'user_id' => $user->user_id,
+                'remaining_members' => $remainingTeamMembers
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'You have successfully abandoned the quest.'
+        ]);
     }
 
     /**
