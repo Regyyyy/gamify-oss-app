@@ -5,14 +5,21 @@ import LeaderboardRoundedIcon from '@mui/icons-material/LeaderboardRounded';
 import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
 import { blue, green, grey, orange, red, yellow } from "@mui/material/colors";
 import AvatarProfile from '@/Components/AvatarProfile';
+import { useTheme } from '@mui/material/styles';
 
 export default function Leaderboard() {
     // Get users data passed from the controller
     const { users } = usePage().props;
+    const { user: currentUser } = usePage().props.auth;
+    const theme = useTheme();
 
     // Colors for top 3 players
     const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32']; // Gold, Silver, Bronze
     const rankBgColors = ['rgba(255, 215, 0, 0.1)', 'rgba(192, 192, 192, 0.1)', 'rgba(205, 127, 50, 0.1)']; // Light versions
+    
+    // Current user highlight color - using theme primary color
+    const currentUserBorderColor = theme.palette.primary.main;
+    const currentUserBgColor = `${theme.palette.primary.main}15`; // 15 = 10% opacity in hex
 
     return (
         <MainLayout>
@@ -44,8 +51,13 @@ export default function Leaderboard() {
                         <TableBody>
                             {users.map((user, index) => {
                                 const isTopThree = index < 3;
-                                const borderColor = isTopThree ? rankColors[index] : 'transparent';
-                                const backgroundColor = isTopThree ? rankBgColors[index] : 'transparent';
+                                const isCurrentUser = user.user_id === currentUser.user_id;
+                                const needsHighlight = isCurrentUser && !isTopThree;
+                                const borderColor = isTopThree ? rankColors[index] : (needsHighlight ? currentUserBorderColor : 'transparent');
+                                const backgroundColor = isTopThree ? rankBgColors[index] : (needsHighlight ? currentUserBgColor : 'transparent');
+                                
+                                // Set the color for the "You" label - use position color for top 3, primary color otherwise
+                                const youLabelColor = isTopThree ? rankColors[index] : currentUserBorderColor;
 
                                 return (
                                     <TableRow
@@ -54,21 +66,26 @@ export default function Leaderboard() {
                                             height: '64px',
                                             backgroundColor: backgroundColor,
                                             '& > td': {
-                                                borderTop: isTopThree ? `2px solid ${borderColor}` : '1px solid #eaeaea',
-                                                borderBottom: isTopThree ? `2px solid ${borderColor}` : '1px solid #eaeaea',
+                                                borderTop: isTopThree ? `2px solid ${borderColor}` : 
+                                                        (needsHighlight ? `2px solid ${currentUserBorderColor}` : '1px solid #eaeaea'),
+                                                borderBottom: isTopThree ? `2px solid ${borderColor}` : 
+                                                           (needsHighlight ? `2px solid ${currentUserBorderColor}` : '1px solid #eaeaea'),
                                             },
                                             '& > td:first-of-type': {
                                                 borderTopLeftRadius: '12px',
                                                 borderBottomLeftRadius: '12px',
-                                                borderLeft: isTopThree ? `2px solid ${borderColor}` : '1px solid #eaeaea',
+                                                borderLeft: isTopThree ? `2px solid ${borderColor}` : 
+                                                         (needsHighlight ? `2px solid ${currentUserBorderColor}` : '1px solid #eaeaea'),
                                             },
                                             '& > td:last-child': {
                                                 borderTopRightRadius: '12px',
                                                 borderBottomRightRadius: '12px',
-                                                borderRight: isTopThree ? `2px solid ${borderColor}` : '1px solid #eaeaea',
+                                                borderRight: isTopThree ? `2px solid ${borderColor}` : 
+                                                          (needsHighlight ? `2px solid ${currentUserBorderColor}` : '1px solid #eaeaea'),
                                             },
                                             '&:hover': {
-                                                backgroundColor: isTopThree ? `${rankBgColors[index]}` : 'rgba(0,0,0,0.02)',
+                                                backgroundColor: isTopThree ? `${rankBgColors[index]}` : 
+                                                               (needsHighlight ? `${theme.palette.primary.main}25` : 'rgba(0,0,0,0.02)'),
                                                 transition: 'all 0.2s'
                                             }
                                         }}
@@ -76,7 +93,7 @@ export default function Leaderboard() {
                                         <TableCell sx={{ width: '10%', pl: 3 }}>
                                             <Typography sx={{
                                                 fontWeight: 'bold',
-                                                color: isTopThree ? borderColor : 'inherit',
+                                                color: isTopThree ? borderColor : (needsHighlight ? currentUserBorderColor : 'inherit'),
                                                 fontSize: isTopThree ? '1.2rem' : '1rem'
                                             }}>
                                                 {index + 1}
@@ -97,11 +114,23 @@ export default function Leaderboard() {
                                                 />
                                                 <Typography
                                                     sx={{
-                                                        fontWeight: isTopThree ? 'bold' : 'normal',
+                                                        fontWeight: isTopThree || isCurrentUser ? 'bold' : 'normal',
                                                         fontSize: isTopThree ? '1.1rem' : '1rem'
                                                     }}
                                                 >
                                                     {user.name}
+                                                    {isCurrentUser && (
+                                                        <Box 
+                                                            component="span" 
+                                                            sx={{ 
+                                                                ml: 1, 
+                                                                color: youLabelColor,
+                                                                fontWeight: 'bold'
+                                                            }}
+                                                        >
+                                                            (You)
+                                                        </Box>
+                                                    )}
                                                 </Typography>
                                             </Box>
                                         </TableCell>
@@ -111,7 +140,7 @@ export default function Leaderboard() {
                                                     color: "#FFC107",
                                                     fontSize: isTopThree ? 28 : 24
                                                 }} />
-                                                <Typography fontWeight="bold" sx={{
+                                                <Typography fontWeight={isTopThree || isCurrentUser ? "bold" : "normal"} sx={{
                                                     fontSize: isTopThree ? '1.1rem' : '1rem'
                                                 }}>
                                                     {user.xp_point}
