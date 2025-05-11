@@ -396,7 +396,7 @@ class QuestController extends Controller
             $request->validate([
                 'quest_id' => 'required|exists:quests,quest_id',
                 'images' => 'required|array|min:1|max:3',
-                'images.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'images.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240',
             ]);
 
             $quest = Quest::findOrFail($request->quest_id);

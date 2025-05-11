@@ -60,7 +60,7 @@ class ProfileController extends Controller
 
         // Only validate avatar if it's being uploaded (and not marked as unchanged)
         if ($request->hasFile('avatar') && !$request->has('_avatar_unchanged')) {
-            $rules['avatar'] = ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'];
+            $rules['avatar'] = ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:10240'];
         }
 
         // Create validator with our dynamic rules

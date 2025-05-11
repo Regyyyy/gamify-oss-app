@@ -1,4 +1,3 @@
-import Checkbox from '@/Components/Checkbox';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -71,6 +70,7 @@ export default function Login({ status, canResetPassword }) {
                     </Box>
                 </Box>
 
+                {/* Remember me checkbox - commented out
                 <Box className="mt-4 block">
                     <label className="flex items-center">
                         <Checkbox
@@ -85,8 +85,10 @@ export default function Login({ status, canResetPassword }) {
                         </span>
                     </label>
                 </Box>
+                */}
 
                 <Box className="mt-4 flex items-center justify-end gap-4">
+                    {/* Forgot password link - commented out
                     {canResetPassword && (
                         <Link
                             href={route('password.request')}
@@ -95,6 +97,15 @@ export default function Login({ status, canResetPassword }) {
                             Forgot your password?
                         </Link>
                     )}
+                    */}
+                    
+                    {/* Added "Don't have an account?" link */}
+                    <Link
+                        href={route('register')}
+                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    >
+                        Don't have an account?
+                    </Link>
 
                     <PrimaryButton className="md-4" disabled={processing}>
                         Log in
