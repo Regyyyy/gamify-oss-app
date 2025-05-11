@@ -1,6 +1,16 @@
 import MainLayout from '@/Layouts/MainLayout';
 import { Head, usePage } from '@inertiajs/react';
 import { Box, Typography, Link, Button, Divider } from '@mui/material';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import {
+    Popover,
+    FormControl,
+    MenuItem,
+    Select,
+    InputLabel,
+    IconButton,
+    Badge,
+} from '@mui/material';
 
 import MapRoundedIcon from '@mui/icons-material/MapRounded';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -9,11 +19,67 @@ import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import QuestCard from '@/Components/QuestCard';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { useEffect, useState } from 'react';
+import SecondaryButton from '@/Components/SecondaryButton';
 
 export default function QuestBoard() {
     const { takenQuests, availableQuests, auth } = usePage().props;
     const user = auth.user;
     const isAdmin = user.role === 'admin';
+
+    // Filter state
+    const [filterAnchorEl, setFilterAnchorEl] = useState(null);
+    const [difficultyFilter, setDifficultyFilter] = useState("None");
+    const [roleFilter, setRoleFilter] = useState("None");
+    const [filteredQuests, setFilteredQuests] = useState([]);
+    const [isFiltering, setIsFiltering] = useState(false);
+
+    // Filter popover handlers
+    const handleFilterClick = (event) => {
+        setFilterAnchorEl(event.currentTarget);
+    };
+
+    const handleFilterClose = () => {
+        setFilterAnchorEl(null);
+    };
+
+    // Filter apply and reset handlers
+    const applyFilters = () => {
+        if (difficultyFilter !== "None" || roleFilter !== "None") {
+            setIsFiltering(true);
+
+            // Apply filtering logic
+            let filtered = [...availableQuests];
+
+            if (difficultyFilter !== "None") {
+                filtered = filtered.filter(quest => quest.difficulty === difficultyFilter);
+            }
+
+            if (roleFilter !== "None") {
+                filtered = filtered.filter(quest => {
+                    // If the quest has no role (null), it won't match any role filter except "None"
+                    return quest.role === roleFilter;
+                });
+            }
+
+            setFilteredQuests(filtered);
+        } else {
+            setIsFiltering(false);
+            setFilteredQuests([]);
+        }
+
+        handleFilterClose();
+    };
+
+    const resetFilters = () => {
+        setDifficultyFilter("None");
+        setRoleFilter("None");
+        setIsFiltering(false);
+        setFilteredQuests([]);
+        handleFilterClose();
+    };
+
+    // Determine which quests to display
+    const displayedQuests = isFiltering ? filteredQuests : availableQuests;
 
     useEffect(() => {
         // Log taken and available quests for debugging
@@ -109,19 +175,105 @@ export default function QuestBoard() {
                                     <Typography variant="h5" fontWeight="bold">
                                         Available Quests
                                     </Typography>
-                                    {isAdmin && (
-                                        <PrimaryButton
-                                            variant="contained"
-                                            startIcon={<AddIcon />}
-                                            href={route('quests.create')}
+                                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                        <IconButton
+                                            onClick={handleFilterClick}
+                                            sx={{ ml: 1 }}
+                                            color={isFiltering ? "primary" : "default"}
+                                            aria-label="filter quests"
                                         >
-                                            Add New Quest
-                                        </PrimaryButton>
-                                    )}
+                                            <Badge
+                                                color="primary"
+                                                variant="dot"
+                                                invisible={!isFiltering}
+                                            >
+                                                <FilterListIcon />
+                                            </Badge>
+                                        </IconButton>
+                                        {isAdmin && (
+                                            <PrimaryButton
+                                                variant="contained"
+                                                startIcon={<AddIcon />}
+                                                href={route('quests.create')}
+                                            >
+                                                Add New Quest
+                                            </PrimaryButton>
+                                        )}
+                                    </Box>
                                 </Box>
 
-                                {availableQuests && availableQuests.length > 0 ? (
-                                    availableQuests.map((quest) => (
+                                {/* Filter Popover */}
+                                <Popover
+                                    open={Boolean(filterAnchorEl)}
+                                    anchorEl={filterAnchorEl}
+                                    onClose={handleFilterClose}
+                                    anchorOrigin={{
+                                        vertical: 'bottom',
+                                        horizontal: 'right',
+                                    }}
+                                    transformOrigin={{
+                                        vertical: 'top',
+                                        horizontal: 'right',
+                                    }}
+                                >
+                                    <Box sx={{ p: 3, width: 300 }}>
+                                        <Typography variant="h6" gutterBottom>
+                                            Filter Quests
+                                        </Typography>
+
+                                        {/* Difficulty Filter */}
+                                        <FormControl fullWidth sx={{ mb: 2 }}>
+                                            <InputLabel id="difficulty-filter-label">Difficulty</InputLabel>
+                                            <Select
+                                                labelId="difficulty-filter-label"
+                                                id="difficulty-filter"
+                                                value={difficultyFilter}
+                                                label="Difficulty"
+                                                onChange={(e) => setDifficultyFilter(e.target.value)}
+                                            >
+                                                <MenuItem value="None">All Difficulties</MenuItem>
+                                                <MenuItem value="Easy">Easy</MenuItem>
+                                                <MenuItem value="Medium">Medium</MenuItem>
+                                                <MenuItem value="Hard">Hard</MenuItem>
+                                            </Select>
+                                        </FormControl>
+
+                                        {/* Role Filter */}
+                                        <FormControl fullWidth sx={{ mb: 3 }}>
+                                            <InputLabel id="role-filter-label">Role</InputLabel>
+                                            <Select
+                                                labelId="role-filter-label"
+                                                id="role-filter"
+                                                value={roleFilter}
+                                                label="Role"
+                                                onChange={(e) => setRoleFilter(e.target.value)}
+                                            >
+                                                <MenuItem value="None">All Roles</MenuItem>
+                                                <MenuItem value="Game Designer">Game Designer</MenuItem>
+                                                <MenuItem value="Game Artist">Game Artist</MenuItem>
+                                                <MenuItem value="Game Programmer">Game Programmer</MenuItem>
+                                                <MenuItem value="Audio Composer">Audio Composer</MenuItem>
+                                            </Select>
+                                        </FormControl>
+
+                                        {/* Filter Actions */}
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <SecondaryButton
+                                                onClick={resetFilters}
+                                            >
+                                                Reset
+                                            </SecondaryButton>
+                                            <PrimaryButton
+                                                onClick={applyFilters}
+                                            >
+                                                Apply Filters
+                                            </PrimaryButton>
+                                        </Box>
+                                    </Box>
+                                </Popover>
+
+                                {displayedQuests && displayedQuests.length > 0 ? (
+                                    displayedQuests.map((quest) => (
                                         <QuestCard
                                             key={`available-${quest.quest_id}`}
                                             questId={quest.quest_id}
@@ -146,16 +298,27 @@ export default function QuestBoard() {
                                         p: 4,
                                         border: '1px dashed #ccc',
                                         borderRadius: 2,
-                                        textAlign: 'center'
+                                        textAlign: 'center',
                                     }}>
                                         <Typography variant="body1" color="text.secondary">
-                                            No available quests at the moment.
-                                            {isAdmin && (
+                                            {isFiltering
+                                                ? "No quests match the selected filters."
+                                                : "No available quests at the moment."}
+                                            {isAdmin && !isFiltering && (
                                                 <Box component="span" sx={{ display: 'block', mt: 1 }}>
                                                     Click the "Add New Quest" button to create one.
                                                 </Box>
                                             )}
                                         </Typography>
+                                        {isFiltering && (
+                                            <Box sx={{ mt: 2 }}>
+                                                <SecondaryButton
+                                                    onClick={resetFilters}
+                                                >
+                                                    Clear Filters
+                                                </SecondaryButton>
+                                            </Box>
+                                        )}
                                     </Box>
                                 )}
                             </Box>
