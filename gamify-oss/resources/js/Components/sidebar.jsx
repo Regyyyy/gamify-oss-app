@@ -113,6 +113,40 @@ export default function Sidebar({
     return Math.min(100, Math.max(0, (xpProgress / xpNeeded) * 100));
   };
 
+  // Function to check if the current path matches a given href
+  const isActive = (href) => {
+    // For profile.edit route, handle separately since it doesn't match URL exactly
+    if (href === route("profile.edit") && url.includes("/profile/edit")) {
+      return true;
+    }
+    if (href === route("profile.show") && url.includes("/profile") && !url.includes("/profile/edit")) {
+      return true;
+    }
+    return url === href || url.startsWith(href);
+  };
+
+  // Active style for menu items
+  const activeStyle = {
+    bgcolor: 'rgba(255, 255, 255, 0.15)',
+    borderLeft: '4px solid',
+    borderColor: theme.palette.primary.main,
+    paddingLeft: (theme) => theme.spacing(2) - 4, // Adjust padding to maintain alignment
+    '&:hover': {
+      bgcolor: 'rgba(255, 255, 255, 0.2)',
+    }
+  };
+
+  // Active style for nested menu items
+  const activeNestedStyle = {
+    bgcolor: 'rgba(255, 255, 255, 0.15)',
+    borderLeft: '4px solid',
+    borderColor: theme.palette.primary.main,
+    paddingLeft: (theme) => theme.spacing(4) - 4, // Adjust padding to maintain alignment
+    '&:hover': {
+      bgcolor: 'rgba(255, 255, 255, 0.2)',
+    }
+  };
+
   // Sidebar content
   const sidebarContent = (
     <Box
@@ -205,6 +239,7 @@ export default function Sidebar({
             <ListItemButton 
               href="/receptionist"
               onClick={isMobile ? onMobileClose : undefined}
+              sx={isActive("/receptionist") ? activeStyle : {}}
             >
               <ListItemIcon>
                 <RoomServiceRoundedIcon sx={{ color: "#fff" }} />
@@ -214,7 +249,10 @@ export default function Sidebar({
           )}
 
           {/* Quest Dropdown */}
-          <ListItemButton onClick={handleToggleQuests}>
+          <ListItemButton 
+            onClick={handleToggleQuests}
+            sx={isQuestPage ? activeStyle : {}}
+          >
             <ListItemIcon>
               <ExploreRoundedIcon sx={{ color: "#fff" }} />
             </ListItemIcon>
@@ -226,7 +264,10 @@ export default function Sidebar({
             <List component="div" disablePadding>
               <ListItemButton 
                 href="/questboard" 
-                sx={{ pl: 4 }}
+                sx={[
+                  { pl: 4 },
+                  isActive("/questboard") && activeNestedStyle
+                ]}
                 onClick={isMobile ? onMobileClose : undefined}
               >
                 <ListItemIcon>
@@ -236,7 +277,10 @@ export default function Sidebar({
               </ListItemButton>
               <ListItemButton 
                 href="/beginnerquests" 
-                sx={{ pl: 4 }}
+                sx={[
+                  { pl: 4 },
+                  isActive("/beginnerquests") && activeNestedStyle
+                ]}
                 onClick={isMobile ? onMobileClose : undefined}
               >
                 <ListItemIcon>
@@ -246,7 +290,10 @@ export default function Sidebar({
               </ListItemButton>
               <ListItemButton 
                 href="/takenquests" 
-                sx={{ pl: 4 }}
+                sx={[
+                  { pl: 4 },
+                  isActive("/takenquests") && activeNestedStyle
+                ]}
                 onClick={isMobile ? onMobileClose : undefined}
               >
                 <ListItemIcon>
@@ -256,7 +303,10 @@ export default function Sidebar({
               </ListItemButton>
               <ListItemButton 
                 href="/questhistory" 
-                sx={{ pl: 4 }}
+                sx={[
+                  { pl: 4 },
+                  isActive("/questhistory") && activeNestedStyle
+                ]}
                 onClick={isMobile ? onMobileClose : undefined}
               >
                 <ListItemIcon>
@@ -270,6 +320,7 @@ export default function Sidebar({
           <ListItemButton 
             href="/leaderboard"
             onClick={isMobile ? onMobileClose : undefined}
+            sx={isActive("/leaderboard") ? activeStyle : {}}
           >
             <ListItemIcon>
               <LeaderboardRoundedIcon sx={{ color: "#fff" }} />
@@ -280,6 +331,7 @@ export default function Sidebar({
           <ListItemButton 
             href="/achievements"
             onClick={isMobile ? onMobileClose : undefined}
+            sx={isActive("/achievements") ? activeStyle : {}}
           >
             <ListItemIcon>
               <StarRoundedIcon sx={{ color: "#fff" }} />
@@ -290,6 +342,7 @@ export default function Sidebar({
           <ListItemButton 
             href="/badges"
             onClick={isMobile ? onMobileClose : undefined}
+            sx={isActive("/badges") ? activeStyle : {}}
           >
             <ListItemIcon>
               <EmojiEventsRoundedIcon sx={{ color: "#fff" }} />
@@ -305,6 +358,7 @@ export default function Sidebar({
         <ListItemButton 
           href={route("profile.edit")}
           onClick={isMobile ? onMobileClose : undefined}
+          sx={isActive(route("profile.edit")) ? activeStyle : {}}
         >
           <ListItemIcon>
             <SettingsIcon sx={{ color: "#fff" }} />
