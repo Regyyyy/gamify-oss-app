@@ -17,6 +17,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import StarIcon from '@mui/icons-material/Star';
 import EditIcon from '@mui/icons-material/Edit';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import { useTheme } from '@mui/material/styles';
 
@@ -65,6 +66,30 @@ export default function Profile({ profileUser, achievements, badges, proficienci
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+                    {/* Back to Quest Board link - added at the top */}
+                    <Box sx={{ mb: 2 }}>
+                        <Link 
+                            href={route('questboard')} 
+                            style={{ textDecoration: 'none' }}
+                        >
+                            <Typography 
+                                variant="body2" 
+                                sx={{ 
+                                    display: 'flex', 
+                                    alignItems: 'center',
+                                    color: 'text.secondary',
+                                    '&:hover': { 
+                                        color: theme.palette.primary.main,
+                                    },
+                                    transition: 'color 0.2s'
+                                }}
+                            >
+                                <ArrowBackIcon fontSize="small" sx={{ mr: 0.5 }} />
+                                Back to Quest Board
+                            </Typography>
+                        </Link>
+                    </Box>
+
                     <Paper className="bg-white p-6 shadow sm:rounded-lg">
                         {/* First Row: User Info - Horizontal Layout */}
                         <Box sx={{ display: 'flex', flexDirection: 'row', mb: 3, alignItems: 'center' }}>
