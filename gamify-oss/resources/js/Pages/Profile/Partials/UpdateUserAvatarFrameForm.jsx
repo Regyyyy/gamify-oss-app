@@ -6,6 +6,7 @@ import AvatarFrameCard from '@/Components/AvatarFrameCard';
 import FramedAvatar from '@/Components/FramedAvatar';
 import { usePage } from '@inertiajs/react';
 import axios from 'axios';
+import { Transition } from '@headlessui/react';
 
 export default function UpdateUserAvatarFrameForm({ className = '' }) {
     const user = usePage().props.auth.user;
@@ -15,7 +16,8 @@ export default function UpdateUserAvatarFrameForm({ className = '' }) {
     const [selectedFrame, setSelectedFrame] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [message, setMessage] = useState(null);
+    const [recentlySuccessful, setRecentlySuccessful] = useState(false);
+    const [error, setError] = useState(null);
     
     // Fetch avatar frames on component mount
     useEffect(() => {
@@ -35,10 +37,7 @@ export default function UpdateUserAvatarFrameForm({ className = '' }) {
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching avatar frames:', error);
-                setMessage({
-                    type: 'error',
-                    text: 'Failed to load avatar frames. Please try again.'
-                });
+                setError('Failed to load avatar frames. Please try again.');
                 setLoading(false);
             }
         };
@@ -65,23 +64,17 @@ export default function UpdateUserAvatarFrameForm({ className = '' }) {
                 is_used: frame.id === selectedFrame
             })));
             
-            setMessage({
-                type: 'success',
-                text: 'Avatar frame updated successfully!'
-            });
+            setRecentlySuccessful(true);
             
-            // Clear success message after 3 seconds
+            // Clear success message after 2 seconds
             setTimeout(() => {
-                setMessage(null);
-            }, 3000);
+                setRecentlySuccessful(false);
+            }, 2000);
             
             setSaving(false);
         } catch (error) {
             console.error('Error updating avatar frame:', error);
-            setMessage({
-                type: 'error',
-                text: error.response?.data?.error || 'Failed to update avatar frame. Please try again.'
-            });
+            setError(error.response?.data?.error || 'Failed to update avatar frame. Please try again.');
             setSaving(false);
         }
     };
@@ -98,13 +91,13 @@ export default function UpdateUserAvatarFrameForm({ className = '' }) {
                 </p>
             </header>
             
-            {message && (
+            {error && (
                 <Alert 
-                    severity={message.type} 
+                    severity="error" 
                     sx={{ mt: 2, mb: 2 }}
-                    onClose={() => setMessage(null)}
+                    onClose={() => setError(null)}
                 >
-                    {message.text}
+                    {error}
                 </Alert>
             )}
             
@@ -137,13 +130,25 @@ export default function UpdateUserAvatarFrameForm({ className = '' }) {
                         ))}
                     </Grid>
                     
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-start', mt: 4 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 4, mt: 4 }}>
                         <PrimaryButton
                             onClick={handleSave}
                             disabled={saving}
                         >
                             {saving ? 'Saving...' : 'Save'}
                         </PrimaryButton>
+
+                        <Transition
+                            show={recentlySuccessful}
+                            enter="transition ease-in-out"
+                            enterFrom="opacity-0"
+                            leave="transition ease-in-out"
+                            leaveTo="opacity-0"
+                        >
+                            <p className="text-sm text-gray-600">
+                                Saved.
+                            </p>
+                        </Transition>
                     </Box>
                 </>
             )}
