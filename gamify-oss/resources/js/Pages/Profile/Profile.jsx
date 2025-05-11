@@ -66,7 +66,7 @@ export default function Profile({ profileUser, achievements, badges, proficienci
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                    {/* Back to Quest Board link - added at the top */}
+                    {/* Back to Quest Board link*/}
                     <Box sx={{ mb: 2 }}>
                         <Link 
                             href={route('questboard')} 

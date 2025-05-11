@@ -122,10 +122,26 @@ export default function QuestBoard() {
                                 <Typography>
                                     Project name: ASE Lab Game Dev Project 001
                                 </Typography>
-                                <Typography>
-                                    Project repo:
-                                    <Link href="https://github.com/F201/aselab-game-dev-open-project_001" underline="hover" sx={{ ml: 1 }}>click here</Link>
-                                </Typography>
+                                <Box sx={{ mt: 1 }}>
+                                    <Typography sx={{ display: 'flex', alignItems: 'center' }}>
+                                        Project repo:
+                                        <PrimaryButton
+                                            href="https://github.com/F201/aselab-game-dev-open-project_001"
+                                            target="_blank"
+                                            size="small"
+                                            sx={{ ml: 1, px: 2, py: 0.5 }}
+                                            startIcon={
+                                                <img
+                                                    src="/images/github-mark-white.png"
+                                                    alt="GitHub"
+                                                    style={{ width: 16, height: 16 }}
+                                                />
+                                            }
+                                        >
+                                            Open Project
+                                        </PrimaryButton>
+                                    </Typography>
+                                </Box>
                             </Box>
 
                             {/* Your Taken Quests Section - Only shown if user has taken quests */}

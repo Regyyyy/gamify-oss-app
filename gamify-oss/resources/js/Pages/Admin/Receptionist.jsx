@@ -5,10 +5,11 @@ import RoomServiceRoundedIcon from '@mui/icons-material/RoomServiceRounded';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import AdminQuestCard from '@/Components/AdminQuestCard';
 import { useEffect, useState } from 'react';
+import PrimaryButton from '@/Components/PrimaryButton';
 
 export default function Receptionist() {
     const { quests } = usePage().props;
-    
+
     const [waitingQuests, setWaitingQuests] = useState([]);
     const [submittedQuests, setSubmittedQuests] = useState([]);
 
@@ -52,10 +53,26 @@ export default function Receptionist() {
                                 <Typography>
                                     Project name: ASE Lab Game Dev Project 001
                                 </Typography>
-                                <Typography>
-                                    Project repo:
-                                    <Link href="https://github.com/F201/aselab-game-dev-open-project_001" underline="hover" sx={{ ml: 1 }}>click here</Link>
-                                </Typography>
+                                <Box sx={{ mt: 1 }}>
+                                    <Typography sx={{ display: 'flex', alignItems: 'center' }}>
+                                        Project repo:
+                                        <PrimaryButton
+                                            href="https://github.com/F201/aselab-game-dev-open-project_001"
+                                            target="_blank"
+                                            size="small"
+                                            sx={{ ml: 1, px: 2, py: 0.5 }}
+                                            startIcon={
+                                                <img
+                                                    src="/images/github-mark-white.png"
+                                                    alt="GitHub"
+                                                    style={{ width: 16, height: 16 }}
+                                                />
+                                            }
+                                        >
+                                            Open Project
+                                        </PrimaryButton>
+                                    </Typography>
+                                </Box>
                             </Box>
 
                             {/* Pending Requests Section */}
@@ -63,7 +80,7 @@ export default function Receptionist() {
                                 <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
                                     Pending Requests
                                 </Typography>
-                                
+
                                 {waitingQuests && waitingQuests.length > 0 ? (
                                     waitingQuests.map((quest) => (
                                         <AdminQuestCard
@@ -82,11 +99,11 @@ export default function Receptionist() {
                                         />
                                     ))
                                 ) : (
-                                    <Box sx={{ 
-                                        p: 4, 
-                                        border: '1px dashed #ccc', 
-                                        borderRadius: 2, 
-                                        textAlign: 'center' 
+                                    <Box sx={{
+                                        p: 4,
+                                        border: '1px dashed #ccc',
+                                        borderRadius: 2,
+                                        textAlign: 'center'
                                     }}>
                                         <Typography variant="body1" color="text.secondary">
                                             No pending quest requests at the moment.
@@ -102,7 +119,7 @@ export default function Receptionist() {
                                 <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
                                     Pending Submissions
                                 </Typography>
-                                
+
                                 {submittedQuests && submittedQuests.length > 0 ? (
                                     submittedQuests.map((quest) => (
                                         <AdminQuestCard
@@ -122,11 +139,11 @@ export default function Receptionist() {
                                         />
                                     ))
                                 ) : (
-                                    <Box sx={{ 
-                                        p: 4, 
-                                        border: '1px dashed #ccc', 
-                                        borderRadius: 2, 
-                                        textAlign: 'center' 
+                                    <Box sx={{
+                                        p: 4,
+                                        border: '1px dashed #ccc',
+                                        borderRadius: 2,
+                                        textAlign: 'center'
                                     }}>
                                         <Typography variant="body1" color="text.secondary">
                                             No pending quest submissions at the moment.

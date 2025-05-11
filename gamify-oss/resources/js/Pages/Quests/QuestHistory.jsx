@@ -6,6 +6,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import QuestCard from '@/Components/QuestCard';
 import { useEffect } from 'react';
 import SecondaryButton from '@/Components/SecondaryButton';
+import PrimaryButton from '@/Components/PrimaryButton';
 
 export default function QuestHistory() {
     const { finishedQuests, auth } = usePage().props;
@@ -49,11 +50,28 @@ export default function QuestHistory() {
                                 <Typography>
                                     Project name: ASE Lab Game Dev Project 001
                                 </Typography>
-                                <Typography>
-                                    Project repo:
-                                    <Link href="https://github.com/F201/aselab-game-dev-open-project_001" underline="hover" sx={{ ml: 1 }}>click here</Link>
-                                </Typography>
+                                <Box sx={{ mt: 1 }}>
+                                    <Typography sx={{ display: 'flex', alignItems: 'center' }}>
+                                        Project repo:
+                                        <PrimaryButton
+                                            href="https://github.com/F201/aselab-game-dev-open-project_001"
+                                            target="_blank"
+                                            size="small"
+                                            sx={{ ml: 1, px: 2, py: 0.5 }}
+                                            startIcon={
+                                                <img
+                                                    src="/images/github-mark-white.png"
+                                                    alt="GitHub"
+                                                    style={{ width: 16, height: 16 }}
+                                                />
+                                            }
+                                        >
+                                            Open Project
+                                        </PrimaryButton>
+                                    </Typography>
+                                </Box>
                             </Box>
+
 
                             {/* Quest History Section */}
                             <Box sx={{ py: 2 }}>
