@@ -44,6 +44,10 @@ Route::post('/quests/take', [QuestController::class, 'takeQuest'])
     ->middleware(['auth', 'verified'])
     ->name('quests.take');
 
+Route::post('/quest/abandon', [QuestController::class, 'abandonQuest'])
+    ->middleware(['auth', 'verified'])
+    ->name('quest.abandon');
+
 Route::get('/takenquests', [QuestController::class, 'communityTakenQuests'])
     ->middleware(['auth', 'verified'])
     ->name('takenquests');

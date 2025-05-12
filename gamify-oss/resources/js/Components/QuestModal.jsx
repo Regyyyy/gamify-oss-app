@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Box, Typography, Chip, IconButton, Paper, Alert, Link } from "@mui/material";
+import { Modal, Box, Typography, Chip, IconButton, Paper, Alert, Link, Button } from "@mui/material";
 import { blue, green, grey, orange, red, yellow, purple } from "@mui/material/colors";
+import axios from "axios";
 import LockOpenRoundedIcon from "@mui/icons-material/LockOpenRounded";
 import LockRoundedIcon from "@mui/icons-material/LockRounded";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
@@ -46,6 +47,85 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
     quest_id: quest.questId,
     images: [],
   });
+
+  // Function to handle abandoning a quest
+  const [abandonConfirmOpen, setAbandonConfirmOpen] = useState(false);
+  const [abandonProcessing, setAbandonProcessing] = useState(false);
+
+  const handleAbandonQuest = () => {
+    setAbandonConfirmOpen(true);
+  };
+
+  const confirmAbandonQuest = async () => {
+    try {
+      setAbandonProcessing(true);
+      const response = await axios.post(route('quest.abandon'), {
+        quest_id: quest.questId
+      });
+      
+      // Close the modal and refresh the page to show updated data
+      onClose();
+      window.location.reload();
+    } catch (error) {
+      console.error('Error abandoning quest:', error);
+      setAbandonProcessing(false);
+      setAbandonConfirmOpen(false);
+    }
+  };
+
+  // Render confirmation dialog for abandoning quest
+  const renderAbandonConfirmDialog = () => {
+    return abandonConfirmOpen ? (
+      <Box sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1500,
+      }}>
+        <Paper sx={{
+          width: 400,
+          p: 3,
+          borderRadius: 2,
+        }}>
+          <Typography variant="h6" gutterBottom>
+            Abandon Quest?
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 3 }}>
+            Are you sure you want to abandon this quest? You will be removed from the team, but other team members can continue working on it. If you are the last team member, the quest will be reset to "open" status.
+          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+            <Button 
+              variant="outlined" 
+              onClick={() => setAbandonConfirmOpen(false)}
+              disabled={abandonProcessing}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="contained"
+              onClick={confirmAbandonQuest}
+              disabled={abandonProcessing}
+              sx={{ 
+                backgroundColor: red[600],
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: red[800],
+                }
+              }}
+            >
+              Abandon Quest
+            </Button>
+          </Box>
+        </Paper>
+      </Box>
+    ) : null;
+  };
 
   // Function to determine chip properties based on quest type and status
   const getStatusChip = () => {
@@ -628,14 +708,14 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
                   id="upload-images"
                   style={{ display: 'none' }}
                   onChange={handleFileChange}
-                  disabled={selectedFiles.length >= 3 || processing}
+                  disabled={selectedFiles.length >= 3 || processing || abandonProcessing}
                 />
                 <label htmlFor="upload-images">
                   <PrimaryButton
                     variant="contained"
                     component="span"
                     startIcon={<UploadFileIcon />}
-                    disabled={selectedFiles.length >= 3 || processing}
+                    disabled={selectedFiles.length >= 3 || processing || abandonProcessing}
                     fullWidth
                     sx={{ mb: 2 }}
                   >
@@ -669,7 +749,7 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
                         </Box>
                         <IconButton
                           onClick={() => removeFile(index)}
-                          disabled={processing}
+                          disabled={processing || abandonProcessing}
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -684,11 +764,31 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
                 variant="contained"
                 color="primary"
                 fullWidth
-                disabled={selectedFiles.length === 0 || processing}
+                disabled={selectedFiles.length === 0 || processing || abandonProcessing}
                 onClick={handleSubmit}
               >
                 Submit Quest
               </PrimaryButton>
+
+              {/* Abandon Quest button */}
+              <Button
+                variant="outlined"
+                color="error"
+                fullWidth
+                disabled={processing || abandonProcessing}
+                onClick={handleAbandonQuest}
+                sx={{
+                  mt: 2,
+                  color: red[600],
+                  borderColor: red[600],
+                  '&:hover': {
+                    backgroundColor: red[50],
+                    borderColor: red[800],
+                  }
+                }}
+              >
+                Abandon Quest
+              </Button>
             </>
           ) : (
             <></>
@@ -801,7 +901,7 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
         <IconButton
           aria-label="close"
           onClick={onClose}
-          disabled={processing}
+          disabled={processing || abandonProcessing}
           sx={{
             position: 'absolute',
             right: 12,
@@ -811,6 +911,9 @@ export default function QuestModal({ open, onClose, quest, questType = "Beginner
         >
           <CloseIcon />
         </IconButton>
+        
+        {/* Abandon Quest Confirmation Dialog */}
+        {renderAbandonConfirmDialog()}
 
         <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3 }}>
           {/* Left side - Quest Information */}

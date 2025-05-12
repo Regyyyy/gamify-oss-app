@@ -280,10 +280,8 @@ class QuestController extends Controller
         // Set required level based on quest difficulty
         if ($quest->difficulty === 'Hard') {
             $requiredLevel = 4;
-        } elseif ($quest->difficulty === 'Medium') {
-            $requiredLevel = 3;
         } else {
-            $requiredLevel = 2;
+            $requiredLevel = 3;
         }
 
         // Check if current user meets the level requirement
