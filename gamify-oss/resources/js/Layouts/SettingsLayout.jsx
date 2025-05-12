@@ -8,12 +8,16 @@ import AppBar from '@mui/material/AppBar';
 import CssBaseline from '@mui/material/CssBaseline';
 import Toolbar from '@mui/material/Toolbar';
 import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';  // Added import
+import InfoIcon from '@mui/icons-material/Info';  // Added import
+import InfoModal from '@/Components/InfoModal';  // Added import
+import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 
 export default function SettingsLayout({ header, children }) {
     const user = usePage().props.auth.user;
 
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
+    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const [infoModalOpen, setInfoModalOpen] = useState(false);  // Added state
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -31,6 +35,16 @@ export default function SettingsLayout({ header, children }) {
                         </Box>
 
                         <Box sx={{ flexGrow: 1 }} />
+
+                        {/* Info Icon - Added */}
+                        <IconButton
+                            color="inherit"
+                            onClick={() => setInfoModalOpen(true)}
+                            aria-label="information"
+                            sx={{ mr: 2, color: 'white' }}
+                        >
+                            <HelpOutlineOutlinedIcon />
+                        </IconButton>
 
                         {/* USERNAME DAN DROPDOWN */}
                         <Box className="hidden sm:flex sm:items-center">
@@ -110,6 +124,9 @@ export default function SettingsLayout({ header, children }) {
             )}
 
             <main class='pt-7'>{children}</main>
+            
+            {/* Info Modal - Added */}
+            <InfoModal open={infoModalOpen} onClose={() => setInfoModalOpen(false)} />
         </div>
     );
 }

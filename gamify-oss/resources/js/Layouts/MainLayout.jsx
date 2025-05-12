@@ -2,14 +2,18 @@ import React, { useState } from 'react';
 import { Box, AppBar, CssBaseline, Toolbar, IconButton, useMediaQuery, useTheme } from '@mui/material';
 import { Link, usePage } from '@inertiajs/react';
 import MenuIcon from '@mui/icons-material/Menu';
+import InfoIcon from '@mui/icons-material/Info';
+import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import Dropdown from '@/Components/Dropdown';
 import Sidebar from '@/Components/Sidebar';
+import InfoModal from '@/Components/InfoModal'; 
 
 export default function MainLayout({ children }) {
     const user = usePage().props.auth.user;
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [infoModalOpen, setInfoModalOpen] = useState(false);  // Added state
 
     const drawerWidth = 275;
 
@@ -53,6 +57,16 @@ export default function MainLayout({ children }) {
                         </Box>
 
                         <Box sx={{ flexGrow: 1 }} />
+
+                        {/* Info Icon - Added */}
+                        <IconButton
+                            color="inherit"
+                            onClick={() => setInfoModalOpen(true)}
+                            aria-label="information"
+                            sx={{ mr: 2, color: 'white' }}
+                        >
+                            <HelpOutlineOutlinedIcon />
+                        </IconButton>
 
                         {/* Username and Dropdown */}
                         <Box className="hidden sm:flex sm:items-center">
@@ -136,6 +150,9 @@ export default function MainLayout({ children }) {
                         {children}
                     </Box>
                 </Box>
+                
+                {/* Info Modal - Added */}
+                <InfoModal open={infoModalOpen} onClose={() => setInfoModalOpen(false)} />
             </Box>
         </Box>
     );
