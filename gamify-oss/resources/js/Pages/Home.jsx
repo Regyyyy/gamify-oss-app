@@ -36,7 +36,7 @@ export default function Home({ auth }) {
                         </Box>
 
                         <Typography variant="h2" fontWeight="bold" gutterBottom>
-                            ASE <Box component="span" sx={{ color: theme.palette.primary.main }}>Gamified</Box> OSS
+                            ASE <Box component="span" sx={{ color: theme.palette.primary.main }}>GAMIFY</Box>-OSS
                         </Typography>
 
                         <Typography variant="h6" sx={{ mb: 5, mt: 3, color: 'text.secondary' }}>
